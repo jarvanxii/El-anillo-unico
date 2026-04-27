@@ -5,6 +5,10 @@
   <HeaderBoromir v-if="showBoromirHeader" />
   <HeaderNazgul v-if="showNazgulHeader" />
   <HeaderBiblioteca v-if="showBibliotecaHeader" />
+  <HeaderCelebrimbor v-if="showCelebrimborHeader" />
+  <HeaderSauron v-if="showSauronHeader" />
+  <HeaderPalantir v-if="showPalantirHeader" />
+  <HeaderRadagast v-if="showRadagastHeader" />
   <router-view />
   <Footer v-if="showFooter" />
 </template>
@@ -17,10 +21,14 @@ import HeaderGimli from './components/HeaderGimli.vue'
 import HeaderBoromir from './components/HeaderBoromir.vue'
 import HeaderNazgul from './components/HeaderNazgul.vue'
 import HeaderBiblioteca from './components/HeaderBiblioteca.vue'
+import HeaderCelebrimbor from './components/HeaderCelebrimbor.vue'
+import HeaderSauron from './components/HeaderSauron.vue'
+import HeaderPalantir from './components/HeaderPalantir.vue'
+import HeaderRadagast from './components/HeaderRadagast.vue'
 
 export default {
   name: "App",
-  components: { Header, Footer, HeaderSaruman, HeaderGimli, HeaderBoromir, HeaderNazgul, HeaderBiblioteca },
+  components: { Header, Footer, HeaderSaruman, HeaderGimli, HeaderBoromir, HeaderNazgul, HeaderBiblioteca, HeaderCelebrimbor, HeaderSauron, HeaderPalantir, HeaderRadagast },
   computed: {
     showHeader() {
       return this.$route?.meta?.showHeader !== false;
@@ -42,6 +50,18 @@ export default {
     },
     showBibliotecaHeader() {
       return this.$route?.meta?.showBibliotecaHeader;
+    },
+    showCelebrimborHeader() {
+      return this.$route?.meta?.showCelebrimborHeader;
+    },
+    showSauronHeader() {
+      return this.$route?.meta?.showSauronHeader;
+    },
+    showPalantirHeader() {
+      return this.$route?.meta?.showPalantirHeader;
+    },
+    showRadagastHeader() {
+      return this.$route?.meta?.showRadagastHeader;
     }
   }
 }

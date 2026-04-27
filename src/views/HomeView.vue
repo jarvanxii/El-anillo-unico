@@ -10,10 +10,7 @@
             <div class="title-underline"></div>
             <p class="quote">
                 <span class="quote-mark">"</span>
-                Un Anillo para gobernarlos a todos,<br />
-                Un Anillo para encontrarlos,<br />
-                Un Anillo para atraerlos a todos<br />
-                y atarlos en las tinieblas…
+                Un sitio para gobernarlos a todos.
                 <span class="quote-mark">"</span>
             </p>
         </header>
@@ -100,6 +97,19 @@
                         <p class="info-quote">"¿Viene en pintas?"</p>
                     </div>
                 </router-link>
+                <router-link :to="{ name: 'la-guardia-de-faramir' }" class="option-card card-large">
+                    <div class="corner-tl"></div>
+                    <div class="corner-br"></div>
+                    <div class="option-img-wrap">
+                        <img src="@/assets/logos/pippin.png" class="option-img" />
+                    </div>
+                    <h3>La guardia de Faramir</h3>
+                    <span class="option-tag">URLs seguras y malignas</span>
+                    <div class="option-info">
+                        <p class="info-desc">Comprobación de la hostilidad y seguridad de URLs</p>
+                        <p class="info-quote">"Mucho daño puede venir de manos bien intencionadas."</p>
+                    </div>
+                </router-link>
                 <router-link :to="{ name: 'la-piedra-palantir' }" class="option-card card-large">
                     <div class="corner-tl"></div>
                     <div class="corner-br"></div>
@@ -107,9 +117,9 @@
                         <img src="@/assets/logos/palantir.png" class="option-img" />
                     </div>
                     <h3>La piedra Palantír</h3>
-                    <span class="option-tag">IA | Agentes</span>
+                    <span class="option-tag">Inteligencia Artificial</span>
                     <div class="option-info">
-                        <p class="info-desc">Inteligencia artificial, modelos y futuro tecnológico.</p>
+                        <p class="info-desc">Conceptos de inteligencia artificial y avances tecnológicos.</p>
                         <p class="info-quote">"No todas las visiones son ciertas."</p>
                     </div>
                 </router-link>
@@ -124,6 +134,19 @@
                     <div class="option-info">
                         <p class="info-desc">Un lugar protegido para debatir, compartir ideas y tomar decisiones.</p>
                         <p class="info-quote">"Extraños de tierras lejanas, amigos de antaño…"</p>
+                    </div>
+                </router-link>
+                <router-link :to="{ name: 'el-codice-de-feanor' }" class="option-card card-large">
+                    <div class="corner-tl"></div>
+                    <div class="corner-br"></div>
+                    <div class="option-img-wrap">
+                        <img src="@/assets/logos/elrond.png" class="option-img" />
+                    </div>
+                    <h3>El códice de Fëanor</h3>
+                    <span class="option-tag">Herramientas criptográficas</span>
+                    <div class="option-info">
+                        <p class="info-desc">Herramientas criptográficas y técnicas de codificación y cifrado.</p>
+                        <p class="info-quote">"Fëanor era el más grande de los Noldor en habilidad y saber."</p>
                     </div>
                 </router-link>
                 <router-link :to="{ name: 'los-champiñones-de-radagast' }" class="option-card card-large">
@@ -190,6 +213,32 @@
                     <div class="option-info">
                         <p class="info-desc">Herramientas y recursos.</p>
                         <p class="info-quote">"La habilidad de los Elfos está más allá de tu imaginación."</p>
+                    </div>
+                </router-link>
+                <router-link :to="{ name: 'el-vuelo-de-thorondor' }" class="option-card card-large">
+                    <div class="corner-tl"></div>
+                    <div class="corner-br"></div>
+                    <div class="option-img-wrap">
+                        <img src="@/assets/logos/celebrimbor.png" class="option-img" />
+                    </div>
+                    <h3>El vuelo de Thorondor</h3>
+                    <span class="option-tag">Monitorización</span>
+                    <div class="option-info">
+                        <p class="info-desc">Herramienta para monitorización de sistemas Linux</p>
+                        <p class="info-quote">"Thorondor observaba todo lo que sucedía en las tierras de abajo."</p>
+                    </div>
+                </router-link>
+                <router-link :to="{ name: 'la-identidad-de-gollum' }" class="option-card card-large">
+                    <div class="corner-tl"></div>
+                    <div class="corner-br"></div>
+                    <div class="option-img-wrap">
+                        <img src="@/assets/logos/celebrimbor.png" class="option-img" />
+                    </div>
+                    <h3>La identidad de Golum</h3>
+                    <span class="option-tag">WHOAMI</span>
+                    <div class="option-info">
+                        <p class="info-desc">Información sobre tu identidad digital</p>
+                        <p class="info-quote">"¿Qué son patatas, tesoro?"</p>
                     </div>
                 </router-link>
                 <router-link :to="{ name: 'el-antiguo-mapa-de-bilbo' }" class="option-card card-large">
@@ -414,7 +463,7 @@ main {
 }
 
 .cards-grid.big-cards {
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(5, 1fr);
     gap: 28px;
 }
 

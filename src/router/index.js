@@ -1,5 +1,14 @@
 import { createRouter, createWebHashHistory } from "vue-router";
 import HomeView from "../views/HomeView.vue";
+import JarraPippinView from "../views/JarraPippinView.vue";
+import ConcilioElrondView from "../views/ConcilioElrondView.vue";
+import EspejoGaladrielView from "../views/EspejoGaladrielView.vue";
+import MapaBilboView from "../views/MapaBilboView.vue";
+import LibroRojoView from "../views/LibroRojoView.vue";
+import IdentidadGollumView from "../views/IdentidadGollumView.vue";
+import VueloThorondorView from "../views/VueloThorondorView.vue";
+import GuardiaFaramirView from "../views/GuardiaFaramirView.vue";
+import CodiceFeanorView from "../views/CodiceFeanorView.vue";
 
 // BASTÓN SARUMAN
 import BastonSarumanView from "../views/BastonSaruman/BastonSarumanView.vue";
@@ -29,18 +38,57 @@ import ManoSauronView from "../views/ManoSauron/ManoSauronView.vue";
 import PiedraPalantirView from "../views/PiedraPalantir/PiedraPalantirView.vue";
 
 // RESTO DE VISTAS SIN HEADER PERSONALIZADO
-import JarraPippinView from "../views/JarraPippinView.vue";
-import ConcilioElrondView from "../views/ConcilioElrondView.vue";
-import EspejoGaladrielView from "../views/EspejoGaladrielView.vue";
-import MapaBilboView from "../views/MapaBilboView.vue";
-import LibroRojoView from "../views/LibroRojoView.vue";
 
 const routes = [
   {
     path: "/",
     name: "home",
     component: HomeView,
-    meta: { showHeader: true, showFooter: true },
+  },
+  {
+    path: "/la-jarra-de-pippin",
+    name: "la-jarra-de-pippin",
+    component: JarraPippinView,
+  },
+  {
+    path: "/el-concilio-de-elrond",
+    name: "el-concilio-de-elrond",
+    component: ConcilioElrondView,
+  },
+  {
+    path: "/el-espejo-de-galadriel",
+    name: "el-espejo-de-galadriel",
+    component: EspejoGaladrielView,
+  },
+  {
+    path: "/el-antiguo-mapa-de-bilbo",
+    name: "el-antiguo-mapa-de-bilbo",
+    component: MapaBilboView,
+  },
+  {
+    path: "/el-libro-rojo-de-la-frontera-del-oeste",
+    name: "el-libro-rojo-de-la-frontera-del-oeste",
+    component: LibroRojoView,
+  },
+  {
+    path: "/la-identidad-de-gollum",
+    name: "la-identidad-de-gollum",
+    component: IdentidadGollumView,
+  },
+  {
+    path: "/el-vuelo-de-thorondor",
+    name: "el-vuelo-de-thorondor",
+    component: VueloThorondorView,
+  },
+  {
+    path: "/la-guardia-de-faramir",
+    name: "la-guardia-de-faramir",
+    component: GuardiaFaramirView,
+  },
+  {
+    path: "/el-codice-de-feanor",
+    name: "el-codice-de-feanor",
+    component: CodiceFeanorView,
   },
 
   // BASTÓN DE SARUMAN
@@ -48,7 +96,7 @@ const routes = [
     path: "/el-baston-de-saruman",
     name: "el-baston-de-saruman",
     component: BastonSarumanView,
-    meta: { showHeader: true, showSarumanHeader: true },
+    meta: { showSarumanHeader: true },
   },
 
   // HACHA DE GIMLI
@@ -56,7 +104,7 @@ const routes = [
     path: "/el-hacha-de-gimli",
     name: "el-hacha-de-gimli",
     component: HachaGimliView,
-    meta: { showHeader: true, showGimliHeader: true },
+    meta: { showGimliHeader: true },
   },
 
   // ESCUDO DE BOROMIR
@@ -64,7 +112,7 @@ const routes = [
     path: "/el-escudo-de-boromir",
     name: "el-escudo-de-boromir",
     component: EscudoBoromirView,
-    meta: { showHeader: true, showBoromirHeader: true },
+    meta: { showBoromirHeader: true },
   },
 
   // LA CAPA DE LOS NAZGUL
@@ -72,7 +120,7 @@ const routes = [
     path: "/la-capa-de-los-nazgul",
     name: "la-capa-de-los-nazgul",
     component: CapaNazgulView,
-    meta: { showHeader: true, showNazgulHeader: true },
+    meta: { showNazgulHeader: true },
   },
 
   // BIBLIOTECA DE RIVENDEL
@@ -80,7 +128,7 @@ const routes = [
     path: "/la-biblioteca-de-rivendel",
     name: "la-biblioteca-de-rivendel",
     component: BibliotecaRivendelView,
-    meta: { showHeader: true, showBibliotecaHeader: true },
+    meta: { showBibliotecaHeader: true },
   },
 
   // FORJA DE CELEBRIMBOR
@@ -88,7 +136,7 @@ const routes = [
     path: "/la-forja-de-celebrimbor",
     name: "la-forja-de-celebrimbor",
     component: ForjaCelebrimborView,
-    meta: { showHeader: true },
+    meta: { showCelebrimborHeader: true },
   },
 
   // CHAMPIÑONES DE RADAGAST
@@ -96,7 +144,7 @@ const routes = [
     path: "/los-champiñones-de-radagast",
     name: "los-champiñones-de-radagast",
     component: ChampiñonesRadagastView,
-    meta: { showHeader: true },
+    meta: { showRadagastHeader: true },
   },
 
   // MANO DE SAURON
@@ -104,7 +152,7 @@ const routes = [
     path: "/la-mano-de-sauron",
     name: "la-mano-de-sauron",
     component: ManoSauronView,
-    meta: { showHeader: true },
+    meta: { showSauronHeader: true },
   },
 
   // PIEDRA PALANTIR
@@ -112,39 +160,7 @@ const routes = [
     path: "/la-piedra-palantir",
     name: "la-piedra-palantir",
     component: PiedraPalantirView,
-    meta: { showHeader: true },
-  },
-
-  // RESTO DE VISTAS SIN HEADER PERSONALIZADO
-  {
-    path: "/la-jarra-de-pippin",
-    name: "la-jarra-de-pippin",
-    component: JarraPippinView,
-    meta: { showHeader: true },
-  },
-  {
-    path: "/el-concilio-de-elrond",
-    name: "el-concilio-de-elrond",
-    component: ConcilioElrondView,
-    meta: { showHeader: true },
-  },
-  {
-    path: "/el-espejo-de-galadriel",
-    name: "el-espejo-de-galadriel",
-    component: EspejoGaladrielView,
-    meta: { showHeader: true },
-  },
-  {
-    path: "/el-antiguo-mapa-de-bilbo",
-    name: "el-antiguo-mapa-de-bilbo",
-    component: MapaBilboView,
-    meta: { showHeader: true },
-  },
-  {
-    path: "/el-libro-rojo-de-la-frontera-del-oeste",
-    name: "el-libro-rojo-de-la-frontera-del-oeste",
-    component: LibroRojoView,
-    meta: { showHeader: true },
+    meta: { showPalantirHeader: true },
   },
 ];
 

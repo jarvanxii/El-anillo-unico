@@ -176,7 +176,7 @@
                                     <div class="source-data">
                                         <template v-if="emailResult.sources?.hibp?.success">
                                             <span>Brechas encontradas: <strong>{{
-                                                    emailResult.sources.hibp.breaches?.length || 0 }}</strong></span>
+                                                emailResult.sources.hibp.breaches?.length || 0 }}</strong></span>
                                         </template>
                                         <template v-else-if="emailResult.sources?.hibp?.skipped">
                                             <span class="text-muted">Requiere API key. <a
@@ -207,9 +207,9 @@
                                         <template v-if="emailResult.sources?.validation?.success">
                                             <span>Válido: <strong>{{ emailResult.valid ? 'Sí' : 'No' }}</strong></span>
                                             <span>Temporal: <strong>{{ emailResult.sources.validation.disposable ? 'Sí'
-                                                    : 'No' }}</strong></span>
+                                                : 'No' }}</strong></span>
                                             <span>Cuenta de rol: <strong>{{ emailResult.sources.validation.role ? 'Sí' :
-                                                    'No' }}</strong></span>
+                                                'No' }}</strong></span>
                                             <span v-if="emailResult.sources.validation.deliverable !== null">
                                                 Entregable: <strong>{{ emailResult.sources.validation.deliverable ? 'Sí'
                                                     : 'No' }}</strong>
@@ -239,7 +239,7 @@
                                     <div class="source-data">
                                         <template v-if="emailResult.sources?.gravatar?.success">
                                             <span>Avatar registrado: <strong>{{ emailResult.hasGravatar ? 'Sí' : 'No'
-                                                    }}</strong></span>
+                                            }}</strong></span>
                                         </template>
                                         <template v-else>
                                             <span class="text-muted small">{{ emailResult.sources?.gravatar?.error ||
@@ -1447,5 +1447,69 @@ function isRecentBreach(breach) {
 .metric-label,
 .results-section-title {
     color: #c9d1d9 !important;
+}
+
+/* ───── FIX VISIBILIDAD TEXTO (EMAIL ANALYSIS) ───── */
+
+.loading-step-status,
+.source-desc,
+.source-data,
+.metric-label,
+.field-label,
+.info-card p,
+.api-notice-body p,
+.breach-tag,
+.password-verdict-body p,
+.recommendations-list li {
+    color: #c9d1d9 !important;
+}
+
+/* Mejor contraste para resultados */
+.metric-value {
+    color: #ffffff;
+}
+
+/* Placeholder más visible */
+.analysis-input::placeholder {
+    color: rgba(200, 210, 220, 0.6) !important;
+}
+
+/* ───── FIX DEFINITIVO TEXTOS ILEGIBLES ───── */
+
+/* Sustituye el gris apagado de Bootstrap */
+.text-muted {
+    color: #c9d1d9 !important;
+}
+
+/* Textos pequeños (errores / fallback APIs) */
+.small {
+    color: #c9d1d9 !important;
+    opacity: 0.9;
+}
+
+/* Mensajes de warning tipo "Requiere API key" */
+.text-warning {
+    color: #ffd166 !important;
+}
+
+/* Mensajes de error */
+.text-danger {
+    color: #ff6b6b !important;
+}
+
+/* Refuerzo específico para bloques de resultados */
+.source-data span {
+    color: #e6edf3 !important;
+}
+
+/* Links dentro de mensajes */
+.source-data a,
+.text-muted a {
+    color: #c9a84c !important;
+}
+
+/* Hover links */
+.source-data a:hover {
+    text-decoration: underline;
 }
 </style>

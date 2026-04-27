@@ -41,41 +41,45 @@ export default {
       hideTimeout: null,
       items: [
         {
-          id: "ciberseguridad",
-          name: "Ciberseguridad",
+          id: "Teoria",
+          name: "Teoría",
           subs: [
-            { name: "Redes, protocolos y conceptos", route: "/el-baston-de-saruman" },
+            { name: "Redes, protocolos y conceptos de ciberseguridad", route: "/el-baston-de-saruman" },
             { name: "Red Team", route: "/el-hacha-de-gimli" },
             { name: "Blue Team", route: "/el-escudo-de-boromir" },
-            { name: "Privacidad", route: "/la-capa-de-los-nazgul" },
+            { name: "Privacidad y anonimato", route: "/la-capa-de-los-nazgul" },
+            { name: "Darkweb", route: "/la-mano-de-sauron" },
+            { name: "Inteligencia Artificial", route: "/la-piedra-palantir" },
             { name: "Certificaciones", route: "/la-biblioteca-de-rivendel" }
           ]
         },
         {
-          id: "recursos",
-          name: "Recursos",
+          id: "herramientas",
+          name: "Herramientas",
           subs: [
-            { name: "Herramientas", route: "/la-forja-de-celebrimbor" },
+            { name: "Herramientas Externas", route: "/la-forja-de-celebrimbor" },
+            { name: "Herramientas de codificación y cifrado", route: "/el-codice-de-feanor" },
+            { name: "Comprobación de URLs", route: "/la-guardia-de-faramir" },
+            { name: "Herramienta de monitorización", route: "/el-vuelo-de-thorondor" },
             { name: "Filtraciones", route: "/el-espejo-de-galadriel" },
-            { name: "Tests", route: "/el-antiguo-mapa-de-bilbo" }
+            { name: "Tests", route: "/el-antiguo-mapa-de-bilbo" },
+            { name: "WHOAMI", route: "/la-identidad-de-gollum" },
           ]
         },
         {
           id: "comunidad",
           name: "Comunidad",
           subs: [
+            { name: "Chat", route: "/el-concilio-de-elrond" },
             { name: "Películas, series y otros", route: "http://lapipadegandalf.ddns.net:8080" },
             { name: "Memes", route: "/la-jarra-de-pippin" },
-            { name: "Música", route: "https://www.youtube.com/@TomBombadil-SONGS" },
-            { name: "Chat", route: "/el-concilio-de-elrond" }
+            { name: "Música", route: "https://www.youtube.com/@TomBombadil-SONGS" }
           ]
         },
         {
           id: "otros",
           name: "Otros",
           subs: [
-            { name: "Darkweb", route: "/la-mano-de-sauron" },
-            { name: "IA", route: "/la-piedra-palantir" },
             { name: "Rendimiento cognitivo", route: "/los-champiñones-de-radagast" },
             { name: "FAQ", route: "/el-libro-rojo-de-la-frontera-del-oeste" }
           ]
@@ -181,23 +185,19 @@ export default {
 .logo img {
   width: 24px;
   filter:
-    drop-shadow(0 0 4px rgba(255, 200, 50, 0.55))
-    drop-shadow(0 0 10px rgba(212, 175, 55, 0.18))
-    drop-shadow(0 0 20px rgba(255, 215, 0, 0.08));
+    drop-shadow(0 0 4px rgba(255, 200, 50, 0.55)) drop-shadow(0 0 10px rgba(212, 175, 55, 0.18)) drop-shadow(0 0 20px rgba(255, 215, 0, 0.08));
   transition: all 0.3s ease;
 }
 
 .logo:hover img {
   filter:
-    drop-shadow(0 0 6px rgba(255, 200, 50, 0.7))
-    drop-shadow(0 0 15px rgba(212, 175, 55, 0.3))
-    drop-shadow(0 0 30px rgba(255, 215, 0, 0.15));
+    drop-shadow(0 0 6px rgba(255, 200, 50, 0.7)) drop-shadow(0 0 15px rgba(212, 175, 55, 0.3)) drop-shadow(0 0 30px rgba(255, 215, 0, 0.15));
   transform: rotate(5deg) scale(1.1);
 }
 
 .nav-links {
   flex: 1;
-  max-width: 1200px;
+  max-width: 1060px;
   padding: 0 20px;
 }
 
@@ -316,6 +316,7 @@ export default {
     transform: translateY(-8px) scale(0.98);
     filter: blur(1px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0) scale(1);

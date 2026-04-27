@@ -1,7 +1,7 @@
 <template>
-    <div class="radagast-page">
+    <div class="thorondor-page">
         <section class="hero-banner">
-            <img src="@/assets/banners/banner-radagast.png" alt="Los champiñones de Radagast" />
+            <img src="@/assets/banners/banner-pippin.png" alt="El vuelo de Thorondor" />
         </section>
         <main class="content container">
             <section class="section-box">
@@ -59,12 +59,12 @@
 
 <script>
 export default {
-    name: "RadagastPage"
+    name: "ThorondorPage"
 };
 </script>
 
 <style scoped>
-.radagast-page {
+.thorondor-page {
     background: #0f1419;
     color: #e8f4fd;
     min-height: 100vh;
@@ -72,7 +72,7 @@ export default {
 }
 
 .hero-banner {
-    margin-top: 111px;
+    margin-top: 53px;
 }
 
 .hero-banner img {

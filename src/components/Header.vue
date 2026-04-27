@@ -5,38 +5,24 @@
         <img src="/anillo.ico" alt="logo" />
         <span>El Anillo Único</span>
       </div>
-
-      <ul class="nav-links" ref="navLinks">
-        <li
-          v-for="item in items"
-          :key="item.id"
-          class="nav-item"
-          :class="{ active: active === item.id }"
-          @mouseenter="showMenu(item.id, $event)"
-          @mouseleave="startHide"
-        >
-          {{ item.name }}
-        </li>
-      </ul>
-    </nav>
-
-    <!-- MENÚ DESPLEGABLE -->
-    <div
-      v-if="active"
-      class="mega-menu"
-      :style="{ top: headerHeight + 'px', left: dropdownX + 'px' }"
-      @mouseenter="cancelHide"
-      @mouseleave="startHide"
-    >
-      <div class="submenu">
-        <div
-          v-for="(sub, index) in currentSubs"
-          :key="index"
-          class="submenu-item"
-          @click="handleClick(sub)"
-        >
-          {{ sub.name }}
+      <div class="nav-links">
+        <div class="row g-0 justify-content-center">
+          <div v-for="item in items" :key="item.id" class="col-xl-3 col-lg-3 col-md-4 col-sm-6 col-6">
+            <div :class="['nav-item', 'h-100', { active: active === item.id }]" @mouseenter="showMenu(item.id, $event)"
+              @mouseleave="startHide">
+              {{ item.name }}
+            </div>
+          </div>
         </div>
+      </div>
+    </nav>
+    <div v-if="active" class="sub-dropdown"
+      :style="{ top: headerHeight + 'px', left: dropdownLeft + 'px', width: dropdownWidth + 'px' }"
+      @mouseenter="cancelHide" @mouseleave="startHide">
+      <div class="submenu">
+        <a v-for="(sub, index) in currentSubs" :key="index" @click="handleClick(sub)">
+          {{ sub.name }}
+        </a>
       </div>
     </div>
   </header>
@@ -49,10 +35,10 @@ export default {
   data() {
     return {
       active: null,
-      dropdownX: 0,
-      headerHeight: 0,
+      dropdownLeft: 0,
+      dropdownTop: 0,
+      dropdownWidth: 0,
       hideTimeout: null,
-
       items: [
         {
           id: "ciberseguridad",
@@ -61,7 +47,8 @@ export default {
             { name: "Redes, protocolos y conceptos", route: "/el-baston-de-saruman" },
             { name: "Red Team", route: "/el-hacha-de-gimli" },
             { name: "Blue Team", route: "/el-escudo-de-boromir" },
-            { name: "Privacidad", route: "/la-capa-de-los-nazgul" }
+            { name: "Privacidad", route: "/la-capa-de-los-nazgul" },
+            { name: "Certificaciones", route: "/la-biblioteca-de-rivendel" }
           ]
         },
         {
@@ -69,7 +56,6 @@ export default {
           name: "Recursos",
           subs: [
             { name: "Herramientas", route: "/la-forja-de-celebrimbor" },
-            { name: "Chat", route: "/el-concilio-de-elrond" },
             { name: "Filtraciones", route: "/el-espejo-de-galadriel" },
             { name: "Tests", route: "/el-antiguo-mapa-de-bilbo" }
           ]
@@ -80,7 +66,8 @@ export default {
           subs: [
             { name: "Películas, series y otros", route: "http://lapipadegandalf.ddns.net:8080" },
             { name: "Memes", route: "/la-jarra-de-pippin" },
-            { name: "Música", route: "https://www.youtube.com/@TomBombadil-SONGS" }
+            { name: "Música", route: "https://www.youtube.com/@TomBombadil-SONGS" },
+            { name: "Chat", route: "/el-concilio-de-elrond" }
           ]
         },
         {
@@ -90,7 +77,6 @@ export default {
             { name: "Darkweb", route: "/la-mano-de-sauron" },
             { name: "IA", route: "/la-piedra-palantir" },
             { name: "Rendimiento cognitivo", route: "/los-champiñones-de-radagast" },
-            { name: "Certificaciones", route: "/la-biblioteca-de-rivendel" },
             { name: "FAQ", route: "/el-libro-rojo-de-la-frontera-del-oeste" }
           ]
         }
@@ -113,19 +99,23 @@ export default {
     showMenu(id, event) {
       this.active = id;
       const rect = event.currentTarget.getBoundingClientRect();
-      this.dropdownX = rect.left;
+      this.dropdownLeft = rect.left;
+      this.dropdownTop = rect.bottom;
+      this.dropdownWidth = rect.width;
       this.cancelHide();
     },
 
     startHide() {
       this.hideTimeout = setTimeout(() => {
         this.active = null;
-      }, 300);
+      }, 250);
     },
 
     cancelHide() {
-      if (this.hideTimeout) clearTimeout(this.hideTimeout);
-      this.hideTimeout = null;
+      if (this.hideTimeout) {
+        clearTimeout(this.hideTimeout);
+        this.hideTimeout = null;
+      }
     },
 
     handleClick(sub) {
@@ -144,224 +134,203 @@ export default {
 </script>
 
 <style scoped>
-/* =====================================================
-   HEADER PRINCIPAL - PREMIUM TOLKIEN DARK
-===================================================== */
 .main-header {
   width: 100%;
   height: 52px;
-  padding: 4px 0;
-
   position: fixed;
   top: 0;
   left: 0;
   z-index: 99999;
-  overflow: visible;
-
-  /* Fondo premium oscuro */
   background:
     linear-gradient(180deg, #1b1813 0%, #12100d 45%, #0c0b09 100%);
-
   border-bottom: 1px solid rgba(212, 175, 55, 0.38);
-
   box-shadow:
     0 2px 10px rgba(0, 0, 0, 0.65),
     inset 0 1px 0 rgba(255, 220, 120, 0.06);
 }
 
-/* =====================================================
-   CONTENEDOR NAV
-===================================================== */
 .nav-container {
   width: 100%;
   height: 100%;
-
   display: flex;
   justify-content: center;
   align-items: center;
-
   position: relative;
 }
 
-/* =====================================================
-   LOGO
-===================================================== */
 .logo {
   position: absolute;
   left: 16px;
-
   display: flex;
   align-items: center;
   gap: 8px;
-
   cursor: pointer;
-
   color: #d4af37;
   font-family: "Cinzel Decorative", serif;
   font-size: 14px;
   letter-spacing: 0.5px;
-
   transition: all 0.25s ease;
 }
 
 .logo:hover {
   color: #f0cf72;
-  transform: translateY(-1px);
+  transform: translateY(-1px) scale(1.05);
+  text-shadow: 0 0 12px rgba(212, 175, 55, 0.4);
 }
 
 .logo img {
   width: 24px;
-
   filter:
     drop-shadow(0 0 4px rgba(255, 200, 50, 0.55))
-    drop-shadow(0 0 10px rgba(212, 175, 55, 0.18));
+    drop-shadow(0 0 10px rgba(212, 175, 55, 0.18))
+    drop-shadow(0 0 20px rgba(255, 215, 0, 0.08));
+  transition: all 0.3s ease;
 }
 
-/* =====================================================
-   LINKS PRINCIPALES
-===================================================== */
+.logo:hover img {
+  filter:
+    drop-shadow(0 0 6px rgba(255, 200, 50, 0.7))
+    drop-shadow(0 0 15px rgba(212, 175, 55, 0.3))
+    drop-shadow(0 0 30px rgba(255, 215, 0, 0.15));
+  transform: rotate(5deg) scale(1.1);
+}
+
 .nav-links {
-  list-style: none;
-
-  display: flex;
-  gap: 34px;
-
-  margin: 0;
-  padding: 0;
+  flex: 1;
+  max-width: 1200px;
+  padding: 0 20px;
 }
 
 .nav-item {
-  position: relative;
-
+  min-height: 52px;
+  padding: 12px 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  white-space: normal;
+  line-height: 1.25;
   color: #f0e4c3;
   font-family: "Cinzel", serif;
-  font-size: 14px;
-  letter-spacing: 0.4px;
-
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: .3px;
   cursor: pointer;
-
-  padding: 4px 2px;
-
-  transition: color 0.25s ease, transform 0.2s ease;
+  border-left: 1px solid rgba(212, 175, 55, 0.18);
+  border-right: 1px solid rgba(212, 175, 55, 0.18);
+  transition: all .22s ease;
+  position: relative;
 }
 
-.nav-item:hover {
+.nav-item:hover,
+.nav-item.active {
+  background: #1b1813;
   color: #f3cf75;
-  transform: translateY(-1px);
+  box-shadow: inset 0 0 20px rgba(212, 175, 55, 0.15);
 }
 
-/* Línea dorada inferior */
 .nav-item::after {
   content: "";
-
   position: absolute;
-  bottom: -4px;
+  bottom: -2px;
   left: 50%;
-
   transform: translateX(-50%);
-
   width: 0;
-  height: 1px;
-
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(212, 175, 55, 0.95),
-    transparent
-  );
-
-  transition: width 0.35s ease;
+  height: 2px;
+  background: linear-gradient(90deg,
+      transparent 0%,
+      #d4af37 20%,
+      #ffd700 50%,
+      #d4af37 80%,
+      transparent 100%);
+  box-shadow: 0 0 8px rgba(212, 175, 55, 0.6), 0 0 16px rgba(255, 215, 0, 0.3);
+  transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  border-radius: 1px;
 }
 
 .nav-item:hover::after,
 .nav-item.active::after {
-  width: 90%;
+  width: 95%;
+  bottom: -1px;
 }
 
-/* =====================================================
-   MEGA MENU
-===================================================== */
-.mega-menu {
+.sub-dropdown {
   position: fixed;
-  width: 240px;
-
-  background:
-    linear-gradient(180deg, #1a1712 0%, #110f0c 100%);
-
-  border: 1px solid rgba(212, 175, 55, 0.24);
-  border-top: none;
-
-  border-radius: 0 0 10px 10px;
-
-  overflow: hidden;
-
+  max-height: 72vh;
+  overflow-y: auto;
+  background: linear-gradient(180deg, #141414 0%, #0f0f0f 100%);
+  border-left: 1px solid rgba(255, 214, 102, 0.22);
+  border-right: 1px solid rgba(255, 214, 102, 0.22);
+  border-bottom: 1px solid rgba(255, 214, 102, 0.22);
+  border-radius: 0 0 6px 6px;
+  padding: 14px 14px;
   z-index: 100000;
-
   box-shadow:
-    0 18px 30px rgba(0, 0, 0, 0.55),
-    inset 0 1px 0 rgba(255, 220, 120, 0.05);
-
-  animation: menuFade 0.18s ease;
+    0 18px 30px rgba(0, 0, 0, 0.50),
+    0 0 40px rgba(212, 175, 55, 0.08),
+    inset 0 1px 0 rgba(255, 220, 120, 0.03);
+  animation: dropdownFade 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  backdrop-filter: blur(1px);
 }
 
-/* =====================================================
-   SUBMENU
-===================================================== */
 .submenu {
   display: flex;
   flex-direction: column;
+  gap: 8px;
 }
 
-.submenu-item {
-  padding: 13px 18px;
-
-  font-size: 13px;
-  font-family: "Cinzel", serif;
-  letter-spacing: 0.25px;
-
+.submenu a {
   color: #f3e7c2;
-
+  text-decoration: none;
+  font-family: "Cinzel", serif;
+  font-size: 13px;
+  line-height: 1.35;
+  padding: 6px 2px;
   border-bottom: 1px solid rgba(255, 214, 102, 0.08);
-
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   cursor: pointer;
-
-  transition: all 0.22s ease;
 }
 
-.submenu-item:last-child {
+.submenu a:hover {
+  color: #ffd76d;
+  font-family: "Cinzel", serif;
+  transform: translateX(1px);
+}
+
+.submenu a:last-child {
   border-bottom: none;
 }
 
-.submenu-item:hover {
-  background:
-    linear-gradient(
-      90deg,
-      rgba(212, 175, 55, 0.14),
-      rgba(212, 175, 55, 0.05)
-    );
-
-  color: #ffd76d;
-  padding-left: 22px;
+.sub-dropdown::-webkit-scrollbar {
+  width: 8px;
 }
 
-/* =====================================================
-   ANIMACIÓN
-===================================================== */
-@keyframes menuFade {
+.sub-dropdown::-webkit-scrollbar-thumb {
+  background: rgba(212, 175, 55, 0.35);
+  border-radius: 10px;
+}
+
+@keyframes dropdownFade {
   from {
     opacity: 0;
-    transform: translateY(-6px);
+    transform: translateY(-8px) scale(0.98);
+    filter: blur(1px);
   }
-
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: translateY(0) scale(1);
+    filter: blur(0);
   }
 }
 
-/* =====================================================
-   RESPONSIVE
-===================================================== */
+@media (max-width: 1199px) {
+  .nav-item {
+    padding: 12px 18px;
+    font-size: 12px;
+    min-height: 58px;
+  }
+}
+
 @media (max-width: 820px) {
   .nav-links {
     display: none !important;

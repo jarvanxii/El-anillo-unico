@@ -1,7 +1,7 @@
 <template>
-    <div class="pippin-page">
+    <div class="nazgul-page">
         <section class="hero-banner">
-            <img src="@/assets/banners/banner-pippin.png" alt="La jarra de Pippin" />
+            <img src="@/assets/banners/banner-nazgul.png" alt="La capa de los Nazgul" />
         </section>
         <main class="content container">
             <section class="section-box">
@@ -59,12 +59,12 @@
 
 <script>
 export default {
-    name: "PippinPage"
+    name: "NazgulPage"
 };
 </script>
 
 <style scoped>
-.pippin-page {
+.nazgul-page {
     background: #0f1419;
     color: #e8f4fd;
     min-height: 100vh;
@@ -72,7 +72,7 @@ export default {
 }
 
 .hero-banner {
-    margin-top: 53px;
+    margin-top: 129px;
 }
 
 .hero-banner img {

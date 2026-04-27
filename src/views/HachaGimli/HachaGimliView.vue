@@ -1,7 +1,7 @@
 <template>
-    <div class="pippin-page">
+    <div class="gimli-page">
         <section class="hero-banner">
-            <img src="@/assets/banners/banner-pippin.png" alt="La jarra de Pippin" />
+            <img src="@/assets/banners/banner-gimli.png" alt="El hacha de Gimli" />
         </section>
         <main class="content container">
             <section class="section-box">
@@ -59,20 +59,20 @@
 
 <script>
 export default {
-    name: "PippinPage"
+    name: "GimliPage"
 };
 </script>
 
 <style scoped>
-.pippin-page {
-    background: #0f1419;
-    color: #e8f4fd;
+.gimli-page {
+    background: #1a0c0c;
+    color: #f0e8d8;
     min-height: 100vh;
     font-family: "EB Garamond", serif;
 }
 
 .hero-banner {
-    margin-top: 53px;
+    margin-top: 113px;
 }
 
 .hero-banner img {

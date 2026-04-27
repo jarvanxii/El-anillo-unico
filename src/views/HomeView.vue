@@ -24,7 +24,7 @@
                     <div class="corner-tl"></div>
                     <div class="corner-br"></div>
                     <div class="option-img-wrap">
-                        <img src="@/assets/saruman.png" class="option-img" />
+                        <img src="@/assets/logos/saruman.png" class="option-img" />
                     </div>
                     <h3>El bastón de Saruman</h3>
                     <span class="option-tag">Conceptos de Ciberseguridad</span>
@@ -37,7 +37,7 @@
                     <div class="corner-tl"></div>
                     <div class="corner-br"></div>
                     <div class="option-img-wrap">
-                        <img src="@/assets/gimli.png" class="option-img" />
+                        <img src="@/assets/logos/gimli.png" class="option-img" />
                     </div>
                     <h3>El hacha de Gimli</h3>
                     <span class="option-tag">Red Team</span>
@@ -50,7 +50,7 @@
                     <div class="corner-tl"></div>
                     <div class="corner-br"></div>
                     <div class="option-img-wrap">
-                        <img src="@/assets/boromir.png" class="option-img" />
+                        <img src="@/assets/logos/boromir.png" class="option-img" />
                     </div>
                     <h3>El escudo de Boromir</h3>
                     <span class="option-tag">Blue Team</span>
@@ -63,7 +63,7 @@
                     <div class="corner-tl"></div>
                     <div class="corner-br"></div>
                     <div class="option-img-wrap">
-                        <img src="@/assets/gandalf.png" class="option-img" />
+                        <img src="@/assets/logos/gandalf.png" class="option-img" />
                     </div>
                     <h3>La pipa de Gandalf</h3>
                     <span class="option-tag">Ocio</span>
@@ -78,7 +78,7 @@
                     <div class="corner-tl"></div>
                     <div class="corner-br"></div>
                     <div class="option-img-wrap">
-                        <img src="@/assets/nazgul.png" class="option-img" />
+                        <img src="@/assets/logos/nazgul.png" class="option-img" />
                     </div>
                     <h3>La capa de los Nazgûl</h3>
                     <span class="option-tag">Privacidad</span>
@@ -91,7 +91,7 @@
                     <div class="corner-tl"></div>
                     <div class="corner-br"></div>
                     <div class="option-img-wrap">
-                        <img src="@/assets/pippin.png" class="option-img" />
+                        <img src="@/assets/logos/pippin.png" class="option-img" />
                     </div>
                     <h3>La jarra de Pippin</h3>
                     <span class="option-tag">Memes</span>
@@ -104,7 +104,7 @@
                     <div class="corner-tl"></div>
                     <div class="corner-br"></div>
                     <div class="option-img-wrap">
-                        <img src="@/assets/palantir.png" class="option-img" />
+                        <img src="@/assets/logos/palantir.png" class="option-img" />
                     </div>
                     <h3>La piedra Palantír</h3>
                     <span class="option-tag">IA | Agentes</span>
@@ -117,7 +117,7 @@
                     <div class="corner-tl"></div>
                     <div class="corner-br"></div>
                     <div class="option-img-wrap">
-                        <img src="@/assets/elrond.png" class="option-img" />
+                        <img src="@/assets/logos/elrond.png" class="option-img" />
                     </div>
                     <h3>El concilio de Elrond</h3>
                     <span class="option-tag">Chat</span>
@@ -130,7 +130,7 @@
                     <div class="corner-tl"></div>
                     <div class="corner-br"></div>
                     <div class="option-img-wrap">
-                        <img src="@/assets/radagast.png" class="option-img" />
+                        <img src="@/assets/logos/radagast.png" class="option-img" />
                     </div>
                     <h3>Los champiñones de Radagast</h3>
                     <span class="option-tag">Rendimiento cognitivo</span>
@@ -144,7 +144,7 @@
                     <div class="corner-tl"></div>
                     <div class="corner-br"></div>
                     <div class="option-img-wrap">
-                        <img src="@/assets/sauron.png" class="option-img" />
+                        <img src="@/assets/logos/sauron.png" class="option-img" />
                     </div>
                     <h3>La mano de Sauron</h3>
                     <span class="option-tag">Darkweb</span>
@@ -157,7 +157,7 @@
                     <div class="corner-tl"></div>
                     <div class="corner-br"></div>
                     <div class="option-img-wrap">
-                        <img src="@/assets/biblioteca.png" class="option-img" />
+                        <img src="@/assets/logos/biblioteca.png" class="option-img" />
                     </div>
                     <h3>La biblioteca de Rivendel</h3>
                     <span class="option-tag">Certificaciones</span>
@@ -170,7 +170,7 @@
                     <div class="corner-tl"></div>
                     <div class="corner-br"></div>
                     <div class="option-img-wrap">
-                        <img src="@/assets/galadriel.png" class="option-img" />
+                        <img src="@/assets/logos/galadriel.png" class="option-img" />
                     </div>
                     <h3>El espejo de Galadriel</h3>
                     <span class="option-tag">Filtraciones</span>
@@ -183,7 +183,7 @@
                     <div class="corner-tl"></div>
                     <div class="corner-br"></div>
                     <div class="option-img-wrap">
-                        <img src="@/assets/celebrimbor.png" class="option-img" />
+                        <img src="@/assets/logos/celebrimbor.png" class="option-img" />
                     </div>
                     <h3>La forja de Celebrimbor</h3>
                     <span class="option-tag">Herramientas</span>
@@ -196,7 +196,7 @@
                     <div class="corner-tl"></div>
                     <div class="corner-br"></div>
                     <div class="option-img-wrap">
-                        <img src="@/assets/bilbo.png" class="option-img" />
+                        <img src="@/assets/logos/bilbo.png" class="option-img" />
                     </div>
                     <h3>El antiguo mapa de Bilbo</h3>
                     <span class="option-tag">Tests</span>
@@ -209,7 +209,7 @@
                     <div class="corner-tl"></div>
                     <div class="corner-br"></div>
                     <div class="option-img-wrap">
-                        <img src="@/assets/tombombadil.png" class="option-img" />
+                        <img src="@/assets/logos/tombombadil.png" class="option-img" />
                     </div>
                     <h3>La canción de Tom Bombadil</h3>
                     <span class="option-tag">Música</span>
@@ -222,7 +222,7 @@
                     <div class="corner-tl"></div>
                     <div class="corner-br"></div>
                     <div class="option-img-wrap">
-                        <img src="@/assets/librorojo.png" class="option-img" />
+                        <img src="@/assets/logos/librorojo.png" class="option-img" />
                     </div>
                     <h3>El Libro Rojo de la Frontera del Oeste</h3>
                     <span class="option-tag">FAQ</span>
@@ -266,8 +266,9 @@ export default {
 .hero-section {
     position: relative;
     text-align: center;
-    padding: 80px 20px 60px;
+    padding: 42px 20px 28px;
     overflow: hidden;
+    border-bottom: 1px solid rgba(212, 175, 55, .08);
 }
 
 .hero-section::before {
@@ -279,6 +280,8 @@ export default {
 }
 
 .hero-section::after {
+    height: 1px;
+    opacity: .6;
     content: '';
     position: absolute;
     bottom: 0;
@@ -290,23 +293,25 @@ export default {
 
 .rune-bar {
     font-family: 'Cinzel', serif;
-    font-size: 11px;
-    letter-spacing: 8px;
-    color: rgba(201, 162, 39, 0.4);
-    margin-bottom: 40px;
+    font-size: 10px;
+    letter-spacing: 7px;
+    color: rgba(201, 162, 39, 0.35);
+    margin-bottom: 18px;
 }
 
 .ring-wrapper {
     position: relative;
     display: inline-block;
-    margin-bottom: 48px;
+    margin-bottom: 18px;
 }
 
 .ring-glow {
     position: absolute;
-    inset: -30px;
+    inset: -18px;
     border-radius: 50%;
-    background: radial-gradient(circle, rgba(212, 175, 55, 0.25) 0%, transparent 70%);
+    background: radial-gradient(circle,
+            rgba(212, 175, 55, .22) 0%,
+            transparent 72%);
     animation: pulse 4s ease-in-out infinite;
 }
 
@@ -326,10 +331,11 @@ export default {
 
 .ring-img {
     position: relative;
-    width: 180px;
-    height: 180px;
+    width: 112px;
+    height: 112px;
     object-fit: contain;
-    filter: drop-shadow(0 0 30px rgba(255, 180, 0, 0.7)) drop-shadow(0 0 60px rgba(200, 100, 0, 0.3));
+    filter:
+        drop-shadow(0 0 18px rgba(255, 180, 0, .55)) drop-shadow(0 0 35px rgba(200, 100, 0, .22));
     animation: float 6s ease-in-out infinite;
 }
 
@@ -347,39 +353,43 @@ export default {
 
 .main-title {
     font-family: 'Cinzel Decorative', serif;
-    font-size: clamp(1.8rem, 5vw, 3.2rem);
+    font-size: clamp(1.55rem, 4vw, 2.5rem);
     font-weight: 700;
     color: #d4af37;
-    letter-spacing: 4px;
-    line-height: 1.2;
-    margin-bottom: 12px;
-    text-shadow: 0 0 40px rgba(212, 175, 55, 0.4), 0 2px 4px rgba(0, 0, 0, 0.8);
+    letter-spacing: 3px;
+    line-height: 1.15;
+    margin-bottom: 8px;
+    text-shadow:
+        0 0 22px rgba(212, 175, 55, .30),
+        0 2px 4px rgba(0, 0, 0, .8);
 }
 
 .title-underline {
-    width: 120px;
+    width: 90px;
     height: 1px;
-    background: linear-gradient(90deg, transparent, #c9a227, transparent);
-    margin: 16px auto 32px;
+    background: linear-gradient(90deg,
+            transparent,
+            #c9a227,
+            transparent);
+    margin: 10px auto 18px;
 }
 
 .quote {
     font-family: 'EB Garamond', serif;
     font-style: italic;
-    font-size: clamp(1rem, 2.5vw, 1.25rem);
-    line-height: 2;
-    color: rgba(245, 230, 179, 0.75);
-    max-width: 600px;
+    font-size: clamp(.92rem, 2vw, 1.08rem);
+    line-height: 1.55;
+    color: rgba(245, 230, 179, .72);
+    max-width: 620px;
     margin: 0 auto;
-    letter-spacing: 0.5px;
+    letter-spacing: .25px;
 }
 
 .quote-mark {
     font-family: 'Cinzel Decorative', serif;
-    font-size: 2rem;
-    color: rgba(201, 162, 39, 0.3);
-    line-height: 0;
-    vertical-align: -0.4em;
+    font-size: 1.45rem;
+    color: rgba(201, 162, 39, .28);
+    vertical-align: -0.2em;
 }
 
 main {

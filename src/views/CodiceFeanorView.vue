@@ -126,7 +126,7 @@
 
 <script>
 import CryptoJS from "crypto-js";
-import jwtDecode from "jwt-decode";
+import { jwtDecode } from "jwt-decode";
 
 export default {
     data() {

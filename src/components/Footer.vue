@@ -127,7 +127,6 @@ export default {
 
 <style scoped>
 .main-footer {
-    margin-top: 80px;
     background:
         linear-gradient(180deg, #15120e 0%, #0c0b09 52%, #070707 100%);
     border-top: 1px solid rgba(212, 175, 55, 0.22);

@@ -1,14 +1,11 @@
 <template>
     <div class="gollum-page">
         <section class="hero-banner">
-            <img src="@/assets/banners/banner-pippin.png" alt="La identidad de Gollum" />
+            <img src="@/assets/banners/banner-gollum.png" alt="La identidad de Gollum" />
         </section>
-
         <main class="content container">
-
-            <!-- RED -->
             <section class="section-box">
-                <h2 class="section-title">🌐 Red y Conectividad</h2>
+                <h4 class="section-title">🌐 Red y Conectividad</h4>
                 <div class="row g-3">
                     <div class="col-md-4" v-for="item in networkFields" :key="item.label">
                         <div class="item">
@@ -18,10 +15,8 @@
                     </div>
                 </div>
             </section>
-
-            <!-- SISTEMA -->
             <section class="section-box">
-                <h2 class="section-title">💻 Sistema</h2>
+                <h4 class="section-title">💻 Sistema</h4>
                 <div class="row g-3">
                     <div class="col-md-4" v-for="item in systemFields" :key="item.label">
                         <div class="item">
@@ -31,10 +26,8 @@
                     </div>
                 </div>
             </section>
-
-            <!-- HARDWARE -->
             <section class="section-box">
-                <h2 class="section-title">🧠 Hardware</h2>
+                <h4 class="section-title">🧠 Hardware</h4>
                 <div class="row g-3">
                     <div class="col-md-4" v-for="item in hardwareFields" :key="item.label">
                         <div class="item">
@@ -44,10 +37,8 @@
                     </div>
                 </div>
             </section>
-
-            <!-- PANTALLA -->
             <section class="section-box">
-                <h2 class="section-title">🖥️ Pantalla</h2>
+                <h4 class="section-title">🖥️ Pantalla</h4>
                 <div class="row g-3">
                     <div class="col-md-4" v-for="item in screenFields" :key="item.label">
                         <div class="item">
@@ -57,11 +48,8 @@
                     </div>
                 </div>
             </section>
-
-            <!-- GEO -->
             <section class="section-box">
-                <h2 class="section-title">📍 Ubicación</h2>
-
+                <h4 class="section-title">📍 Ubicación</h4>
                 <div class="row g-3 mb-3">
                     <div class="col-md-6">
                         <div class="item">
@@ -76,16 +64,12 @@
                         </div>
                     </div>
                 </div>
-
                 <button class="btn btn-main" @click="getGeoLocation">
                     Obtener ubicación
                 </button>
             </section>
-
-            <!-- IDENTIDAD DIGITAL -->
             <section class="section-box">
-                <h2 class="section-title">🕵️ Identidad Digital</h2>
-
+                <h4 class="section-title">🕵️ Identidad Digital</h4>
                 <div class="row g-3">
                     <div class="col-md-4">
                         <div class="item">
@@ -93,28 +77,24 @@
                             <span>{{ data.fingerprint }}</span>
                         </div>
                     </div>
-
                     <div class="col-md-4">
                         <div class="item">
                             <label>Trackers</label>
                             <span>{{ data.trackers }}</span>
                         </div>
                     </div>
-
                     <div class="col-md-4">
                         <div class="item">
                             <label>Cookies</label>
                             <span>{{ data.cookieCount }}</span>
                         </div>
                     </div>
-
                     <div class="col-md-4">
                         <div class="item">
                             <label>IP sospechosa</label>
                             <span>{{ data.proxy }}</span>
                         </div>
                     </div>
-
                     <div class="col-md-4">
                         <div class="item">
                             <label>Riesgo privacidad</label>
@@ -122,12 +102,10 @@
                         </div>
                     </div>
                 </div>
-
                 <button class="btn btn-main mt-3" @click="analyzeDigitalIdentity">
                     Analizar identidad
                 </button>
             </section>
-
         </main>
     </div>
 </template>
@@ -145,11 +123,9 @@ export default {
                 city: "-",
                 country: "-",
                 timezone: "-",
-
                 connectionType: "-",
                 downlink: "-",
                 rtt: "-",
-
                 os: "-",
                 browser: "-",
                 userAgent: "-",
@@ -158,20 +134,16 @@ export default {
                 cookies: "-",
                 online: "-",
                 dnt: "-",
-
                 cpu: "-",
                 ram: "-",
                 touch: "-",
-
                 screen: "-",
                 viewport: "-",
                 pixelRatio: "-",
                 colorDepth: "-",
                 darkMode: "-",
-
                 lat: "-",
                 lon: "-",
-
                 fingerprint: "-",
                 trackers: "-",
                 cookieCount: "-",
@@ -232,7 +204,6 @@ export default {
         async getPublicIp() {
             const res = await fetch("https://ipapi.co/json/");
             const json = await res.json();
-
             this.data.publicIp = json.ip;
             this.data.city = json.city;
             this.data.country = json.country_name;
@@ -242,22 +213,18 @@ export default {
 
         loadBasicInfo() {
             const nav = navigator;
-
             this.data.userAgent = nav.userAgent;
             this.data.language = nav.language;
             this.data.languages = nav.languages?.join(", ");
             this.data.cookies = nav.cookieEnabled ? "Sí" : "No";
             this.data.online = nav.onLine ? "Sí" : "No";
             this.data.dnt = nav.doNotTrack === "1" ? "Activado" : "Desactivado";
-
             this.data.cpu = nav.hardwareConcurrency;
             this.data.ram = nav.deviceMemory + " GB";
             this.data.touch = nav.maxTouchPoints;
-
             this.data.screen = `${screen.width} x ${screen.height}`;
             this.data.viewport = `${window.innerWidth} x ${window.innerHeight}`;
             this.data.darkMode = window.matchMedia("(prefers-color-scheme: dark)").matches ? "Sí" : "No";
-
             this.data.os = this.detectOS(nav.userAgent);
             this.data.browser = this.detectBrowser(nav.userAgent);
         },
@@ -290,7 +257,6 @@ export default {
                 screen.width,
                 screen.height
             ].join("|");
-
             this.data.fingerprint = btoa(fp).substring(0, 20);
         },
 

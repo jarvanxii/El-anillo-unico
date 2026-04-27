@@ -1,7 +1,7 @@
 <template>
     <div class="thorondor-page">
         <section class="hero-banner">
-            <img src="@/assets/banners/banner-pippin.png" alt="El vuelo de Thorondor" />
+            <img src="@/assets/banners/banner-thorondor.png" alt="El vuelo de Thorondor" />
         </section>
         <main class="content container">
             <section class="section-box">

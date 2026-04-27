@@ -94,14 +94,14 @@
                     <span class="option-tag">Memes</span>
                     <div class="option-info">
                         <p class="info-desc">Humor, memes y contenido ligero.</p>
-                        <p class="info-quote">"¿Viene en pintas?"</p>
+                        <p class="info-quote">"¿Y el segundo desayuno?"</p>
                     </div>
                 </router-link>
                 <router-link :to="{ name: 'la-guardia-de-faramir' }" class="option-card card-large">
                     <div class="corner-tl"></div>
                     <div class="corner-br"></div>
                     <div class="option-img-wrap">
-                        <img src="@/assets/logos/pippin.png" class="option-img" />
+                        <img src="@/assets/logos/faramir.png" class="option-img" />
                     </div>
                     <h3>La guardia de Faramir</h3>
                     <span class="option-tag">URLs seguras y malignas</span>
@@ -140,7 +140,7 @@
                     <div class="corner-tl"></div>
                     <div class="corner-br"></div>
                     <div class="option-img-wrap">
-                        <img src="@/assets/logos/elrond.png" class="option-img" />
+                        <img src="@/assets/logos/feanor.png" class="option-img" />
                     </div>
                     <h3>El códice de Fëanor</h3>
                     <span class="option-tag">Herramientas criptográficas</span>
@@ -219,7 +219,7 @@
                     <div class="corner-tl"></div>
                     <div class="corner-br"></div>
                     <div class="option-img-wrap">
-                        <img src="@/assets/logos/celebrimbor.png" class="option-img" />
+                        <img src="@/assets/logos/thorondor.png" class="option-img" />
                     </div>
                     <h3>El vuelo de Thorondor</h3>
                     <span class="option-tag">Monitorización</span>
@@ -232,7 +232,7 @@
                     <div class="corner-tl"></div>
                     <div class="corner-br"></div>
                     <div class="option-img-wrap">
-                        <img src="@/assets/logos/celebrimbor.png" class="option-img" />
+                        <img src="@/assets/logos/gollum.png" class="option-img" />
                     </div>
                     <h3>La identidad de Golum</h3>
                     <span class="option-tag">WHOAMI</span>
@@ -463,7 +463,7 @@ main {
 }
 
 .cards-grid.big-cards {
-    grid-template-columns: repeat(5, 1fr);
+    grid-template-columns: repeat(4, 1fr);
     gap: 28px;
 }
 

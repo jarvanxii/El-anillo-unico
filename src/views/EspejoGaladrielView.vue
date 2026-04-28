@@ -10,7 +10,7 @@
                     <span class="section-kicker">OSINT pasivo</span>
                     <h1 class="section-name">El Espejo de Galadriel</h1>
                     <p class="section-copy">
-                        Un panel de reconocimiento pasivo para revisar correo, contrasenas y dominio sin backend
+                        Un panel de reconocimiento pasivo para revisar correo, contraseñas y dominio sin backend
                         propio y sin API keys privadas. Todo lo que aparece aqui se obtiene desde fuentes publicas,
                         consultas DNS, inteligencia abierta y calculos locales en el navegador.
                     </p>
@@ -34,7 +34,7 @@
                     </div>
                     <div class="guide-card">
                         <label>Privacidad local</label>
-                        <span>La contrasena nunca se envia completa: solo viaja el prefijo SHA-1 al rango de HIBP,
+                        <span>La contraseña nunca se envia completa: solo viaja el prefijo SHA-1 al rango de HIBP,
                             siguiendo el modelo k-anonymity.</span>
                     </div>
                 </div>
@@ -43,7 +43,7 @@
             <section class="section-box">
                 <div class="module-header">
                     <span class="section-kicker">Modulo 01</span>
-                    <h2 class="module-title">Inteligencia de correo</h2>
+                    <h2 class="module-title">Comprobación de correo</h2>
                     <p class="module-copy">
                         Valida sintaxis, detecta buzones temporales o de rol, inspecciona MX, SPF, DMARC, BIMI y
                         MTA-STS del dominio, consulta RDAP publico y busca huella publica en Gravatar.
@@ -147,23 +147,23 @@
             <section class="section-box">
                 <div class="module-header">
                     <span class="section-kicker">Modulo 02</span>
-                    <h2 class="module-title">Inteligencia de contrasena</h2>
+                    <h2 class="module-title">Comprobación de contraseña</h2>
                     <p class="module-copy">
-                        Cruza la contrasena contra HIBP Pwned Passwords sin exponerla completa, calcula fortaleza con
+                        Cruza la contraseña contra HIBP Pwned Passwords sin exponerla completa, calcula fortaleza con
                         zxcvbn y explica patrones, tiempos de crack y mejoras concretas.
                     </p>
                 </div>
 
                 <div class="control-row">
                     <div class="control-field">
-                        <label class="field-label" for="password-input">Contrasena a revisar</label>
+                        <label class="field-label" for="password-input">Contraseña a revisar</label>
                         <div class="password-shell">
                             <input
                                 id="password-input"
                                 v-model="passwordInput"
                                 :type="showPassword ? 'text' : 'password'"
                                 class="form-control input-dark"
-                                placeholder="Introduce la contrasena"
+                                placeholder="Introduce la contraseña a revisar"
                                 @keyup.enter="analyzePassword"
                             />
                             <button type="button" class="password-toggle" @click="showPassword = !showPassword">
@@ -172,7 +172,7 @@
                         </div>
                     </div>
                     <button class="btn btn-main action-button" :disabled="passwordLoading || !passwordInput" @click="analyzePassword">
-                        {{ passwordLoading ? "Analizando..." : "Analizar contrasena" }}
+                        {{ passwordLoading ? "Analizando..." : "Analizar contraseña" }}
                     </button>
                 </div>
 
@@ -246,7 +246,7 @@
             <section class="section-box">
                 <div class="module-header">
                     <span class="section-kicker">Modulo 03</span>
-                    <h2 class="module-title">Inteligencia de dominio y URL</h2>
+                    <h2 class="module-title">Comprobación de dominio y URL</h2>
                     <p class="module-copy">
                         Analiza DNS, cabeceras publicas, superficie visible, certificados, reputacion en URLHaus,
                         huella historica en Wayback y registro RDAP de un dominio o URL.
@@ -1223,7 +1223,7 @@ async function analyzePassword() {
             'No disponible'
 
         const recommendations = uniqueList([
-            pwned.count > 0 ? 'La contrasena aparece en brechas reales: cambia esta clave y todas sus reutilizaciones.' : '',
+            pwned.count > 0 ? 'La contraseña aparece en brechas reales: cambia esta clave y todas sus reutilizaciones.' : '',
             passwordInput.value.length < 14 ? 'Sube la longitud a 14-16 caracteres o mas.' : '',
             !/[A-Z]/.test(passwordInput.value) ? 'Anade mayusculas para elevar diversidad del alfabeto.' : '',
             !/[0-9]/.test(passwordInput.value) ? 'Introduce numeros no triviales.' : '',
@@ -1233,12 +1233,12 @@ async function analyzePassword() {
         ])
 
         const verdictTitle = pwned.count > 0
-            ? 'Contrasena comprometida en brechas reales'
+            ? 'Contraseña comprometida en brechas reales'
             : score >= 80
-                ? 'Contrasena robusta y sin coincidencias en HIBP'
+                ? 'Contraseña robusta y sin coincidencias en HIBP'
                 : score >= 55
-                    ? 'Contrasena razonable, pero mejorable'
-                    : 'Contrasena debil o predecible'
+                    ? 'Contraseña razonable, pero mejorable'
+                    : 'Contraseña débil o predecible'
 
         const verdictBody = pwned.count > 0
             ? `Se ha observado en HIBP ${pwned.count.toLocaleString()} veces. Aunque su forma parezca compleja, ya no puede considerarse secreta.`

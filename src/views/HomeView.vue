@@ -215,7 +215,7 @@
                         <p class="info-quote">"La habilidad de los Elfos está más allá de tu imaginación."</p>
                     </div>
                 </router-link>
-                <router-link :to="{ name: 'el-vuelo-de-thorondor' }" class="option-card card-large">
+                <router-link :to="{ name: 'thorondor-information' }" class="option-card card-large">
                     <div class="corner-tl"></div>
                     <div class="corner-br"></div>
                     <div class="option-img-wrap">

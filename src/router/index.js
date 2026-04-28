@@ -6,9 +6,17 @@ import EspejoGaladrielView from "../views/EspejoGaladrielView.vue";
 import MapaBilboView from "../views/MapaBilboView.vue";
 import LibroRojoView from "../views/LibroRojoView.vue";
 import IdentidadGollumView from "../views/IdentidadGollumView.vue";
-import VueloThorondorView from "../views/VueloThorondorView.vue";
 import GuardiaFaramirView from "../views/GuardiaFaramirView.vue";
 import CodiceFeanorView from "../views/CodiceFeanorView.vue";
+
+// VUELO THORONDOR
+import VueloThorondorView from "../views/VueloThorondor/VueloThorondorView.vue";
+import ThorondorGuiaInstalacionView from "../views/VueloThorondor/Thorondor-GuiaInstalacionView.vue";
+import ThorondorGeneradorAgentesView from "../views/VueloThorondor/Thorondor-GeneradorAgentesView.vue";
+import ThorondorDashboardView from "../views/VueloThorondor/Thorondor-DashboardView.vue";
+import ThorondorDetalleHostsView from "../views/VueloThorondor/Thorondor-DetalleHostsView.vue";
+import ThorondorReglasMonitorizacionView from "../views/VueloThorondor/Thorondor-ReglasMonitorizacionView.vue";
+import ThorondorAgentesView from "../views/VueloThorondor/Thorondor-AgentesView.vue";
 
 // BASTÓN SARUMAN
 import BastonSarumanView from "../views/BastonSaruman/BastonSarumanView.vue";
@@ -36,8 +44,6 @@ import ManoSauronView from "../views/ManoSauron/ManoSauronView.vue";
 
 // PIEDRA PALANTIR
 import PiedraPalantirView from "../views/PiedraPalantir/PiedraPalantirView.vue";
-
-// RESTO DE VISTAS SIN HEADER PERSONALIZADO
 
 const routes = [
   {
@@ -76,11 +82,6 @@ const routes = [
     component: IdentidadGollumView,
   },
   {
-    path: "/el-vuelo-de-thorondor",
-    name: "el-vuelo-de-thorondor",
-    component: VueloThorondorView,
-  },
-  {
     path: "/la-guardia-de-faramir",
     name: "la-guardia-de-faramir",
     component: GuardiaFaramirView,
@@ -89,6 +90,50 @@ const routes = [
     path: "/el-codice-de-feanor",
     name: "el-codice-de-feanor",
     component: CodiceFeanorView,
+  },
+
+  // VUELO DE THORONDOR
+  {
+    path: "/el-vuelo-de-thorondor",
+    name: "thorondor-information",
+    component: VueloThorondorView,
+    meta: { showThorondorHeader: true },
+  },
+  {
+    path: "/el-vuelo-de-thorondor/guia-de-instalacion",
+    name: "thorondor-installation-guide",
+    component: ThorondorGuiaInstalacionView,
+    meta: { showThorondorHeader: true },
+  },
+  {
+    path: "/el-vuelo-de-thorondor/generador-de-agentes",
+    name: "thorondor-agent-generator",
+    component: ThorondorGeneradorAgentesView,
+    meta: { showThorondorHeader: true },
+  },
+  {
+    path: "/el-vuelo-de-thorondor/dashboard-general",
+    name: "thorondor-dashboard",
+    component: ThorondorDashboardView,
+    meta: { showThorondorHeader: true },
+  },
+  {
+    path: "/el-vuelo-de-thorondor/detalle-de-hosts",
+    name: "thorondor-host-detail",
+    component: ThorondorDetalleHostsView,
+    meta: { showThorondorHeader: true },
+  },
+  {
+    path: "/el-vuelo-de-thorondor/reglas-de-monitorizacion",
+    name: "thorondor-monitorization-rules",
+    component: ThorondorReglasMonitorizacionView,
+    meta: { showThorondorHeader: true },
+  },
+  {
+    path: "/el-vuelo-de-thorondor/agentes",
+    name: "thorondor-agents",
+    component: ThorondorAgentesView,
+    meta: { showThorondorHeader: true },
   },
 
   // BASTÓN DE SARUMAN

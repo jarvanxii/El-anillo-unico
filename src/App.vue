@@ -9,6 +9,7 @@
   <HeaderSauron v-if="showSauronHeader" />
   <HeaderPalantir v-if="showPalantirHeader" />
   <HeaderRadagast v-if="showRadagastHeader" />
+  <HeaderThorondor v-if="showThorondorHeader" />
   <router-view />
   <Footer v-if="showFooter" />
 </template>
@@ -25,10 +26,11 @@ import HeaderCelebrimbor from './components/HeaderCelebrimbor.vue'
 import HeaderSauron from './components/HeaderSauron.vue'
 import HeaderPalantir from './components/HeaderPalantir.vue'
 import HeaderRadagast from './components/HeaderRadagast.vue'
+import HeaderThorondor from './components/HeaderThorondor.vue'
 
 export default {
   name: "App",
-  components: { Header, Footer, HeaderSaruman, HeaderGimli, HeaderBoromir, HeaderNazgul, HeaderBiblioteca, HeaderCelebrimbor, HeaderSauron, HeaderPalantir, HeaderRadagast },
+  components: { Header, Footer, HeaderSaruman, HeaderGimli, HeaderBoromir, HeaderNazgul, HeaderBiblioteca, HeaderCelebrimbor, HeaderSauron, HeaderPalantir, HeaderRadagast, HeaderThorondor },
   computed: {
     showHeader() {
       return this.$route?.meta?.showHeader !== false;
@@ -62,6 +64,9 @@ export default {
     },
     showRadagastHeader() {
       return this.$route?.meta?.showRadagastHeader;
+    },
+    showThorondorHeader() {
+      return this.$route?.meta?.showThorondorHeader;
     }
   }
 }

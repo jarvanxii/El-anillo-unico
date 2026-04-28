@@ -1,114 +1,96 @@
 <template>
     <footer class="main-footer">
         <div class="footer-gold-line"></div>
-
         <div class="footer-container">
-            <!-- IZQUIERDA -->
             <div class="footer-brand">
                 <div class="brand-logo" @click="$router.push('/')">
                     <img src="/anillo.ico" alt="logo" />
                     <span>El Anillo Único</span>
                 </div>
-
                 <p class="brand-description">
                     Archivo digital inspirado en la Tierra Media. Un portal donde convergen
                     ciberseguridad, privacidad, herramientas, inteligencia artificial y
                     conocimiento moderno bajo una estética legendaria.
                 </p>
-
                 <div class="brand-quote">
                     “Un sitio para gobernarlos a todos.”
                 </div>
             </div>
-
-            <!-- DERECHA -->
             <div class="footer-links-area">
-                <!-- CIBERSEGURIDAD -->
                 <div class="footer-column">
                     <h3>Ciberseguridad</h3>
-
                     <a @click="$router.push('/el-baston-de-saruman')">
-                        Redes y Conceptos
+                        Redes, protocolos y conceptos de ciberseguridad
                     </a>
-
                     <a @click="$router.push('/el-hacha-de-gimli')">
                         Red Team
                     </a>
-
                     <a @click="$router.push('/el-escudo-de-boromir')">
                         Blue Team
                     </a>
-
                     <a @click="$router.push('/la-capa-de-los-nazgul')">
-                        Privacidad
+                        Privacidad y anonimato
                     </a>
-
+                    <a @click="$router.push('/la-mano-de-sauron')">
+                        Darkweb
+                    </a>
+                    <a @click="$router.push('/la-piedra-palantir')">
+                        Inteligencia Artificial
+                    </a>
                     <a @click="$router.push('/la-biblioteca-de-rivendel')">
                         Certificaciones
                     </a>
                 </div>
-
-                <!-- RECURSOS -->
                 <div class="footer-column">
-                    <h3>Recursos</h3>
-
+                    <h3>Herramientas</h3>
                     <a @click="$router.push('/la-forja-de-celebrimbor')">
-                        Herramientas
+                        Herramientas Externas
                     </a>
-
+                    <a @click="$router.push('/el-codice-de-feanor')">
+                        Herramientas de codificación y cifrado
+                    </a>
+                    <a @click="$router.push('/la-guardia-de-faramir')">
+                        Comprobación de URLs
+                    </a>
+                    <a @click="$router.push('/el-vuelo-de-thorondor')">
+                        Monitorización de sistemas Linux
+                    </a>
                     <a @click="$router.push('/el-espejo-de-galadriel')">
                         Filtraciones
                     </a>
-
                     <a @click="$router.push('/el-antiguo-mapa-de-bilbo')">
                         Tests
                     </a>
+                    <a @click="$router.push('/la-identidad-de-gollum')">
+                        WHOAMI
+                    </a>
                 </div>
-
-                <!-- COMUNIDAD -->
                 <div class="footer-column">
                     <h3>Comunidad</h3>
-
-                    <a href="http://lapipadegandalf.ddns.net:8080" target="_blank">
-                        Películas y Series
-                    </a>
-
-                    <a @click="$router.push('/la-jarra-de-pippin')">
-                        Memes
-                    </a>
-
-                    <a href="https://www.youtube.com/@TomBombadil-SONGS" target="_blank">
-                        Música
-                    </a>
-
                     <a @click="$router.push('/el-concilio-de-elrond')">
                         Chat
                     </a>
+                    <a href="http://192.168.0.254/#/" target="_blank">
+                        Películas y Series
+                    </a>
+                    <a @click="$router.push('/la-jarra-de-pippin')">
+                        Humor
+                    </a>
+                    <a href="https://www.youtube.com/@TomBombadil-SONGS" target="_blank">
+                        Música
+                    </a>
                 </div>
-
-                <!-- OTROS -->
                 <div class="footer-column">
                     <h3>Otros</h3>
-
-                    <a @click="$router.push('/la-mano-de-sauron')">
-                        Darkweb
-                    </a>
-
-                    <a @click="$router.push('/la-piedra-palantir')">
-                        IA
-                    </a>
-
                     <a @click="$router.push('/los-champiñones-de-radagast')">
-                        Rendimiento
+                        Rendimiento cognitivo
                     </a>
-
                     <a @click="$router.push('/el-libro-rojo-de-la-frontera-del-oeste')">
                         FAQ
                     </a>
                 </div>
             </div>
         </div>
-
         <div class="footer-bottom">
             <span>© 2026 El Anillo Único</span>
             <span class="dot">✦</span>

@@ -60,7 +60,7 @@ export default {
             { name: "Herramientas Externas", route: "/la-forja-de-celebrimbor" },
             { name: "Herramientas de codificación y cifrado", route: "/el-codice-de-feanor" },
             { name: "Comprobación de URLs", route: "/la-guardia-de-faramir" },
-            { name: "Herramienta de monitorización", route: "/el-vuelo-de-thorondor" },
+            { name: "Monitorización de sistemas Linux", route: "/el-vuelo-de-thorondor" },
             { name: "Filtraciones", route: "/el-espejo-de-galadriel" },
             { name: "Tests", route: "/el-antiguo-mapa-de-bilbo" },
             { name: "WHOAMI", route: "/la-identidad-de-gollum" },
@@ -71,7 +71,7 @@ export default {
           name: "Comunidad",
           subs: [
             { name: "Chat", route: "/el-concilio-de-elrond" },
-            { name: "Películas, series y otros", route: "http://lapipadegandalf.ddns.net:8080" },
+            { name: "Películas, series y otros", route: "http://192.168.0.254/#/" },
             { name: "Memes", route: "/la-jarra-de-pippin" },
             { name: "Música", route: "https://www.youtube.com/@TomBombadil-SONGS" }
           ]

@@ -1,498 +1,434 @@
 <template>
-    <div class="galadriel-page">
+    <div class="mirror-page text-light">
         <section class="hero-banner">
-            <img src="@/assets/banners/banner-galadriel.png" alt="El espejo de Galadriel - OSINT Dashboard" />
+            <img src="@/assets/banners/banner-galadriel.png" alt="El espejo de Galadriel" />
         </section>
-        <main class="content container py-5">
-            <section class="mb-5">
-                <div class="section-header mb-4">
-                    <span class="section-label">Protocolo de análisis</span>
-                    <h2 class="section-title">La Sabiduría del Espejo</h2>
+
+        <div class="container py-5">
+            <section class="section-box intro-box">
+                <div class="section-heading">
+                    <span class="section-kicker">OSINT pasivo</span>
+                    <h1 class="section-name">El Espejo de Galadriel</h1>
+                    <p class="section-copy">
+                        Un panel de reconocimiento pasivo para revisar correo, contrasenas y dominio sin backend
+                        propio y sin API keys privadas. Todo lo que aparece aqui se obtiene desde fuentes publicas,
+                        consultas DNS, inteligencia abierta y calculos locales en el navegador.
+                    </p>
                 </div>
-                <div class="row g-4">
-                    <div class="col-md-4">
-                        <div class="info-card h-100">
-                            <div class="info-card-icon"><i class="bi bi-shield-lock"></i></div>
-                            <h5>Hashing SHA-1</h5>
-                            <p>Tus credenciales se transforman en hashes indescifrables. Solo los primeros 5 caracteres
-                                viajan por la red, protegiendo tu secreto mediante <strong>k-anonymity</strong>.</p>
-                        </div>
+
+                <div class="guide-grid">
+                    <div class="guide-card">
+                        <label>Sin tokens</label>
+                        <span>Solo fuentes publicas o gratuitas: DNS over HTTPS, RDAP, HIBP Pwned Passwords, Gravatar,
+                            SecurityHeaders, crt.sh, URLHaus y Wayback.</span>
                     </div>
-                    <div class="col-md-4">
-                        <div class="info-card h-100">
-                            <div class="info-card-icon"><i class="bi bi-search"></i></div>
-                            <h5>Consulta en las Sombras</h5>
-                            <p>Los servidores devuelven hashes similares. La comparación final ocurre <strong>en tu
-                                    propio dispositivo</strong>, sin revelar tu identidad a ningún servidor externo.</p>
-                        </div>
+                    <div class="guide-card">
+                        <label>Sin backend</label>
+                        <span>Las consultas salen desde el navegador. Cuando un servicio no expone CORS de forma
+                            estable, se usan proxies GET publicos como fallback.</span>
                     </div>
-                    <div class="col-md-4">
-                        <div class="info-card h-100">
-                            <div class="info-card-icon"><i class="bi bi-eye-slash"></i></div>
-                            <h5>Privacidad Garantizada</h5>
-                            <p>Ninguna contraseña ni credencial completa abandona tu navegador. El análisis sigue el
-                                estándar de privacidad de <strong>Have I Been Pwned</strong>.</p>
-                        </div>
+                    <div class="guide-card">
+                        <label>Lectura explicada</label>
+                        <span>Cada modulo devuelve puntuacion, hallazgos, controles observables, fuentes consultadas y
+                            recomendaciones accionables.</span>
+                    </div>
+                    <div class="guide-card">
+                        <label>Privacidad local</label>
+                        <span>La contrasena nunca se envia completa: solo viaja el prefijo SHA-1 al rango de HIBP,
+                            siguiendo el modelo k-anonymity.</span>
                     </div>
                 </div>
             </section>
-            <div class="api-notice mb-5" v-if="!hibpApiKey">
-                <div class="api-notice-icon"><i class="bi bi-key"></i></div>
-                <div class="api-notice-body">
-                    <strong>Consulta de brechas por email requiere API key de HIBP</strong>
-                    <p class="mb-0 mt-1">
-                        Have I Been Pwned requiere una API key para consultar brechas asociadas a un correo electrónico.
-                        Puedes obtenerla en <a href="https://haveibeenpwned.com/API/Key" target="_blank"
-                            rel="noopener">haveibeenpwned.com/API/Key</a>.
-                        La consulta de contraseñas comprometidas <strong>no requiere key</strong> y funciona
-                        completamente.
+
+            <section class="section-box">
+                <div class="module-header">
+                    <span class="section-kicker">Modulo 01</span>
+                    <h2 class="module-title">Inteligencia de correo</h2>
+                    <p class="module-copy">
+                        Valida sintaxis, detecta buzones temporales o de rol, inspecciona MX, SPF, DMARC, BIMI y
+                        MTA-STS del dominio, consulta RDAP publico y busca huella publica en Gravatar.
                     </p>
-                    <div class="mt-3 d-flex gap-2 align-items-center flex-wrap">
-                        <input v-model="hibpApiKeyInput" type="password"
-                            class="form-control analysis-input api-key-input"
-                            placeholder="Introduce tu HIBP API key (opcional)" />
-                        <button class="btn btn-outline-gold" @click="saveApiKey" :disabled="!hibpApiKeyInput">
-                            <i class="bi bi-check-lg me-1"></i>Guardar key
-                        </button>
-                    </div>
                 </div>
-            </div>
-            <div class="api-notice api-notice-success mb-5" v-else>
-                <div class="api-notice-icon"><i class="bi bi-key-fill"></i></div>
-                <div class="api-notice-body">
-                    <strong>HIBP API key configurada</strong>
-                    <p class="mb-0 mt-1">Las consultas de brechas por email están activadas.</p>
-                    <button class="btn btn-sm btn-outline-danger mt-2" @click="clearApiKey">
-                        <i class="bi bi-x me-1"></i>Eliminar key
+
+                <div class="control-row">
+                    <div class="control-field">
+                        <label class="field-label" for="email-input">Direccion de correo</label>
+                        <input
+                            id="email-input"
+                            v-model.trim="emailInput"
+                            type="email"
+                            class="form-control input-dark"
+                            placeholder="usuario@dominio.com"
+                            @keyup.enter="analyzeEmail"
+                        />
+                    </div>
+                    <button class="btn btn-main action-button" :disabled="emailLoading || !emailInput" @click="analyzeEmail">
+                        {{ emailLoading ? "Analizando..." : "Analizar correo" }}
                     </button>
                 </div>
-            </div>
 
-            <!-- Email Intelligence -->
-            <section class="mb-5">
-                <div class="section-header mb-4">
-                    <span class="section-label">Módulo 01</span>
-                    <h2 class="section-title">Inteligencia de Correo Electrónico</h2>
+                <div v-if="emailLoading" class="loading-panel">
+                    <div class="loading-step" v-for="step in emailSteps" :key="step.name" :class="step.state">
+                        <div class="loading-step-icon">
+                            <span v-if="step.state === 'done'" class="bi bi-check-lg"></span>
+                            <span v-else-if="step.state === 'error'" class="bi bi-x-lg"></span>
+                            <span v-else-if="step.state === 'active'" class="spinner-border spinner-border-sm"></span>
+                            <span v-else class="bi bi-circle"></span>
+                        </div>
+                        <div class="loading-step-body">
+                            <strong>{{ step.name }}</strong>
+                            <span>{{ step.status }}</span>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="analysis-card">
-                    <div class="row g-4 align-items-end mb-4">
-                        <div class="col-md-8">
-                            <label class="form-label field-label">Dirección de correo electrónico</label>
-                            <input v-model="email" type="email" class="form-control analysis-input"
-                                placeholder="usuario@dominio.com" @keyup.enter="checkEmail" />
+                <template v-if="emailResult && !emailLoading">
+                    <div class="row g-3 mb-4">
+                        <div class="col-6 col-lg-3" v-for="item in emailResult.summaryCards" :key="item.label">
+                            <div class="metric-card">
+                                <label>{{ item.label }}</label>
+                                <span :class="item.tone || scoreClass(item.numeric)">{{ item.value }}</span>
+                                <small v-if="item.note">{{ item.note }}</small>
+                            </div>
                         </div>
-                        <div class="col-md-4">
-                            <button @click="checkEmail" :disabled="emailLoading || !email"
-                                class="btn btn-analyze w-100">
-                                <span v-if="emailLoading"
-                                    class="d-flex align-items-center justify-content-center gap-2">
-                                    <span class="spinner-border spinner-border-sm"></span>
-                                    Consultando oráculos...
-                                </span>
-                                <span v-else class="d-flex align-items-center justify-content-center gap-2">
-                                    <i class="bi bi-send"></i>
-                                    Iniciar análisis
-                                </span>
+                    </div>
+
+                    <div class="verdict-card" :class="emailResult.verdictTone">
+                        <div class="verdict-icon">
+                            <span>MAIL</span>
+                        </div>
+                        <div class="verdict-body">
+                            <strong>{{ emailResult.verdictTitle }}</strong>
+                            <p>{{ emailResult.verdictBody }}</p>
+                        </div>
+                    </div>
+
+                    <h5 class="subsection-title">Fuentes consultadas</h5>
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6 col-xl-3" v-for="item in emailResult.sourceCards" :key="item.name">
+                            <div class="source-card" :class="item.tone">
+                                <div class="source-head">
+                                    <span>{{ item.name }}</span>
+                                    <span class="mini-badge">{{ item.state }}</span>
+                                </div>
+                                <p>{{ item.description }}</p>
+                                <small>{{ item.note }}</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h5 class="subsection-title">Senales observadas</h5>
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6 col-xl-4" v-for="item in emailResult.signalCards" :key="item.label">
+                            <div class="signal-card">
+                                <label>{{ item.label }}</label>
+                                <span :class="item.tone">{{ item.value }}</span>
+                                <small>{{ item.note }}</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row g-3">
+                        <div class="col-xl-6" v-for="panel in emailResult.rawPanels" :key="panel.title">
+                            <div class="tool-card">
+                                <div class="card-head">
+                                    <h5>{{ panel.title }}</h5>
+                                    <span class="mini-badge">{{ panel.badge }}</span>
+                                </div>
+                                <div class="output-box">
+                                    <pre class="result-pre">{{ panel.content }}</pre>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+            </section>
+
+            <section class="section-box">
+                <div class="module-header">
+                    <span class="section-kicker">Modulo 02</span>
+                    <h2 class="module-title">Inteligencia de contrasena</h2>
+                    <p class="module-copy">
+                        Cruza la contrasena contra HIBP Pwned Passwords sin exponerla completa, calcula fortaleza con
+                        zxcvbn y explica patrones, tiempos de crack y mejoras concretas.
+                    </p>
+                </div>
+
+                <div class="control-row">
+                    <div class="control-field">
+                        <label class="field-label" for="password-input">Contrasena a revisar</label>
+                        <div class="password-shell">
+                            <input
+                                id="password-input"
+                                v-model="passwordInput"
+                                :type="showPassword ? 'text' : 'password'"
+                                class="form-control input-dark"
+                                placeholder="Introduce la contrasena"
+                                @keyup.enter="analyzePassword"
+                            />
+                            <button type="button" class="password-toggle" @click="showPassword = !showPassword">
+                                <i :class="showPassword ? 'bi bi-eye-slash' : 'bi bi-eye'"></i>
                             </button>
                         </div>
                     </div>
+                    <button class="btn btn-main action-button" :disabled="passwordLoading || !passwordInput" @click="analyzePassword">
+                        {{ passwordLoading ? "Analizando..." : "Analizar contrasena" }}
+                    </button>
+                </div>
 
-                    <!-- Loading steps -->
-                    <div v-if="emailLoading" class="loading-panel">
-                        <div class="loading-steps">
-                            <div v-for="(step, i) in emailLoadingSteps" :key="i"
-                                :class="['loading-step', { active: step.active, done: step.done, failed: step.failed, skipped: step.skipped }]">
-                                <div class="loading-step-icon">
-                                    <span v-if="step.done" class="bi bi-check-lg"></span>
-                                    <span v-else-if="step.failed" class="bi bi-x-lg"></span>
-                                    <span v-else-if="step.skipped" class="bi bi-dash-lg"></span>
-                                    <span v-else-if="step.active" class="spinner-border spinner-border-sm"></span>
-                                    <span v-else class="bi bi-circle"></span>
-                                </div>
-                                <div class="loading-step-text">
-                                    <span class="loading-step-name">{{ step.name }}</span>
-                                    <span class="loading-step-status">{{ step.status }}</span>
-                                </div>
-                            </div>
+                <div v-if="passwordLoading" class="loading-panel">
+                    <div class="loading-step" v-for="step in passwordSteps" :key="step.name" :class="step.state">
+                        <div class="loading-step-icon">
+                            <span v-if="step.state === 'done'" class="bi bi-check-lg"></span>
+                            <span v-else-if="step.state === 'error'" class="bi bi-x-lg"></span>
+                            <span v-else-if="step.state === 'active'" class="spinner-border spinner-border-sm"></span>
+                            <span v-else class="bi bi-circle"></span>
                         </div>
-                    </div>
-
-                    <!-- Results -->
-                    <div v-if="emailResult && !emailLoading" class="results-panel">
-
-                        <div class="results-summary row g-3 mb-4">
-                            <div class="col-6 col-md-3">
-                                <div class="metric-box">
-                                    <span class="metric-label">Puntuación de riesgo</span>
-                                    <span :class="['metric-value', getScoreBadgeClass(emailScore)]">
-                                        {{ emailScore }}<small>/100</small>
-                                    </span>
-                                </div>
-                            </div>
-                            <div class="col-6 col-md-3">
-                                <div class="metric-box">
-                                    <span class="metric-label">Correo válido</span>
-                                    <span
-                                        :class="['metric-badge', emailResult.valid ? 'badge-success' : 'badge-danger']">
-                                        {{ emailResult.valid ? 'Válido' : 'Inválido' }}
-                                    </span>
-                                </div>
-                            </div>
-                            <div class="col-6 col-md-3">
-                                <div class="metric-box">
-                                    <span class="metric-label">Brechas detectadas</span>
-                                    <span
-                                        :class="['metric-value', (emailResult.breaches?.length || 0) > 0 ? 'text-danger' : 'text-success']">
-                                        {{ emailResult.breaches?.length || 0 }}
-                                    </span>
-                                </div>
-                            </div>
-                            <div class="col-6 col-md-3">
-                                <div class="metric-box">
-                                    <span class="metric-label">Brechas recientes</span>
-                                    <span
-                                        :class="['metric-value', recentBreaches > 0 ? 'text-warning' : 'text-success']">
-                                        {{ recentBreaches }}
-                                    </span>
-                                </div>
-                            </div>
+                        <div class="loading-step-body">
+                            <strong>{{ step.name }}</strong>
+                            <span>{{ step.status }}</span>
                         </div>
-
-                        <!-- Source status -->
-                        <h6 class="results-section-title mb-3">Oráculos consultados</h6>
-                        <div class="row g-3 mb-4">
-
-                            <!-- HIBP -->
-                            <div class="col-md-4">
-                                <div :class="['source-card', getSourceCardClass(emailResult.sources?.hibp)]">
-                                    <div class="source-card-header">
-                                        <span class="source-name">Have I Been Pwned</span>
-                                        <span :class="['source-badge', getSourceBadgeClass(emailResult.sources?.hibp)]">
-                                            {{ getSourceLabel(emailResult.sources?.hibp) }}
-                                        </span>
-                                    </div>
-                                    <p class="source-desc">Base de datos de brechas de seguridad con k-anonymity.</p>
-                                    <div class="source-data">
-                                        <template v-if="emailResult.sources?.hibp?.success">
-                                            <span>Brechas encontradas: <strong>{{
-                                                emailResult.sources.hibp.breaches?.length || 0 }}</strong></span>
-                                        </template>
-                                        <template v-else-if="emailResult.sources?.hibp?.skipped">
-                                            <span class="text-muted">Requiere API key. <a
-                                                    href="https://haveibeenpwned.com/API/Key" target="_blank"
-                                                    rel="noopener" class="link-gold">Obtener key →</a></span>
-                                        </template>
-                                        <template v-else>
-                                            <span class="text-danger small">{{ emailResult.sources?.hibp?.error ||
-                                                'Error al consultar la API.' }}</span>
-                                        </template>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Validation -->
-                            <div class="col-md-4">
-                                <div :class="['source-card', getSourceCardClass(emailResult.sources?.validation)]">
-                                    <div class="source-card-header">
-                                        <span class="source-name">Validación de Email</span>
-                                        <span
-                                            :class="['source-badge', getSourceBadgeClass(emailResult.sources?.validation)]">
-                                            {{ getSourceLabel(emailResult.sources?.validation) }}
-                                        </span>
-                                    </div>
-                                    <p class="source-desc">Análisis sintáctico, detección de cuentas temporales y de
-                                        rol.</p>
-                                    <div class="source-data">
-                                        <template v-if="emailResult.sources?.validation?.success">
-                                            <span>Válido: <strong>{{ emailResult.valid ? 'Sí' : 'No' }}</strong></span>
-                                            <span>Temporal: <strong>{{ emailResult.sources.validation.disposable ? 'Sí'
-                                                : 'No' }}</strong></span>
-                                            <span>Cuenta de rol: <strong>{{ emailResult.sources.validation.role ? 'Sí' :
-                                                'No' }}</strong></span>
-                                            <span v-if="emailResult.sources.validation.deliverable !== null">
-                                                Entregable: <strong>{{ emailResult.sources.validation.deliverable ? 'Sí'
-                                                    : 'No' }}</strong>
-                                            </span>
-                                        </template>
-                                        <template v-else>
-                                            <span class="text-muted small">{{ emailResult.sources?.validation?.error ||
-                                                'No se pudo contactar la API.' }}</span>
-                                            <span class="text-muted small">Se usó validación básica de formato.</span>
-                                        </template>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Gravatar -->
-                            <div class="col-md-4">
-                                <div :class="['source-card', getSourceCardClass(emailResult.sources?.gravatar)]">
-                                    <div class="source-card-header">
-                                        <span class="source-name">Gravatar</span>
-                                        <span
-                                            :class="['source-badge', getSourceBadgeClass(emailResult.sources?.gravatar)]">
-                                            {{ getSourceLabel(emailResult.sources?.gravatar) }}
-                                        </span>
-                                    </div>
-                                    <p class="source-desc">Indicador de presencia digital y actividad en servicios web.
-                                    </p>
-                                    <div class="source-data">
-                                        <template v-if="emailResult.sources?.gravatar?.success">
-                                            <span>Avatar registrado: <strong>{{ emailResult.hasGravatar ? 'Sí' : 'No'
-                                            }}</strong></span>
-                                        </template>
-                                        <template v-else>
-                                            <span class="text-muted small">{{ emailResult.sources?.gravatar?.error ||
-                                                'No se pudo contactar el servicio.' }}</span>
-                                        </template>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Breach list -->
-                        <div v-if="emailResult.breaches?.length > 0">
-                            <h6 class="results-section-title mb-3">Brechas identificadas</h6>
-                            <div class="row g-2">
-                                <div v-for="breach in emailResult.breaches" :key="breach.Name || breach"
-                                    class="col-6 col-md-4 col-lg-3">
-                                    <div :class="['breach-tag', { 'breach-tag-recent': isRecentBreach(breach) }]">
-                                        <i class="bi bi-exclamation-triangle me-1"></i>
-                                        {{ breach.Name || breach }}
-                                        <span v-if="isRecentBreach(breach)"
-                                            class="breach-tag-recent-label">Reciente</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
                     </div>
                 </div>
+
+                <template v-if="passwordResult && !passwordLoading">
+                    <div class="row g-3 mb-4">
+                        <div class="col-6 col-lg-3" v-for="item in passwordResult.summaryCards" :key="item.label">
+                            <div class="metric-card">
+                                <label>{{ item.label }}</label>
+                                <span :class="item.tone || scoreClass(item.numeric)">{{ item.value }}</span>
+                                <small v-if="item.note">{{ item.note }}</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="verdict-card" :class="passwordResult.verdictTone">
+                        <div class="verdict-icon">
+                            <span>PASS</span>
+                        </div>
+                        <div class="verdict-body">
+                            <strong>{{ passwordResult.verdictTitle }}</strong>
+                            <p>{{ passwordResult.verdictBody }}</p>
+                        </div>
+                    </div>
+
+                    <h5 class="subsection-title">Senales observadas</h5>
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6 col-xl-4" v-for="item in passwordResult.signalCards" :key="item.label">
+                            <div class="signal-card">
+                                <label>{{ item.label }}</label>
+                                <span :class="item.tone">{{ item.value }}</span>
+                                <small>{{ item.note }}</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="pattern-cloud" v-if="passwordResult.patterns.length">
+                        <span class="pattern-chip" v-for="pattern in passwordResult.patterns" :key="pattern">{{ pattern }}</span>
+                    </div>
+
+                    <div class="row g-3 mt-1">
+                        <div class="col-xl-6" v-for="panel in passwordResult.rawPanels" :key="panel.title">
+                            <div class="tool-card">
+                                <div class="card-head">
+                                    <h5>{{ panel.title }}</h5>
+                                    <span class="mini-badge">{{ panel.badge }}</span>
+                                </div>
+                                <div class="output-box">
+                                    <pre class="result-pre">{{ panel.content }}</pre>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </template>
             </section>
 
-            <!-- Password Intelligence -->
-            <section class="mb-5">
-                <div class="section-header mb-4">
-                    <span class="section-label">Módulo 02</span>
-                    <h2 class="section-title">Inteligencia de Contraseña</h2>
+            <section class="section-box">
+                <div class="module-header">
+                    <span class="section-kicker">Modulo 03</span>
+                    <h2 class="module-title">Inteligencia de dominio y URL</h2>
+                    <p class="module-copy">
+                        Analiza DNS, cabeceras publicas, superficie visible, certificados, reputacion en URLHaus,
+                        huella historica en Wayback y registro RDAP de un dominio o URL.
+                    </p>
                 </div>
 
-                <div class="analysis-card">
-                    <div class="mb-3 p-3 rounded border border-success-subtle bg-success-subtle-dark">
-                        <small class="text-success d-flex align-items-center gap-2">
-                            <i class="bi bi-check-circle-fill"></i>
-                            Esta consulta usa la API pública de HIBP Pwned Passwords. <strong>No requiere API
-                                key</strong> y los
-                            resultados son 100% reales.
-                        </small>
+                <div class="control-row">
+                    <div class="control-field">
+                        <label class="field-label" for="target-input">Dominio o URL</label>
+                        <input
+                            id="target-input"
+                            v-model.trim="targetInput"
+                            class="form-control input-dark"
+                            placeholder="ejemplo.com o https://ejemplo.com/login"
+                            @keyup.enter="analyzeTarget"
+                        />
                     </div>
+                    <button class="btn btn-main action-button" :disabled="targetLoading || !targetInput" @click="analyzeTarget">
+                        {{ targetLoading ? "Analizando..." : "Analizar dominio" }}
+                    </button>
+                </div>
 
-                    <div class="row g-4 align-items-end mb-4">
-                        <div class="col-md-8">
-                            <label class="form-label field-label">Contraseña a analizar</label>
-                            <div class="password-input-wrapper">
-                                <input v-model="password" :type="showPassword ? 'text' : 'password'"
-                                    class="form-control analysis-input" placeholder="Introduce la contraseña"
-                                    @keyup.enter="checkPassword" />
-                                <button class="password-toggle" @click="showPassword = !showPassword" type="button">
-                                    <i :class="showPassword ? 'bi bi-eye-slash' : 'bi bi-eye'"></i>
-                                </button>
-                            </div>
+                <div v-if="targetLoading" class="loading-panel">
+                    <div class="loading-step" v-for="step in targetSteps" :key="step.name" :class="step.state">
+                        <div class="loading-step-icon">
+                            <span v-if="step.state === 'done'" class="bi bi-check-lg"></span>
+                            <span v-else-if="step.state === 'error'" class="bi bi-x-lg"></span>
+                            <span v-else-if="step.state === 'active'" class="spinner-border spinner-border-sm"></span>
+                            <span v-else class="bi bi-circle"></span>
                         </div>
-                        <div class="col-md-4">
-                            <button @click="checkPassword" :disabled="passwordLoading || !password"
-                                class="btn btn-analyze w-100">
-                                <span v-if="passwordLoading"
-                                    class="d-flex align-items-center justify-content-center gap-2">
-                                    <span class="spinner-border spinner-border-sm"></span>
-                                    Calculando hash SHA-1...
-                                </span>
-                                <span v-else class="d-flex align-items-center justify-content-center gap-2">
-                                    <i class="bi bi-send"></i>
-                                    Iniciar análisis
-                                </span>
-                            </button>
-                        </div>
-                    </div>
-
-                    <div v-if="passwordLoading" class="loading-panel">
-                        <div class="loading-steps">
-                            <div :class="['loading-step', { active: true }]">
-                                <div class="loading-step-icon">
-                                    <span class="spinner-border spinner-border-sm"></span>
-                                </div>
-                                <div class="loading-step-text">
-                                    <span class="loading-step-name">HIBP Pwned Passwords API</span>
-                                    <span class="loading-step-status">Enviando prefijo SHA-1 · Comparando
-                                        localmente...</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div v-if="passwordResult && !passwordLoading" class="results-panel">
-                        <div class="results-summary row g-3 mb-4">
-                            <div class="col-6 col-md-4">
-                                <div class="metric-box">
-                                    <span class="metric-label">Fortaleza estimada</span>
-                                    <span :class="['metric-value', getScoreBadgeClass(passwordScore)]">
-                                        {{ passwordScore }}<small>/100</small>
-                                    </span>
-                                </div>
-                            </div>
-                            <div class="col-6 col-md-4">
-                                <div class="metric-box">
-                                    <span class="metric-label">Estado real (HIBP)</span>
-                                    <span
-                                        :class="['metric-badge', passwordResult.count > 0 ? 'badge-danger' : 'badge-success']">
-                                        {{ passwordResult.count > 0 ? 'Comprometida' : 'No encontrada' }}
-                                    </span>
-                                </div>
-                            </div>
-                            <div class="col-6 col-md-4">
-                                <div class="metric-box">
-                                    <span class="metric-label">Apariciones en brechas</span>
-                                    <span
-                                        :class="['metric-value', passwordResult.count > 0 ? 'text-danger' : 'text-success']">
-                                        {{ passwordResult.count.toLocaleString() }}
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div :class="['password-verdict', getPasswordVerdictClass()]">
-                            <div class="password-verdict-icon">
-                                <i
-                                    :class="passwordResult.count > 0 ? 'bi bi-shield-x' : passwordScore >= 75 ? 'bi bi-shield-check' : 'bi bi-shield-exclamation'"></i>
-                            </div>
-                            <div class="password-verdict-body">
-                                <strong>{{ getPasswordStatus() }}</strong>
-                                <p class="mb-0 mt-1">{{ getPasswordRecommendation() }}</p>
-                            </div>
+                        <div class="loading-step-body">
+                            <strong>{{ step.name }}</strong>
+                            <span>{{ step.status }}</span>
                         </div>
                     </div>
                 </div>
+
+                <template v-if="targetResult && !targetLoading">
+                    <div class="row g-3 mb-4">
+                        <div class="col-6 col-lg-3" v-for="item in targetResult.summaryCards" :key="item.label">
+                            <div class="metric-card">
+                                <label>{{ item.label }}</label>
+                                <span :class="item.tone || scoreClass(item.numeric)">{{ item.value }}</span>
+                                <small v-if="item.note">{{ item.note }}</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="verdict-card" :class="targetResult.verdictTone">
+                        <div class="verdict-icon">
+                            <span>URL</span>
+                        </div>
+                        <div class="verdict-body">
+                            <strong>{{ targetResult.verdictTitle }}</strong>
+                            <p>{{ targetResult.verdictBody }}</p>
+                        </div>
+                    </div>
+
+                    <h5 class="subsection-title">Fuentes consultadas</h5>
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6 col-xl-4" v-for="item in targetResult.sourceCards" :key="item.name">
+                            <div class="source-card" :class="item.tone">
+                                <div class="source-head">
+                                    <span>{{ item.name }}</span>
+                                    <span class="mini-badge">{{ item.state }}</span>
+                                </div>
+                                <p>{{ item.description }}</p>
+                                <small>{{ item.note }}</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h5 class="subsection-title">Senales observadas</h5>
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6 col-xl-4" v-for="item in targetResult.signalCards" :key="item.label">
+                            <div class="signal-card">
+                                <label>{{ item.label }}</label>
+                                <span :class="item.tone">{{ item.value }}</span>
+                                <small>{{ item.note }}</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="stack-panels">
+                        <div class="tool-card" v-for="panel in targetResult.rawPanels" :key="panel.title">
+                            <div class="card-head">
+                                <h5>{{ panel.title }}</h5>
+                                <span class="mini-badge">{{ panel.badge }}</span>
+                            </div>
+                            <div class="output-box">
+                                <pre class="result-pre">{{ panel.content }}</pre>
+                            </div>
+                        </div>
+                    </div>
+                </template>
             </section>
 
-            <!-- Global Score -->
-            <section v-if="globalScore !== null" class="mb-5">
-                <div class="section-header mb-4">
-                    <span class="section-label">Resultado final</span>
-                    <h2 class="section-title">El Juicio del Espejo</h2>
+            <section v-if="globalScore !== null" class="section-box">
+                <div class="module-header">
+                    <span class="section-kicker">Resultado final</span>
+                    <h2 class="module-title">Juicio del espejo</h2>
+                    <p class="module-copy">
+                        La puntuacion final es el promedio de los modulos que ya tienen resultado. No mide bondad
+                        absoluta: resume exposicion, blindaje observable y calidad operativa en este analisis pasivo.
+                    </p>
                 </div>
-                <div class="analysis-card">
-                    <div class="global-score-layout">
-                        <div class="global-score-gauge">
-                            <svg viewBox="0 0 120 120" class="gauge-svg">
-                                <circle cx="60" cy="60" r="50" class="gauge-track" />
-                                <circle cx="60" cy="60" r="50" class="gauge-fill"
-                                    :style="{ strokeDashoffset: gaugeOffset }"
-                                    :class="getScoreBadgeClass(globalScore)" />
-                            </svg>
-                            <div class="gauge-label">
-                                <span class="gauge-number">{{ globalScore }}</span>
-                                <span class="gauge-sub">/ 100</span>
+
+                <div class="global-layout">
+                    <div class="gauge-shell">
+                        <svg viewBox="0 0 120 120" class="gauge-svg">
+                            <circle cx="60" cy="60" r="50" class="gauge-track" />
+                            <circle
+                                cx="60"
+                                cy="60"
+                                r="50"
+                                class="gauge-fill"
+                                :class="scoreClass(globalScore)"
+                                :style="{ strokeDashoffset: gaugeOffset }"
+                            />
+                        </svg>
+                        <div class="gauge-label">
+                            <span class="gauge-number">{{ globalScore }}</span>
+                            <span class="gauge-sub">/ 100</span>
+                        </div>
+                    </div>
+
+                    <div class="global-side">
+                        <div class="verdict-card compact" :class="verdictTone(globalScore)">
+                            <div class="verdict-icon">
+                                <span>OSINT</span>
+                            </div>
+                            <div class="verdict-body">
+                                <strong>{{ globalVerdict }}</strong>
+                                <p>{{ globalNarrative }}</p>
                             </div>
                         </div>
-                        <div class="global-score-details">
-                            <div :class="['global-verdict-badge', getGlobalVerdictClass()]">
-                                {{ getGlobalRiskLevel() }}
-                            </div>
-                            <ul class="recommendations-list mt-3">
-                                <li v-for="rec in getRecommendations()" :key="rec">
-                                    <i class="bi bi-chevron-right"></i>{{ rec }}
+
+                        <div class="recommendation-box">
+                            <h5>Recomendaciones agregadas</h5>
+                            <ul class="recommendation-list">
+                                <li v-for="item in globalRecommendations" :key="item">
+                                    <i class="bi bi-chevron-right"></i>
+                                    <span>{{ item }}</span>
                                 </li>
                             </ul>
                         </div>
                     </div>
                 </div>
             </section>
-
-        </main>
+        </div>
     </div>
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { computed, ref } from 'vue'
+import zxcvbn from 'zxcvbn'
 
-// ── State ─────────────────────────────────────────────────────────────────────
-const email = ref('')
+const emailInput = ref('')
 const emailLoading = ref(false)
 const emailResult = ref(null)
+const emailSteps = ref([])
 
-const password = ref('')
+const passwordInput = ref('')
 const passwordLoading = ref(false)
 const passwordResult = ref(null)
+const passwordSteps = ref([])
 const showPassword = ref(false)
 
-const hibpApiKey = ref(localStorage.getItem('hibp_api_key') || '')
-const hibpApiKeyInput = ref('')
+const targetInput = ref('')
+const targetLoading = ref(false)
+const targetResult = ref(null)
+const targetSteps = ref([])
 
-const emailLoadingSteps = ref([])
-
-function buildLoadingSteps() {
-    return [
-        { name: 'Have I Been Pwned', status: hibpApiKey.value ? 'En espera...' : 'Sin API key — se omitirá', active: false, done: false, failed: false, skipped: !hibpApiKey.value },
-        { name: 'Validación de email', status: 'En espera...', active: false, done: false, failed: false, skipped: false },
-        { name: 'Gravatar', status: 'En espera...', active: false, done: false, failed: false, skipped: false },
-    ]
-}
-
-function saveApiKey() {
-    hibpApiKey.value = hibpApiKeyInput.value.trim()
-    localStorage.setItem('hibp_api_key', hibpApiKey.value)
-    hibpApiKeyInput.value = ''
-}
-function clearApiKey() {
-    hibpApiKey.value = ''
-    localStorage.removeItem('hibp_api_key')
-}
-
-// ── Computed ──────────────────────────────────────────────────────────────────
-const recentBreaches = computed(() => {
-    if (!emailResult.value?.breaches?.length) return 0
-    const currentYear = new Date().getFullYear()
-    return emailResult.value.breaches.filter(b => {
-        const year = b.BreachDate
-            ? parseInt(b.BreachDate.substring(0, 4))
-            : parseInt((b.Name || b).toString().split('-')[0])
-        return year && (currentYear - year) <= 2
-    }).length
-})
-
-const emailScore = computed(() => {
-    if (!emailResult.value) return null
-    let score = 100
-    const breaches = emailResult.value.breaches?.length || 0
-    score -= (breaches * 5) + (recentBreaches.value * 10)
-    if (!emailResult.value.valid) score -= 30
-    if (emailResult.value.hasGravatar) score += 5
-    if (emailResult.value.sources?.validation?.disposable) score -= 20
-    if (emailResult.value.sources?.validation?.role) score -= 10
-    return Math.max(0, Math.min(100, Math.round(score)))
-})
-
-const passwordScore = computed(() => {
-    if (password.value === '') return null
-    let score = 0
-    const pwd = password.value
-    if (pwd.length >= 16) score += 35
-    else if (pwd.length >= 12) score += 25
-    else if (pwd.length >= 8) score += 12
-    else score += 4
-    if (/[A-Z]/.test(pwd)) score += 12
-    if (/[a-z]/.test(pwd)) score += 8
-    if (/[0-9]/.test(pwd)) score += 10
-    if (/[^A-Za-z0-9]/.test(pwd)) score += 20
-    if (/123|password|admin|qwerty|letmein|welcome/i.test(pwd)) score -= 30
-    if (/(.)\1{2,}/.test(pwd)) score -= 15
-    if (passwordResult.value?.count > 0) score = Math.min(score, 20)
-    return Math.max(0, Math.min(100, score))
-})
+const moduleScores = computed(() =>
+    [emailResult.value?.score, passwordResult.value?.score, targetResult.value?.score]
+        .filter(score => typeof score === 'number')
+)
 
 const globalScore = computed(() => {
-    if (emailScore.value === null || passwordScore.value === null) return null
-    return Math.round((emailScore.value + passwordScore.value) / 2)
+    if (!moduleScores.value.length) return null
+    const total = moduleScores.value.reduce((sum, score) => sum + score, 0)
+    return Math.round(total / moduleScores.value.length)
 })
 
 const gaugeOffset = computed(() => {
@@ -500,425 +436,1401 @@ const gaugeOffset = computed(() => {
     return 314 - (globalScore.value / 100) * 314
 })
 
-// ── Email check ───────────────────────────────────────────────────────────────
-async function checkEmail() {
-    if (!email.value) return
-    emailLoading.value = true
-    emailResult.value = null
-    emailLoadingSteps.value = buildLoadingSteps()
-    const step = emailLoadingSteps.value
+const globalRecommendations = computed(() => {
+    const recommendations = uniqueList([
+        ...(emailResult.value?.recommendations || []),
+        ...(passwordResult.value?.recommendations || []),
+        ...(targetResult.value?.recommendations || [])
+    ])
+    return recommendations.length
+        ? recommendations
+        : ['Mantener la higiene actual y repetir el analisis de forma periodica.']
+})
 
-    // 1. HIBP breaches
-    let hibpResult
-    if (!hibpApiKey.value) {
-        hibpResult = { success: false, skipped: true, found: false, breaches: [], error: 'API key no configurada.' }
-    } else {
-        step[0].active = true
-        step[0].skipped = false
-        step[0].status = 'Consultando haveibeenpwned.com...'
-        hibpResult = await fetchHIBPBreaches(email.value)
-        step[0].active = false
-        if (hibpResult.success) { step[0].done = true; step[0].status = `${hibpResult.breaches.length} brechas encontradas` }
-        else { step[0].failed = true; step[0].status = hibpResult.error || 'Error de red' }
+const globalVerdict = computed(() => {
+    if (globalScore.value === null) return ''
+    if (globalScore.value >= 80) return 'Blindaje observable solido'
+    if (globalScore.value >= 55) return 'Postura mixta con puntos de mejora'
+    return 'Exposicion visible y controles incompletos'
+})
+
+const globalNarrative = computed(() => {
+    if (globalScore.value === null) return ''
+    if (globalScore.value >= 80) {
+        return 'La superficie visible muestra varios controles presentes y pocas senales de riesgo inmediato.'
     }
+    if (globalScore.value >= 55) {
+        return 'Hay buenas practicas en algunas zonas, pero aun aparecen huecos que conviene cerrar cuanto antes.'
+    }
+    return 'La combinacion de senales observadas sugiere revisar configuracion, higiene operativa y protecciones basicas.'
+})
 
-    // 2. Email validation
-    step[1].active = true
-    step[1].status = 'Consultando eva.pingutil.com...'
-    const validationResult = await fetchEmailValidation(email.value)
-    step[1].active = false
-    if (validationResult.success) { step[1].done = true; step[1].status = 'Validación completada' }
-    else { step[1].failed = true; step[1].status = validationResult.error || 'Error de red' }
+function buildSteps(names) {
+    return names.map(name => ({
+        name,
+        state: 'pending',
+        status: 'En espera...'
+    }))
+}
 
-    // 3. Gravatar
-    step[2].active = true
-    step[2].status = 'Consultando gravatar.com...'
-    const gravatarResult = await fetchGravatar(email.value)
-    step[2].active = false
-    if (gravatarResult.success) { step[2].done = true; step[2].status = gravatarResult.hasGravatar ? 'Avatar encontrado' : 'Sin avatar registrado' }
-    else { step[2].failed = true; step[2].status = gravatarResult.error || 'Error de red' }
+function updateStep(stepsRef, index, patch) {
+    stepsRef.value[index] = {
+        ...stepsRef.value[index],
+        ...patch
+    }
+}
 
-    emailResult.value = {
-        found: hibpResult.found,
-        breaches: hibpResult.breaches || [],
-        valid: validationResult.valid,
-        hasGravatar: gravatarResult.hasGravatar,
-        sources: {
-            hibp: hibpResult,
-            validation: validationResult,
-            gravatar: gravatarResult,
+function scoreClass(score) {
+    if (typeof score !== 'number') return 'tone-neutral'
+    if (score >= 80) return 'tone-success'
+    if (score >= 55) return 'tone-warning'
+    return 'tone-danger'
+}
+
+function verdictTone(score) {
+    if (typeof score !== 'number') return 'tone-neutral'
+    if (score >= 80) return 'verdict-success'
+    if (score >= 55) return 'verdict-warning'
+    return 'verdict-danger'
+}
+
+function uniqueList(items) {
+    return [...new Set(items.filter(Boolean))]
+}
+
+function safeJsonParse(text) {
+    return JSON.parse(String(text).trim())
+}
+
+function prettyPrint(value) {
+    if (value === null || value === undefined || value === '') return 'Sin datos.'
+    if (typeof value === 'string') return value
+    try {
+        return JSON.stringify(value, null, 2)
+    } catch (error) {
+        return String(value)
+    }
+}
+
+function normalizeTxtRecord(value) {
+    return String(value).replace(/^"+|"+$/g, '').replace(/"\s*"/g, '')
+}
+
+function formatDate(value) {
+    if (!value) return 'No disponible'
+    const date = new Date(value)
+    if (Number.isNaN(date.getTime())) return String(value)
+    return date.toLocaleDateString('es-ES', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric'
+    })
+}
+
+function formatDateTime(value) {
+    if (!value) return 'No disponible'
+    const date = new Date(value)
+    if (Number.isNaN(date.getTime())) return String(value)
+    return date.toLocaleString('es-ES', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+    })
+}
+
+function hostFromEmail(email) {
+    return String(email).split('@')[1]?.toLowerCase() || ''
+}
+
+function normalizeTargetInput(raw) {
+    const trimmed = String(raw || '').trim()
+    if (!trimmed) throw new Error('Introduce un dominio o URL valida.')
+
+    const candidate = /^[a-z]+:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`
+    const parsed = new URL(candidate)
+
+    return {
+        raw: trimmed,
+        url: parsed.toString(),
+        origin: parsed.origin,
+        host: parsed.hostname.toLowerCase(),
+        https: parsed.protocol === 'https:'
+    }
+}
+
+async function sha1Hex(value) {
+    const buffer = await crypto.subtle.digest('SHA-1', new TextEncoder().encode(value))
+    return Array.from(new Uint8Array(buffer))
+        .map(byte => byte.toString(16).padStart(2, '0'))
+        .join('')
+        .toUpperCase()
+}
+
+async function sha256Hex(value) {
+    const buffer = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(value))
+    return Array.from(new Uint8Array(buffer))
+        .map(byte => byte.toString(16).padStart(2, '0'))
+        .join('')
+}
+
+async function fetchTextDirect(url, options = {}) {
+    const response = await fetch(url, options)
+    if (!response.ok) throw new Error(`HTTP ${response.status}`)
+    return await response.text()
+}
+
+async function fetchTextViaProxy(url) {
+    const proxies = [
+        `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
+        `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`
+    ]
+
+    let lastError = null
+    for (const proxyUrl of proxies) {
+        try {
+            const response = await fetch(proxyUrl)
+            if (!response.ok) throw new Error(`HTTP ${response.status}`)
+            return await response.text()
+        } catch (error) {
+            lastError = error
         }
     }
 
-    emailLoading.value = false
+    throw lastError || new Error('No se pudo recuperar el recurso.')
 }
 
-// ── Password check ────────────────────────────────────────────────────────────
-async function checkPassword() {
-    if (!password.value) return
+async function fetchTextSmart(url, options = {}) {
+    const method = (options.method || 'GET').toUpperCase()
+    if (method !== 'GET') {
+        return await fetchTextDirect(url, options)
+    }
+
+    try {
+        return await fetchTextDirect(url, options)
+    } catch (error) {
+        return await fetchTextViaProxy(url)
+    }
+}
+
+async function fetchJsonSmart(url, options = {}) {
+    const text = await fetchTextSmart(url, options)
+    return safeJsonParse(text)
+}
+
+async function fetchPublicText(url) {
+    try {
+        const content = await fetchTextSmart(url)
+        return { success: true, content }
+    } catch (error) {
+        return { success: false, content: '', error: error.message }
+    }
+}
+
+async function fetchDnsRecords(name, type) {
+    try {
+        const json = await fetchJsonSmart(`https://dns.google/resolve?name=${encodeURIComponent(name)}&type=${type}`)
+        const records = (json.Answer || []).map(answer => {
+            return type === 'TXT' ? normalizeTxtRecord(answer.data) : answer.data
+        })
+        return { success: true, records, raw: json, status: json.Status }
+    } catch (error) {
+        return { success: false, records: [], raw: null, error: error.message }
+    }
+}
+
+async function fetchEmailValidation(email) {
+    try {
+        const json = await fetchJsonSmart(`https://api.eva.pingutil.com/email?email=${encodeURIComponent(email)}`)
+        const data = json.data || json
+        return {
+            success: true,
+            valid: data.valid_syntax ?? data.valid ?? /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email),
+            disposable: data.disposable ?? false,
+            role: data.role_account ?? data.role ?? false,
+            deliverable: data.deliverable ?? null,
+            domain: data.domain || hostFromEmail(email)
+        }
+    } catch (error) {
+        return {
+            success: false,
+            valid: /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email),
+            disposable: false,
+            role: false,
+            deliverable: null,
+            domain: hostFromEmail(email),
+            error: error.message
+        }
+    }
+}
+
+async function fetchGravatarProfile(email) {
+    const hash = await sha256Hex(email.toLowerCase().trim())
+    const profileUrl = `https://www.gravatar.com/${hash}.json`
+
+    try {
+        const response = await fetch(profileUrl)
+        if (response.status === 404) {
+            return { success: true, hasProfile: false, hash }
+        }
+        if (!response.ok) throw new Error(`HTTP ${response.status}`)
+        const json = await response.json()
+        const entry = json.entry?.[0]
+        return {
+            success: true,
+            hasProfile: Boolean(entry),
+            hash,
+            raw: json,
+            displayName: entry?.displayName || entry?.preferredUsername || 'Sin alias visible',
+            profileUrl: entry?.profileUrl || '',
+            thumbnail: entry?.thumbnailUrl || '',
+            location: entry?.currentLocation || ''
+        }
+    } catch (directError) {
+        try {
+            const json = await fetchJsonSmart(profileUrl)
+            const entry = json.entry?.[0]
+            return {
+                success: true,
+                hasProfile: Boolean(entry),
+                hash,
+                raw: json,
+                displayName: entry?.displayName || entry?.preferredUsername || 'Sin alias visible',
+                profileUrl: entry?.profileUrl || '',
+                thumbnail: entry?.thumbnailUrl || '',
+                location: entry?.currentLocation || ''
+            }
+        } catch (error) {
+            return {
+                success: false,
+                hasProfile: false,
+                hash,
+                error: error.message
+            }
+        }
+    }
+}
+
+function readVCardField(entity, fieldName) {
+    const entries = entity?.vcardArray?.[1] || []
+    const match = entries.find(entry => entry[0] === fieldName)
+    return match?.[3] || ''
+}
+
+function findRegistrarName(entities = []) {
+    const registrar = entities.find(entity => entity.roles?.includes('registrar'))
+    return readVCardField(registrar, 'fn') || registrar?.handle || 'No disponible'
+}
+
+function findEventDate(events = [], eventAction) {
+    return events.find(event => event.eventAction === eventAction)?.eventDate || ''
+}
+
+async function fetchDomainRdap(domain) {
+    try {
+        const raw = await fetchJsonSmart(`https://rdap.org/domain/${encodeURIComponent(domain)}`)
+        return {
+            success: true,
+            raw,
+            registrar: findRegistrarName(raw.entities),
+            created: findEventDate(raw.events, 'registration'),
+            expires: findEventDate(raw.events, 'expiration'),
+            updated: findEventDate(raw.events, 'last changed'),
+            status: raw.status || [],
+            nameservers: (raw.nameservers || []).map(item => item.ldhName)
+        }
+    } catch (error) {
+        return {
+            success: false,
+            raw: null,
+            registrar: 'No disponible',
+            created: '',
+            expires: '',
+            updated: '',
+            status: [],
+            nameservers: [],
+            error: error.message
+        }
+    }
+}
+
+async function fetchMailDomainSignals(domain) {
+    const [mx, txt, dmarcTxt, bimiTxt, mtaStsTxt, mtaStsPolicy] = await Promise.all([
+        fetchDnsRecords(domain, 'MX'),
+        fetchDnsRecords(domain, 'TXT'),
+        fetchDnsRecords(`_dmarc.${domain}`, 'TXT'),
+        fetchDnsRecords(`default._bimi.${domain}`, 'TXT'),
+        fetchDnsRecords(`_mta-sts.${domain}`, 'TXT'),
+        fetchPublicText(`https://mta-sts.${domain}/.well-known/mta-sts.txt`)
+    ])
+
+    const spf = txt.records.find(record => record.toLowerCase().startsWith('v=spf1')) || ''
+    const dmarc = dmarcTxt.records.find(record => record.toLowerCase().startsWith('v=dmarc1')) || ''
+    const bimi = bimiTxt.records.find(record => record.toLowerCase().startsWith('v=bimi1')) || ''
+    const mtaSts = mtaStsTxt.records.find(record => record.toLowerCase().startsWith('v=stsv1')) || ''
+
+    return {
+        mx,
+        txt,
+        dmarcTxt,
+        bimiTxt,
+        mtaStsTxt,
+        mtaStsPolicy,
+        spf,
+        dmarc,
+        bimi,
+        mtaSts
+    }
+}
+
+async function queryPwnedPasswords(password) {
+    const hex = await sha1Hex(password)
+    const prefix = hex.slice(0, 5)
+    const suffix = hex.slice(5)
+    const response = await fetch(`https://api.pwnedpasswords.com/range/${prefix}`, {
+        headers: { 'Add-Padding': 'true' }
+    })
+    if (!response.ok) throw new Error(`HTTP ${response.status}`)
+    const body = await response.text()
+    const match = body
+        .split('\n')
+        .map(line => line.trim())
+        .find(line => line.toUpperCase().startsWith(suffix))
+    const count = match ? parseInt(match.split(':')[1], 10) : 0
+    return {
+        count,
+        prefix,
+        hashSuffixMatched: Boolean(match)
+    }
+}
+
+async function fetchSecurityHeadersReport(targetUrl) {
+    try {
+        const raw = await fetchJsonSmart(
+            `https://securityheaders.com/?q=${encodeURIComponent(targetUrl)}&followRedirects=on&format=json`
+        )
+        return { success: true, raw }
+    } catch (error) {
+        return { success: false, raw: null, error: error.message }
+    }
+}
+
+function extractSecurityHeadersGrade(report) {
+    if (!report?.raw) return ''
+    return report.raw.grade || report.raw.summary?.grade || report.raw.result?.grade || ''
+}
+
+async function fetchCertificateTransparency(domain) {
+    try {
+        const raw = await fetchJsonSmart(`https://crt.sh/?q=${encodeURIComponent(`%.${domain}`)}&output=json`)
+        const rows = Array.isArray(raw) ? raw : []
+        const names = uniqueList(rows.flatMap(row => String(row.name_value || '').split('\n')))
+        return {
+            success: true,
+            raw: rows,
+            uniqueNames: names,
+            latestEntry: rows[0]?.entry_timestamp || '',
+            sample: names.slice(0, 12)
+        }
+    } catch (error) {
+        return {
+            success: false,
+            raw: [],
+            uniqueNames: [],
+            latestEntry: '',
+            sample: [],
+            error: error.message
+        }
+    }
+}
+
+async function fetchWaybackSnapshots(host) {
+    try {
+        const raw = await fetchJsonSmart(
+            `https://web.archive.org/cdx/search/cdx?url=${encodeURIComponent(host)}&fl=timestamp,original,statuscode&filter=statuscode:200&limit=6&output=json`
+        )
+        const rows = Array.isArray(raw) ? raw.slice(1) : []
+        const latest = rows.length ? rows[rows.length - 1] : null
+        return {
+            success: true,
+            raw: rows,
+            count: rows.length,
+            latest: latest ? { timestamp: latest[0], original: latest[1], status: latest[2] } : null
+        }
+    } catch (error) {
+        return {
+            success: false,
+            raw: [],
+            count: 0,
+            latest: null,
+            error: error.message
+        }
+    }
+}
+
+async function fetchUrlhaus(url) {
+    try {
+        const response = await fetch('https://urlhaus-api.abuse.ch/v1/url/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body: `url=${encodeURIComponent(url)}`
+        })
+        if (!response.ok) throw new Error(`HTTP ${response.status}`)
+        const raw = await response.json()
+        return { success: true, raw }
+    } catch (error) {
+        return { success: false, raw: null, error: error.message }
+    }
+}
+
+async function fetchSurfaceFiles(origin) {
+    const [robots, sitemap, securityWellKnown, securityRoot] = await Promise.all([
+        fetchPublicText(`${origin}/robots.txt`),
+        fetchPublicText(`${origin}/sitemap.xml`),
+        fetchPublicText(`${origin}/.well-known/security.txt`),
+        fetchPublicText(`${origin}/security.txt`)
+    ])
+
+    const securityTxt = securityWellKnown.success
+        ? { ...securityWellKnown, path: '/.well-known/security.txt' }
+        : securityRoot.success
+            ? { ...securityRoot, path: '/security.txt' }
+            : { success: false, content: '', error: securityWellKnown.error || securityRoot.error || 'No disponible', path: '' }
+
+    return { robots, sitemap, securityTxt }
+}
+
+async function fetchTargetDnsBundle(host) {
+    const [a, aaaa, mx, ns, txt, caa] = await Promise.all([
+        fetchDnsRecords(host, 'A'),
+        fetchDnsRecords(host, 'AAAA'),
+        fetchDnsRecords(host, 'MX'),
+        fetchDnsRecords(host, 'NS'),
+        fetchDnsRecords(host, 'TXT'),
+        fetchDnsRecords(host, 'CAA')
+    ])
+
+    return { a, aaaa, mx, ns, txt, caa }
+}
+
+function shortList(records, max = 3) {
+    if (!records?.length) return 'Sin datos'
+    return records.slice(0, max).join(' | ')
+}
+
+async function analyzeEmail() {
+    if (!emailInput.value) return
+
+    const email = emailInput.value.trim().toLowerCase()
+    const domain = hostFromEmail(email)
+    if (!domain) {
+        window.alert('Introduce un correo valido.')
+        return
+    }
+
+    emailLoading.value = true
+    emailResult.value = null
+    emailSteps.value = buildSteps([
+        'Validacion base',
+        'Controles del dominio de correo',
+        'Huella publica en Gravatar',
+        'Registro RDAP del dominio'
+    ])
+
+    try {
+        updateStep(emailSteps, 0, { state: 'active', status: 'Consultando EVA Pingutil...' })
+        const validation = await fetchEmailValidation(email)
+        updateStep(emailSteps, 0, {
+            state: validation.success ? 'done' : 'error',
+            status: validation.success ? 'Sintaxis y flags recibidos.' : `Fallback local: ${validation.error}`
+        })
+
+        updateStep(emailSteps, 1, { state: 'active', status: 'Consultando MX, TXT, DMARC, BIMI y MTA-STS...' })
+        const mailSignals = await fetchMailDomainSignals(domain)
+        const mailSignalSuccess = mailSignals.mx.success || mailSignals.txt.success || mailSignals.dmarcTxt.success
+        updateStep(emailSteps, 1, {
+            state: mailSignalSuccess ? 'done' : 'error',
+            status: mailSignalSuccess ? 'Politicas y transporte de correo recopilados.' : 'No se pudieron leer los registros DNS.'
+        })
+
+        updateStep(emailSteps, 2, { state: 'active', status: 'Buscando perfil publico en Gravatar...' })
+        const gravatar = await fetchGravatarProfile(email)
+        updateStep(emailSteps, 2, {
+            state: gravatar.success ? 'done' : 'error',
+            status: gravatar.success
+                ? (gravatar.hasProfile ? 'Perfil publico encontrado.' : 'Sin perfil publico visible.')
+                : `No disponible: ${gravatar.error}`
+        })
+
+        updateStep(emailSteps, 3, { state: 'active', status: 'Consultando RDAP del dominio...' })
+        const rdap = await fetchDomainRdap(domain)
+        updateStep(emailSteps, 3, {
+            state: rdap.success ? 'done' : 'error',
+            status: rdap.success ? 'Registro del dominio obtenido.' : `No disponible: ${rdap.error}`
+        })
+
+        const hasMx = mailSignals.mx.records.length > 0
+        const hasSpf = Boolean(mailSignals.spf)
+        const hasDmarc = Boolean(mailSignals.dmarc)
+        const hasMtaSts = Boolean(mailSignals.mtaSts)
+        const hasBimi = Boolean(mailSignals.bimi)
+
+        let score = 100
+        if (!validation.valid) score -= 35
+        if (validation.disposable) score -= 25
+        if (validation.role) score -= 10
+        if (!hasMx) score -= 25
+        if (!hasSpf) score -= 10
+        if (!hasDmarc) score -= 15
+        if (!hasMtaSts) score -= 8
+        if (validation.deliverable === false) score -= 10
+        score = Math.max(0, Math.min(100, Math.round(score)))
+
+        const antiSpoofing = hasSpf && hasDmarc
+            ? 'SPF y DMARC presentes'
+            : hasSpf || hasDmarc
+                ? 'Solo un control visible'
+                : 'Sin blindaje antisuplantacion'
+
+        const recommendations = uniqueList([
+            !validation.valid ? 'Corrige el formato del correo antes de usarlo en procesos criticos.' : '',
+            validation.disposable ? 'Evita cuentas temporales en servicios donde la recuperacion sea importante.' : '',
+            validation.role ? 'Los buzones de rol suelen recibir mas phishing y filtraciones.' : '',
+            !hasMx ? 'El dominio no publica MX visibles; revisa si el correo realmente es operativo.' : '',
+            !hasSpf ? 'Publica un registro SPF para limitar envios no autorizados.' : '',
+            !hasDmarc ? 'Activa DMARC para endurecer la proteccion frente a spoofing.' : '',
+            !hasMtaSts ? 'MTA-STS sigue ausente o no visible; el transporte SMTP puede endurecerse.' : '',
+            rdap.expires ? `Vigila la fecha de expiracion del dominio: ${formatDate(rdap.expires)}.` : ''
+        ])
+
+        const verdictTitle = score >= 80
+            ? 'Correo con infraestructura razonablemente sana'
+            : score >= 55
+                ? 'Correo util, pero con blindaje parcial'
+                : 'Correo con senales de riesgo o controles insuficientes'
+
+        const verdictBody = antiSpoofing === 'SPF y DMARC presentes'
+            ? 'La superficie de correo publica muestra controles antisuplantacion visibles y una topologia de entrega reconocible.'
+            : 'Faltan controles que ayuden a reducir suplantacion, degradacion SMTP o abuso de la identidad del dominio.'
+
+        emailResult.value = {
+            score,
+            verdictTone: verdictTone(score),
+            verdictTitle,
+            verdictBody,
+            summaryCards: [
+                {
+                    label: 'Puntuacion',
+                    value: `${score}/100`,
+                    numeric: score,
+                    note: domain
+                },
+                {
+                    label: 'Sintaxis',
+                    value: validation.valid ? 'Valida' : 'Dudosa',
+                    tone: validation.valid ? 'tone-success' : 'tone-danger',
+                    note: validation.deliverable === null ? 'Entrega no confirmada' : (validation.deliverable ? 'Entrega plausible' : 'Entrega dudosa')
+                },
+                {
+                    label: 'Blindaje de correo',
+                    value: antiSpoofing,
+                    tone: antiSpoofing === 'SPF y DMARC presentes' ? 'tone-success' : 'tone-warning',
+                    note: hasMtaSts ? 'MTA-STS visible' : 'MTA-STS no visible'
+                },
+                {
+                    label: 'MX visibles',
+                    value: hasMx ? String(mailSignals.mx.records.length) : '0',
+                    tone: hasMx ? 'tone-success' : 'tone-danger',
+                    note: shortList(mailSignals.mx.records, 2)
+                }
+            ],
+            sourceCards: [
+                {
+                    name: 'EVA Pingutil',
+                    state: validation.success ? 'Exitoso' : 'Fallback',
+                    tone: validation.success ? 'tone-success' : 'tone-warning',
+                    description: 'Validacion sintactica, cuentas temporales, buzones de rol y entrega probable.',
+                    note: validation.success ? 'Respuesta publica procesada.' : (validation.error || 'Solo se uso regex local.')
+                },
+                {
+                    name: 'DNS over HTTPS',
+                    state: mailSignalSuccess ? 'Exitoso' : 'Fallido',
+                    tone: mailSignalSuccess ? 'tone-success' : 'tone-danger',
+                    description: 'Consulta de MX, TXT, SPF, DMARC, BIMI y MTA-STS desde dns.google.',
+                    note: hasMx ? `MX: ${shortList(mailSignals.mx.records, 2)}` : 'Sin MX visibles.'
+                },
+                {
+                    name: 'Gravatar',
+                    state: gravatar.success ? (gravatar.hasProfile ? 'Perfil visible' : 'Sin perfil') : 'No disponible',
+                    tone: gravatar.success ? (gravatar.hasProfile ? 'tone-success' : 'tone-warning') : 'tone-danger',
+                    description: 'Busqueda de huella publica y alias expuestos a partir del hash SHA-256 del correo.',
+                    note: gravatar.success
+                        ? (gravatar.hasProfile ? `${gravatar.displayName}${gravatar.location ? ` · ${gravatar.location}` : ''}` : 'No se encontro perfil publico.')
+                        : gravatar.error
+                },
+                {
+                    name: 'RDAP',
+                    state: rdap.success ? 'Exitoso' : 'No disponible',
+                    tone: rdap.success ? 'tone-success' : 'tone-warning',
+                    description: 'Registro publico del dominio: alta, expiracion, registrar y nameservers.',
+                    note: rdap.success
+                        ? `Alta: ${formatDate(rdap.created)} · Expira: ${formatDate(rdap.expires)}`
+                        : (rdap.error || 'Sin respuesta util.')
+                }
+            ],
+            signalCards: [
+                {
+                    label: 'Cuenta temporal',
+                    value: validation.disposable ? 'Si' : 'No',
+                    tone: validation.disposable ? 'tone-danger' : 'tone-success',
+                    note: validation.disposable ? 'Los buzones desechables suelen elevar riesgo operativo.' : 'No se detecta proveedor temporal.'
+                },
+                {
+                    label: 'Buzon de rol',
+                    value: validation.role ? 'Si' : 'No',
+                    tone: validation.role ? 'tone-warning' : 'tone-success',
+                    note: validation.role ? 'Alias generico con mas superficie de abuso.' : 'Parece una cuenta personal o nominal.'
+                },
+                {
+                    label: 'SPF',
+                    value: hasSpf ? 'Visible' : 'Ausente',
+                    tone: hasSpf ? 'tone-success' : 'tone-danger',
+                    note: hasSpf ? mailSignals.spf : 'Sin SPF publico en TXT raiz.'
+                },
+                {
+                    label: 'DMARC',
+                    value: hasDmarc ? 'Visible' : 'Ausente',
+                    tone: hasDmarc ? 'tone-success' : 'tone-danger',
+                    note: hasDmarc ? mailSignals.dmarc : 'No hay politica DMARC publicada.'
+                },
+                {
+                    label: 'BIMI',
+                    value: hasBimi ? 'Visible' : 'No visible',
+                    tone: hasBimi ? 'tone-success' : 'tone-neutral',
+                    note: hasBimi ? mailSignals.bimi : 'BIMI es opcional y aqui no aparece.'
+                },
+                {
+                    label: 'MTA-STS',
+                    value: hasMtaSts ? 'TXT visible' : 'No visible',
+                    tone: hasMtaSts ? 'tone-success' : 'tone-warning',
+                    note: mailSignals.mtaStsPolicy.success
+                        ? `Politica recuperada desde ${domain}.`
+                        : 'No se pudo leer la politica en /.well-known/mta-sts.txt.'
+                },
+                {
+                    label: 'Registrar',
+                    value: rdap.registrar,
+                    tone: rdap.success ? 'tone-neutral' : 'tone-warning',
+                    note: rdap.success ? `Nameservers: ${rdap.nameservers.length}` : 'Sin respuesta RDAP consistente.'
+                },
+                {
+                    label: 'Huella publica',
+                    value: gravatar.hasProfile ? 'Perfil visible' : 'Sin perfil',
+                    tone: gravatar.hasProfile ? 'tone-warning' : 'tone-success',
+                    note: gravatar.hasProfile ? 'Existe correlacion publica del correo en Gravatar.' : 'No se observa perfil publico en este origen.'
+                }
+            ],
+            rawPanels: [
+                {
+                    title: 'TXT y controles de correo',
+                    badge: 'SPF / DMARC / BIMI / MTA-STS',
+                    content: prettyPrint({
+                        mx: mailSignals.mx.records,
+                        txt: mailSignals.txt.records,
+                        spf: mailSignals.spf || 'No visible',
+                        dmarc: mailSignals.dmarc || 'No visible',
+                        bimi: mailSignals.bimi || 'No visible',
+                        mta_sts_txt: mailSignals.mtaSts || 'No visible',
+                        mta_sts_policy: mailSignals.mtaStsPolicy.success
+                            ? mailSignals.mtaStsPolicy.content
+                            : (mailSignals.mtaStsPolicy.error || 'No disponible')
+                    })
+                },
+                {
+                    title: 'RDAP del dominio',
+                    badge: 'Registro publico',
+                    content: prettyPrint(
+                        rdap.success
+                            ? {
+                                registrar: rdap.registrar,
+                                created: rdap.created,
+                                expires: rdap.expires,
+                                updated: rdap.updated,
+                                status: rdap.status,
+                                nameservers: rdap.nameservers
+                            }
+                            : { error: rdap.error || 'Sin respuesta util.' }
+                    )
+                }
+            ],
+            recommendations
+        }
+    } finally {
+        emailLoading.value = false
+    }
+}
+
+async function analyzePassword() {
+    if (!passwordInput.value) return
+
     passwordLoading.value = true
     passwordResult.value = null
-    try {
-        const enc = new TextEncoder().encode(password.value)
-        const buf = await crypto.subtle.digest('SHA-1', enc)
-        const hex = Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('').toUpperCase()
-        const prefix = hex.slice(0, 5)
-        const suffix = hex.slice(5)
+    passwordSteps.value = buildSteps([
+        'Analisis local con zxcvbn',
+        'Consulta HIBP Pwned Passwords'
+    ])
 
-        const res = await fetch(`https://api.pwnedpasswords.com/range/${prefix}`, {
-            headers: { 'Add-Padding': 'true' }   // padding mode for extra privacy
-        })
-        if (!res.ok) throw new Error(`HTTP ${res.status}`)
-        const text = await res.text()
-        const match = text.split('\n').find(l => l.toUpperCase().startsWith(suffix))
-        const count = match ? parseInt(match.split(':')[1], 10) : 0
-        passwordResult.value = { count, success: true }
-    } catch (err) {
-        passwordResult.value = { count: 0, success: false, error: err.message }
+    try {
+        updateStep(passwordSteps, 0, { state: 'active', status: 'Calculando patrones, longitud y complejidad...' })
+        const strength = zxcvbn(passwordInput.value)
+        updateStep(passwordSteps, 0, { state: 'done', status: 'Modelo local completado.' })
+
+        updateStep(passwordSteps, 1, { state: 'active', status: 'Enviando solo el prefijo SHA-1 a HIBP...' })
+        let pwned
+        try {
+            pwned = await queryPwnedPasswords(passwordInput.value)
+            updateStep(passwordSteps, 1, {
+                state: 'done',
+                status: pwned.count > 0
+                    ? `Coincidencia encontrada: ${pwned.count.toLocaleString()} exposiciones.`
+                    : 'Sin coincidencias en HIBP.'
+            })
+        } catch (error) {
+            pwned = { count: 0, error: error.message, prefix: 'N/D', hashSuffixMatched: false }
+            updateStep(passwordSteps, 1, { state: 'error', status: `Error: ${error.message}` })
+        }
+
+        const baseScoreMap = [16, 36, 58, 79, 93]
+        let score = baseScoreMap[strength.score] ?? 20
+        if (pwned.count > 0) score = Math.min(score, pwned.count > 1000 ? 8 : pwned.count > 10 ? 20 : 32)
+        score = Math.max(0, Math.min(100, Math.round(score)))
+
+        const feedback = uniqueList([
+            strength.feedback.warning,
+            ...(strength.feedback.suggestions || [])
+        ])
+
+        const patterns = strength.sequence
+            .slice(0, 8)
+            .map(sequence => `${translatePattern(sequence.pattern)}: ${sequence.token}`)
+
+        const crackTime =
+            strength.crack_times_display?.offline_slow_hashing_1e4_per_second ||
+            strength.crack_times_display?.offline_fast_hashing_1e10_per_second ||
+            'No disponible'
+
+        const recommendations = uniqueList([
+            pwned.count > 0 ? 'La contrasena aparece en brechas reales: cambia esta clave y todas sus reutilizaciones.' : '',
+            passwordInput.value.length < 14 ? 'Sube la longitud a 14-16 caracteres o mas.' : '',
+            !/[A-Z]/.test(passwordInput.value) ? 'Anade mayusculas para elevar diversidad del alfabeto.' : '',
+            !/[0-9]/.test(passwordInput.value) ? 'Introduce numeros no triviales.' : '',
+            !/[^A-Za-z0-9]/.test(passwordInput.value) ? 'Incluye simbolos para ampliar combinaciones.' : '',
+            feedback[0] || '',
+            feedback[1] || ''
+        ])
+
+        const verdictTitle = pwned.count > 0
+            ? 'Contrasena comprometida en brechas reales'
+            : score >= 80
+                ? 'Contrasena robusta y sin coincidencias en HIBP'
+                : score >= 55
+                    ? 'Contrasena razonable, pero mejorable'
+                    : 'Contrasena debil o predecible'
+
+        const verdictBody = pwned.count > 0
+            ? `Se ha observado en HIBP ${pwned.count.toLocaleString()} veces. Aunque su forma parezca compleja, ya no puede considerarse secreta.`
+            : `zxcvbn la clasifica con ${strength.score}/4 y estima tiempos de crack muy variables segun el atacante y el hash.`
+
+        passwordResult.value = {
+            score,
+            verdictTone: verdictTone(score),
+            verdictTitle,
+            verdictBody,
+            patterns,
+            summaryCards: [
+                {
+                    label: 'Puntuacion',
+                    value: `${score}/100`,
+                    numeric: score,
+                    note: `zxcvbn ${strength.score}/4`
+                },
+                {
+                    label: 'Estado HIBP',
+                    value: pwned.count > 0 ? 'Expuesta' : 'No encontrada',
+                    tone: pwned.count > 0 ? 'tone-danger' : 'tone-success',
+                    note: pwned.error || 'Consulta por rango SHA-1'
+                },
+                {
+                    label: 'Apariciones',
+                    value: pwned.count.toLocaleString(),
+                    tone: pwned.count > 0 ? 'tone-danger' : 'tone-success',
+                    note: 'Coincidencias en brechas publicas'
+                },
+                {
+                    label: 'Crack offline',
+                    value: crackTime,
+                    tone: score >= 80 ? 'tone-success' : score >= 55 ? 'tone-warning' : 'tone-danger',
+                    note: 'Modelo lento 1e4 hashes/seg'
+                }
+            ],
+            signalCards: [
+                {
+                    label: 'Longitud',
+                    value: `${passwordInput.value.length} caracteres`,
+                    tone: passwordInput.value.length >= 14 ? 'tone-success' : 'tone-warning',
+                    note: passwordInput.value.length >= 16 ? 'Muy buena base estructural.' : 'La longitud sigue siendo el multiplicador mas rentable.'
+                },
+                {
+                    label: 'Diversidad',
+                    value: describeAlphabet(passwordInput.value),
+                    tone: /[^A-Za-z0-9]/.test(passwordInput.value) && /[A-Z]/.test(passwordInput.value) && /[0-9]/.test(passwordInput.value)
+                        ? 'tone-success'
+                        : 'tone-warning',
+                    note: 'Mayusculas, minusculas, numeros y simbolos elevan cobertura del espacio de claves.'
+                },
+                {
+                    label: 'Guesses log10',
+                    value: strength.guesses_log10.toFixed(2),
+                    tone: strength.guesses_log10 >= 10 ? 'tone-success' : strength.guesses_log10 >= 7 ? 'tone-warning' : 'tone-danger',
+                    note: 'Estimacion logaritmica de intentos necesarios.'
+                },
+                {
+                    label: 'Patrones detectados',
+                    value: patterns.length ? String(patterns.length) : '0',
+                    tone: patterns.length > 2 ? 'tone-warning' : 'tone-success',
+                    note: patterns.length ? patterns.slice(0, 2).join(' | ') : 'No se han detectado patrones obvios.'
+                },
+                {
+                    label: 'Warning principal',
+                    value: strength.feedback.warning || 'Sin warning fuerte',
+                    tone: strength.feedback.warning ? 'tone-warning' : 'tone-success',
+                    note: feedback.join(' | ') || 'Sin sugerencias adicionales.'
+                },
+                {
+                    label: 'Consulta k-anonymity',
+                    value: pwned.prefix,
+                    tone: 'tone-neutral',
+                    note: 'Solo el prefijo SHA-1 viaja al servicio remoto.'
+                }
+            ],
+            rawPanels: [
+                {
+                    title: 'Lectura tecnica zxcvbn',
+                    badge: 'Analisis local',
+                    content: prettyPrint({
+                        score: strength.score,
+                        guesses: strength.guesses,
+                        guesses_log10: strength.guesses_log10,
+                        crack_times_display: strength.crack_times_display,
+                        warning: strength.feedback.warning,
+                        suggestions: strength.feedback.suggestions,
+                        sequence: strength.sequence.map(sequence => ({
+                            pattern: sequence.pattern,
+                            token: sequence.token,
+                            guesses: sequence.guesses
+                        }))
+                    })
+                },
+                {
+                    title: 'Consulta HIBP Pwned Passwords',
+                    badge: 'Rango SHA-1',
+                    content: prettyPrint({
+                        prefix_sent: pwned.prefix,
+                        exposed_count: pwned.count,
+                        suffix_match: pwned.hashSuffixMatched,
+                        error: pwned.error || null
+                    })
+                }
+            ],
+            recommendations
+        }
     } finally {
         passwordLoading.value = false
     }
 }
 
-// ── API helpers ───────────────────────────────────────────────────────────────
+async function analyzeTarget() {
+    if (!targetInput.value) return
 
-/**
- * HIBP v3 — requires API key (paid, ~3.50 USD/mo)
- * https://haveibeenpwned.com/API/v3#BreachedAccount
- */
-async function fetchHIBPBreaches(emailAddr) {
+    let normalized
     try {
-        const res = await fetch(
-            `https://haveibeenpwned.com/api/v3/breachedaccount/${encodeURIComponent(emailAddr)}?truncateResponse=false`,
-            {
-                headers: {
-                    'hibp-api-key': hibpApiKey.value,
-                    'User-Agent': 'GaladrielOSINT/1.0',
+        normalized = normalizeTargetInput(targetInput.value)
+    } catch (error) {
+        window.alert(error.message)
+        return
+    }
+
+    targetLoading.value = true
+    targetResult.value = null
+    targetSteps.value = buildSteps([
+        'DNS y registros base',
+        'Cabeceras publicas',
+        'Superficie visible',
+        'Certificados en crt.sh',
+        'RDAP del dominio',
+        'Wayback y URLHaus'
+    ])
+
+    try {
+        updateStep(targetSteps, 0, { state: 'active', status: 'Consultando A, AAAA, MX, NS, TXT y CAA...' })
+        const dns = await fetchTargetDnsBundle(normalized.host)
+        updateStep(targetSteps, 0, {
+            state: dns.a.success || dns.aaaa.success || dns.ns.success ? 'done' : 'error',
+            status: `A: ${dns.a.records.length} · AAAA: ${dns.aaaa.records.length} · NS: ${dns.ns.records.length}`
+        })
+
+        updateStep(targetSteps, 1, { state: 'active', status: 'Consultando SecurityHeaders...' })
+        const securityHeaders = await fetchSecurityHeadersReport(normalized.url)
+        const headerGrade = extractSecurityHeadersGrade(securityHeaders)
+        updateStep(targetSteps, 1, {
+            state: securityHeaders.success ? 'done' : 'error',
+            status: securityHeaders.success ? `Respuesta recibida${headerGrade ? ` · grado ${headerGrade}` : ''}` : `No disponible: ${securityHeaders.error}`
+        })
+
+        updateStep(targetSteps, 2, { state: 'active', status: 'Recuperando robots, sitemap y security.txt...' })
+        const surface = await fetchSurfaceFiles(normalized.origin)
+        updateStep(targetSteps, 2, {
+            state: surface.robots.success || surface.sitemap.success || surface.securityTxt.success ? 'done' : 'error',
+            status: `robots: ${surface.robots.success ? 'si' : 'no'} · sitemap: ${surface.sitemap.success ? 'si' : 'no'} · security.txt: ${surface.securityTxt.success ? 'si' : 'no'}`
+        })
+
+        updateStep(targetSteps, 3, { state: 'active', status: 'Consultando transparencia de certificados...' })
+        const ct = await fetchCertificateTransparency(normalized.host)
+        updateStep(targetSteps, 3, {
+            state: ct.success ? 'done' : 'error',
+            status: ct.success ? `${ct.uniqueNames.length} nombres unicos observados.` : `No disponible: ${ct.error}`
+        })
+
+        updateStep(targetSteps, 4, { state: 'active', status: 'Consultando RDAP...' })
+        const rdap = await fetchDomainRdap(normalized.host)
+        updateStep(targetSteps, 4, {
+            state: rdap.success ? 'done' : 'error',
+            status: rdap.success ? `Registrar: ${rdap.registrar}` : `No disponible: ${rdap.error}`
+        })
+
+        updateStep(targetSteps, 5, { state: 'active', status: 'Consultando Wayback y URLHaus...' })
+        const [wayback, urlhaus] = await Promise.all([
+            fetchWaybackSnapshots(normalized.host),
+            fetchUrlhaus(normalized.url)
+        ])
+        updateStep(targetSteps, 5, {
+            state: wayback.success || urlhaus.success ? 'done' : 'error',
+            status: `${wayback.count} snapshots · ${urlhaus.raw?.query_status || urlhaus.error || 'URLHaus sin datos'}`
+        })
+
+        let score = 100
+        const hasIp = dns.a.records.length > 0 || dns.aaaa.records.length > 0
+        const hasSecurityTxt = surface.securityTxt.success
+        const urlhausState = urlhaus.raw?.query_status || ''
+
+        if (!normalized.https) score -= 25
+        if (!hasIp) score -= 25
+        if (!dns.caa.records.length) score -= 5
+        if (!hasSecurityTxt) score -= 8
+        if (headerGrade.startsWith('F')) score -= 40
+        else if (headerGrade.startsWith('D')) score -= 28
+        else if (headerGrade.startsWith('C')) score -= 18
+        else if (headerGrade.startsWith('B')) score -= 8
+        if (urlhausState === 'ok') score = Math.min(score, 8)
+        score = Math.max(0, Math.min(100, Math.round(score)))
+
+        const recommendations = uniqueList([
+            !normalized.https ? 'Publica la URL primaria bajo HTTPS y evita entradas canonicas en HTTP.' : '',
+            !dns.caa.records.length ? 'Anade registros CAA para limitar autoridades certificadoras validas.' : '',
+            !hasSecurityTxt ? 'Publica security.txt para facilitar contacto responsable de hallazgos.' : '',
+            !surface.robots.success ? 'Si el sitio es publico, exponer robots.txt ayuda a documentar politicas de crawling.' : '',
+            !surface.sitemap.success ? 'Un sitemap visible mejora trazabilidad y descubrimiento legitimo.' : '',
+            !headerGrade ? 'La lectura de SecurityHeaders no devolvio grado; revisa cabeceras manualmente.' : '',
+            headerGrade.startsWith('C') || headerGrade.startsWith('D') || headerGrade.startsWith('F')
+                ? 'Endurece CSP, HSTS, Referrer-Policy, X-Frame-Options y Permissions-Policy.'
+                : '',
+            urlhausState === 'ok' ? 'URLHaus marca esta URL con senales maliciosas; verifica el recurso antes de interactuar.' : ''
+        ])
+
+        const verdictTitle = urlhausState === 'ok'
+            ? 'La reputacion publica merece atencion inmediata'
+            : score >= 80
+                ? 'Superficie bastante cuidada para un analisis pasivo'
+                : score >= 55
+                    ? 'Dominio razonable con huecos visibles'
+                    : 'Superficie expuesta con protecciones mejorables'
+
+        const verdictBody = hasSecurityTxt
+            ? 'El sitio expone al menos un canal visible para coordinacion de seguridad y varias senales operativas observables.'
+            : 'La lectura pasiva encuentra controles parciales, pero faltan algunas piezas que mejoran higiene y respuesta.'
+
+        targetResult.value = {
+            score,
+            verdictTone: verdictTone(score),
+            verdictTitle,
+            verdictBody,
+            summaryCards: [
+                {
+                    label: 'Puntuacion',
+                    value: `${score}/100`,
+                    numeric: score,
+                    note: normalized.host
+                },
+                {
+                    label: 'HTTPS',
+                    value: normalized.https ? 'Activo' : 'No',
+                    tone: normalized.https ? 'tone-success' : 'tone-danger',
+                    note: normalized.url
+                },
+                {
+                    label: 'SecurityHeaders',
+                    value: headerGrade || 'Sin grado',
+                    tone: headerGrade.startsWith('A') ? 'tone-success' : headerGrade ? 'tone-warning' : 'tone-neutral',
+                    note: securityHeaders.success ? 'Respuesta parseada' : (securityHeaders.error || 'No disponible')
+                },
+                {
+                    label: 'URLHaus',
+                    value: urlhausState || 'Sin datos',
+                    tone: urlhausState === 'ok' ? 'tone-danger' : 'tone-success',
+                    note: urlhausState === 'ok' ? 'Coincidencia encontrada' : 'Sin coincidencia publica'
                 }
-            }
-        )
-        if (res.status === 404) {
-            // 404 means "no breaches found" — this is a valid successful response
-            return { success: true, found: false, breaches: [] }
+            ],
+            sourceCards: [
+                {
+                    name: 'DNS over HTTPS',
+                    state: hasIp ? 'Exitoso' : 'Parcial',
+                    tone: hasIp ? 'tone-success' : 'tone-warning',
+                    description: 'A, AAAA, MX, NS, TXT y CAA desde dns.google.',
+                    note: `A: ${dns.a.records.length} · AAAA: ${dns.aaaa.records.length} · NS: ${dns.ns.records.length}`
+                },
+                {
+                    name: 'SecurityHeaders',
+                    state: securityHeaders.success ? 'Exitoso' : 'No disponible',
+                    tone: securityHeaders.success ? 'tone-success' : 'tone-warning',
+                    description: 'Lectura de cabeceras visibles y calificacion sintetica.',
+                    note: headerGrade ? `Grado ${headerGrade}` : (securityHeaders.error || 'Sin grado visible')
+                },
+                {
+                    name: 'crt.sh',
+                    state: ct.success ? 'Exitoso' : 'No disponible',
+                    tone: ct.success ? 'tone-success' : 'tone-warning',
+                    description: 'Transparencia de certificados y nombres asociados al dominio.',
+                    note: ct.success ? `${ct.uniqueNames.length} nombres unicos` : (ct.error || 'Sin respuesta util')
+                },
+                {
+                    name: 'RDAP',
+                    state: rdap.success ? 'Exitoso' : 'No disponible',
+                    tone: rdap.success ? 'tone-success' : 'tone-warning',
+                    description: 'Registro del dominio, alta, expiracion, registrar y nameservers.',
+                    note: rdap.success ? `Alta ${formatDate(rdap.created)} · Expira ${formatDate(rdap.expires)}` : (rdap.error || 'Sin datos')
+                },
+                {
+                    name: 'Wayback Machine',
+                    state: wayback.success ? 'Exitoso' : 'No disponible',
+                    tone: wayback.success ? 'tone-success' : 'tone-warning',
+                    description: 'Huella historica publica de capturas archivadas.',
+                    note: wayback.success ? `${wayback.count} snapshots visibles` : (wayback.error || 'Sin datos')
+                },
+                {
+                    name: 'URLHaus',
+                    state: urlhaus.success ? 'Exitoso' : 'No disponible',
+                    tone: urlhausState === 'ok' ? 'tone-danger' : (urlhaus.success ? 'tone-success' : 'tone-warning'),
+                    description: 'Reputacion publica de URL maliciosas observadas en campañas reales.',
+                    note: urlhausState || urlhaus.error || 'Sin respuesta'
+                }
+            ],
+            signalCards: [
+                {
+                    label: 'IPv4',
+                    value: dns.a.records.length ? String(dns.a.records.length) : '0',
+                    tone: dns.a.records.length ? 'tone-success' : 'tone-warning',
+                    note: shortList(dns.a.records, 2)
+                },
+                {
+                    label: 'IPv6',
+                    value: dns.aaaa.records.length ? String(dns.aaaa.records.length) : '0',
+                    tone: dns.aaaa.records.length ? 'tone-success' : 'tone-neutral',
+                    note: shortList(dns.aaaa.records, 2)
+                },
+                {
+                    label: 'Nameservers',
+                    value: dns.ns.records.length ? String(dns.ns.records.length) : '0',
+                    tone: dns.ns.records.length ? 'tone-success' : 'tone-warning',
+                    note: shortList(dns.ns.records, 2)
+                },
+                {
+                    label: 'CAA',
+                    value: dns.caa.records.length ? 'Visible' : 'Ausente',
+                    tone: dns.caa.records.length ? 'tone-success' : 'tone-warning',
+                    note: dns.caa.records.length ? shortList(dns.caa.records, 2) : 'No restringe CA validas.'
+                },
+                {
+                    label: 'security.txt',
+                    value: hasSecurityTxt ? 'Visible' : 'Ausente',
+                    tone: hasSecurityTxt ? 'tone-success' : 'tone-warning',
+                    note: hasSecurityTxt ? surface.securityTxt.path : 'Sin canal publico de contacto de seguridad.'
+                },
+                {
+                    label: 'robots.txt',
+                    value: surface.robots.success ? 'Visible' : 'Ausente',
+                    tone: surface.robots.success ? 'tone-success' : 'tone-neutral',
+                    note: surface.robots.success ? 'Superficie de rastreo documentada.' : 'No se encontro robots.txt.'
+                },
+                {
+                    label: 'sitemap.xml',
+                    value: surface.sitemap.success ? 'Visible' : 'Ausente',
+                    tone: surface.sitemap.success ? 'tone-success' : 'tone-neutral',
+                    note: surface.sitemap.success ? 'Indice publico de URLs recuperado.' : 'No se encontro sitemap.xml.'
+                },
+                {
+                    label: 'Certificados',
+                    value: ct.uniqueNames.length ? String(ct.uniqueNames.length) : '0',
+                    tone: ct.uniqueNames.length ? 'tone-success' : 'tone-warning',
+                    note: ct.latestEntry ? `Ultimo registro ${formatDateTime(ct.latestEntry)}` : 'Sin registros visibles.'
+                },
+                {
+                    label: 'Wayback',
+                    value: wayback.count ? `${wayback.count} capturas` : 'Sin capturas',
+                    tone: wayback.count ? 'tone-neutral' : 'tone-warning',
+                    note: wayback.latest ? `Ultima ${wayback.latest.timestamp}` : 'No se encontraron snapshots.'
+                }
+            ],
+            rawPanels: [
+                {
+                    title: 'DNS snapshot',
+                    badge: 'A / AAAA / MX / NS / TXT / CAA',
+                    content: prettyPrint({
+                        A: dns.a.records,
+                        AAAA: dns.aaaa.records,
+                        MX: dns.mx.records,
+                        NS: dns.ns.records,
+                        TXT: dns.txt.records,
+                        CAA: dns.caa.records
+                    })
+                },
+                {
+                    title: 'Superficie publica',
+                    badge: 'robots / sitemap / security.txt',
+                    content: prettyPrint({
+                        robots: surface.robots.success ? surface.robots.content : surface.robots.error,
+                        sitemap: surface.sitemap.success ? surface.sitemap.content : surface.sitemap.error,
+                        security_txt_path: surface.securityTxt.path || 'No visible',
+                        security_txt: surface.securityTxt.success ? surface.securityTxt.content : surface.securityTxt.error
+                    })
+                },
+                {
+                    title: 'SecurityHeaders y reputacion',
+                    badge: 'SecurityHeaders / URLHaus',
+                    content: prettyPrint({
+                        security_headers: securityHeaders.success ? securityHeaders.raw : { error: securityHeaders.error },
+                        urlhaus: urlhaus.success ? urlhaus.raw : { error: urlhaus.error }
+                    })
+                },
+                {
+                    title: 'Certificados, RDAP y Wayback',
+                    badge: 'crt.sh / RDAP / Archive',
+                    content: prettyPrint({
+                        certificate_names: ct.sample,
+                        rdap: rdap.success
+                            ? {
+                                registrar: rdap.registrar,
+                                created: rdap.created,
+                                expires: rdap.expires,
+                                status: rdap.status,
+                                nameservers: rdap.nameservers
+                            }
+                            : { error: rdap.error },
+                        wayback: wayback.latest || { count: wayback.count, error: wayback.error || null }
+                    })
+                }
+            ],
+            recommendations
         }
-        if (res.status === 401) {
-            return { success: false, found: false, breaches: [], error: 'API key inválida o sin permisos.' }
-        }
-        if (res.status === 429) {
-            return { success: false, found: false, breaches: [], error: 'Límite de peticiones alcanzado. Espera un momento.' }
-        }
-        if (!res.ok) {
-            return { success: false, found: false, breaches: [], error: `Error HTTP ${res.status}` }
-        }
-        const data = await res.json()
-        return { success: true, found: true, breaches: data }
-    } catch (err) {
-        return { success: false, found: false, breaches: [], error: `Error de red: ${err.message}` }
+    } finally {
+        targetLoading.value = false
     }
 }
 
-/**
- * EVA by Pingutil — free, no key required
- * https://eva.pingutil.com/
- */
-async function fetchEmailValidation(emailAddr) {
-    try {
-        const res = await fetch(`https://api.eva.pingutil.com/email?email=${encodeURIComponent(emailAddr)}`)
-        if (!res.ok) throw new Error(`HTTP ${res.status}`)
-        const json = await res.json()
-        // EVA returns { status, data: { email_address, domain, valid_syntax, disposable, ... } }
-        const d = json.data || json
-        return {
-            success: true,
-            valid: d.valid_syntax ?? d.valid ?? /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailAddr),
-            disposable: d.disposable ?? false,
-            role: d.role_account ?? d.role ?? false,
-            deliverable: d.deliverable ?? null,
-        }
-    } catch (err) {
-        // Graceful fallback: basic regex validation if API unreachable
-        return {
-            success: false,
-            valid: /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailAddr),
-            disposable: false,
-            role: false,
-            deliverable: null,
-            error: `No se pudo contactar eva.pingutil.com: ${err.message}`,
-        }
+function translatePattern(pattern) {
+    const labels = {
+        dictionary: 'Diccionario',
+        spatial: 'Patron de teclado',
+        repeat: 'Repeticion',
+        sequence: 'Secuencia',
+        regex: 'Regex',
+        date: 'Fecha',
+        bruteforce: 'Fuerza bruta'
     }
+    return labels[pattern] || pattern
 }
 
-/**
- * Gravatar — public, no key required
- * SHA-256 of lowercase email → HEAD request
- */
-async function fetchGravatar(emailAddr) {
-    try {
-        const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(emailAddr.toLowerCase().trim()))
-        const hex = Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('')
-        const res = await fetch(`https://www.gravatar.com/avatar/${hex}?d=404&s=1`, { method: 'HEAD' })
-        return { success: true, hasGravatar: res.ok }
-    } catch (err) {
-        return { success: false, hasGravatar: false, error: `No se pudo contactar gravatar.com: ${err.message}` }
-    }
-}
-
-function getSourceCardClass(src) {
-    if (!src) return ''
-    if (src.skipped) return 'source-skipped'
-    if (src.success) return 'source-ok'
-    return 'source-fail'
-}
-function getSourceBadgeClass(src) {
-    if (!src) return 'badge-muted'
-    if (src.skipped) return 'badge-muted'
-    if (src.success) return 'badge-success'
-    return 'badge-danger'
-}
-function getSourceLabel(src) {
-    if (!src) return '—'
-    if (src.skipped) return 'Omitido'
-    if (src.success) return 'Exitoso'
-    return 'Fallido'
-}
-
-function getScoreBadgeClass(score) {
-    if (score >= 75) return 'score-good'
-    if (score >= 45) return 'score-medium'
-    return 'score-bad'
-}
-function getPasswordVerdictClass() {
-    if (!passwordResult.value) return ''
-    if (passwordResult.value.count > 0) return 'verdict-danger'
-    if (passwordScore.value >= 75) return 'verdict-success'
-    return 'verdict-warning'
-}
-function getPasswordStatus() {
-    if (passwordResult.value?.count > 0) return 'Contraseña comprometida'
-    if (passwordScore.value >= 75) return 'Contraseña robusta'
-    if (passwordScore.value >= 45) return 'Contraseña mejorable'
-    return 'Contraseña muy débil'
-}
-function getPasswordRecommendation() {
-    if (passwordResult.value?.count > 0)
-        return `Expuesta ${passwordResult.value.count.toLocaleString()} veces en brechas reales según HIBP. Cámbiala de inmediato en todos los servicios donde la uses.`
-    if (passwordScore.value >= 75)
-        return 'No se encontró esta contraseña en ninguna brecha conocida. Recuerda no reutilizarla en otros servicios.'
-    if (passwordScore.value >= 45)
-        return 'No está comprometida, pero su fortaleza es mejorable. Añade longitud y símbolos especiales.'
-    return 'Contraseña muy débil. Usa un gestor de contraseñas para generar una robusta y única.'
-}
-function getGlobalVerdictClass() {
-    if (globalScore.value >= 75) return 'verdict-success'
-    if (globalScore.value >= 45) return 'verdict-warning'
-    return 'verdict-danger'
-}
-function getGlobalRiskLevel() {
-    if (globalScore.value >= 75) return 'Riesgo bajo — Las sombras se retiran'
-    if (globalScore.value >= 45) return 'Riesgo medio — La niebla se espesa'
-    return 'Riesgo alto — Las huestes oscuras se acercan'
-}
-function getRecommendations() {
-    const recs = []
-    if (emailScore.value !== null && emailScore.value < 60)
-        recs.push('Activa la autenticación de dos factores en todos tus servicios críticos.')
-    if (passwordScore.value !== null && passwordScore.value < 60)
-        recs.push('Cambia tu contraseña y no la reutilices en otros servicios.')
-    if (emailResult.value?.breaches?.length > 0)
-        recs.push('Revisa los servicios donde apareces comprometido y rota las credenciales afectadas.')
-    if (recentBreaches.value > 0)
-        recs.push('Hay brechas recientes. Prioriza el cambio de contraseña en esos servicios ahora mismo.')
-    if (recs.length === 0)
-        recs.push('Mantén buenas prácticas: contraseñas únicas, 2FA activo y revisiones periódicas.')
-    return recs
-}
-function isRecentBreach(breach) {
-    const year = breach.BreachDate
-        ? parseInt(breach.BreachDate.substring(0, 4))
-        : parseInt((breach.Name || breach).toString().split('-')[0])
-    return year && (new Date().getFullYear() - year) <= 2
+function describeAlphabet(password) {
+    const parts = []
+    if (/[a-z]/.test(password)) parts.push('minusculas')
+    if (/[A-Z]/.test(password)) parts.push('mayusculas')
+    if (/[0-9]/.test(password)) parts.push('numeros')
+    if (/[^A-Za-z0-9]/.test(password)) parts.push('simbolos')
+    return parts.length ? parts.join(' + ') : 'alfabeto minimo'
 }
 </script>
 
 <style scoped>
-.galadriel-page {
-    background-color: #0d1117;
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+.mirror-page {
+    background: #0b0f17;
     color: #e6edf3;
     min-height: 100vh;
-    font-family: 'EB Garamond', 'Palatino Linotype', Georgia, serif;
+    font-family: 'Inter', sans-serif;
 }
 
-/* Hero */
 .hero-banner {
-    position: relative;
     margin-top: 53px;
-    max-height: 420px;
 }
 
 .hero-banner img {
     width: 100%;
     display: block;
+    object-fit: cover;
 }
 
-/* Section header */
-.section-label {
-    display: block;
-    font-family: 'Courier New', monospace;
-    font-size: 0.65rem;
-    letter-spacing: 0.3em;
+.section-box {
+    background: #111827;
+    border: 1px solid #1f2937;
+    border-radius: 10px;
+    padding: 24px;
+    margin-bottom: 24px;
+}
+
+.intro-box,
+.module-header {
+    display: grid;
+    gap: 10px;
+}
+
+.section-heading {
+    display: grid;
+    gap: 12px;
+}
+
+.section-kicker {
+    color: #94a3b8;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.18em;
     text-transform: uppercase;
-    color: #c9a84c;
-    margin-bottom: 0.35rem;
 }
 
-.section-title {
-    font-size: 1.6rem;
-    font-weight: 400;
-    color: #e6edf3;
+.section-name,
+.module-title {
     margin: 0;
+    color: #f8fafc;
+    font-size: clamp(1.45rem, 2.1vw, 2rem);
+    font-weight: 700;
 }
 
-/* Info cards */
-.info-card {
-    background: #161b22;
-    border: 1px solid rgba(255, 255, 255, 0.08);
+.section-copy,
+.module-copy {
+    margin: 0;
+    color: #9ca3af;
+    line-height: 1.7;
+    max-width: 960px;
+}
+
+.guide-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 16px;
+    margin-top: 8px;
+}
+
+.guide-card,
+.tool-card,
+.source-card,
+.signal-card,
+.metric-card {
+    background: #020617;
+    border: 1px solid #1e293b;
     border-radius: 8px;
-    padding: 1.5rem;
-    transition: border-color 0.2s;
 }
 
-.info-card:hover {
-    border-color: rgba(201, 168, 76, 0.3);
+.guide-card {
+    padding: 16px;
+    display: grid;
+    gap: 6px;
 }
 
-.info-card-icon {
-    font-size: 1.4rem;
-    color: #c9a84c;
-    margin-bottom: 0.75rem;
-}
-
-.info-card h5 {
-    font-size: 1rem;
+.guide-card label,
+.field-label,
+.metric-card label,
+.signal-card label {
+    color: #9ca3af;
+    font-size: 0.78rem;
     font-weight: 600;
-    color: #e6edf3;
-    margin-bottom: 0.5rem;
+    letter-spacing: 0.03em;
+    display: block;
+    margin-bottom: 6px;
 }
 
-.info-card p {
-    font-size: 0.875rem;
-    color: #8b949e;
-    margin: 0;
+.guide-card span {
+    color: #dbe4ee;
     line-height: 1.6;
 }
 
-/* API notice */
-.api-notice {
-    display: flex;
-    gap: 1rem;
-    align-items: flex-start;
-    background: #161b22;
-    border: 1px solid rgba(210, 153, 34, 0.3);
-    border-radius: 10px;
-    padding: 1.25rem 1.5rem;
+.control-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 16px;
+    align-items: end;
+    margin: 20px 0 18px;
 }
 
-.api-notice-success {
-    border-color: rgba(63, 185, 80, 0.3);
+.control-field {
+    min-width: 0;
 }
 
-.api-notice-icon {
-    font-size: 1.3rem;
-    color: #c9a84c;
-    flex-shrink: 0;
-    padding-top: 2px;
+.input-dark {
+    background: #020617;
+    border: 1px solid #334155;
+    color: #f8fafc !important;
+    min-height: 46px;
+    caret-color: #f8fafc;
 }
 
-.api-notice-success .api-notice-icon {
-    color: #3fb950;
+.input-dark::placeholder {
+    color: #64748b;
 }
 
-.api-notice-body {
-    flex: 1;
-    font-size: 0.9rem;
-    color: #e6edf3;
+.input-dark:focus {
+    background: #020617;
+    border-color: #475569;
+    box-shadow: 0 0 0 0.2rem rgba(71, 85, 105, 0.2);
 }
 
-.api-notice-body p {
-    color: #8b949e;
-    font-size: 0.85rem;
+.action-button {
+    min-width: 180px;
+    height: 46px;
 }
 
-.api-notice-body a {
-    color: #c9a84c;
-    text-decoration: none;
+.btn-main {
+    background: #334155;
+    color: #f8fafc;
+    border: 1px solid #475569;
+    border-radius: 8px;
+    padding: 10px 16px;
+    font-weight: 600;
 }
 
-.api-notice-body a:hover {
-    text-decoration: underline;
+.btn-main:hover,
+.btn-main:focus {
+    background: #475569;
+    color: #f8fafc;
 }
 
-.api-key-input {
-    max-width: 320px;
-}
-
-.btn-outline-gold {
-    background: transparent;
-    border: 1px solid #c9a84c;
-    color: #c9a84c;
-    border-radius: 6px;
-    font-size: 0.85rem;
-    padding: 0.45rem 1rem;
-    font-family: inherit;
-    white-space: nowrap;
-}
-
-.btn-outline-gold:hover:not(:disabled) {
-    background: rgba(201, 168, 76, 0.1);
-    color: #c9a84c;
-}
-
-.btn-outline-gold:disabled {
-    opacity: 0.4;
+.btn-main:disabled {
+    opacity: 0.65;
     cursor: not-allowed;
 }
 
-.analysis-card {
-    background: #161b22;
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 10px;
-    padding: 2rem;
-}
-
-.field-label {
-    font-size: 0.78rem;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
-    color: #8b949e;
-    margin-bottom: 0.5rem;
-}
-
-.analysis-input {
-    background: #1c2333 !important;
-    border: 1px solid rgba(255, 255, 255, 0.08) !important;
-    border-radius: 6px !important;
-    color: #e6edf3 !important;
-    font-family: inherit;
-    font-size: 0.95rem;
-    padding: 0.65rem 1rem;
-    transition: border-color 0.2s;
-}
-
-.analysis-input:focus {
-    border-color: #c9a84c !important;
-    box-shadow: 0 0 0 3px rgba(201, 168, 76, 0.1) !important;
-    outline: none;
-}
-
-.analysis-input::placeholder {
-    color: rgba(139, 148, 158, 0.4) !important;
-}
-
-.password-input-wrapper {
+.password-shell {
     position: relative;
 }
 
@@ -927,386 +1839,270 @@ function isRecentBreach(breach) {
     right: 12px;
     top: 50%;
     transform: translateY(-50%);
-    background: none;
-    border: none;
-    color: #8b949e;
-    cursor: pointer;
-    padding: 0;
+    border: 0;
+    background: transparent;
+    color: #94a3b8;
 }
 
-.password-toggle:hover {
-    color: #e6edf3;
-}
-
-.btn-analyze {
-    background: #c9a84c;
-    border: none;
-    border-radius: 6px;
-    color: #0d1117;
-    font-family: inherit;
-    font-size: 0.9rem;
-    font-weight: 600;
-    padding: 0.65rem 1.5rem;
-    letter-spacing: 0.02em;
-    transition: background 0.2s, opacity 0.2s;
-}
-
-.btn-analyze:hover:not(:disabled) {
-    background: #d4b05a;
-    color: #0d1117;
-}
-
-.btn-analyze:disabled {
-    opacity: 0.4;
-    cursor: not-allowed;
-}
-
-.bg-success-subtle-dark {
-    background: rgba(63, 185, 80, 0.06) !important;
-}
-
-.border-success-subtle {
-    border-color: rgba(63, 185, 80, 0.25) !important;
-}
-
-/* Loading */
 .loading-panel {
-    border-top: 1px solid rgba(255, 255, 255, 0.08);
-    padding-top: 1.5rem;
-}
-
-.loading-steps {
-    display: flex;
-    flex-direction: column;
-    gap: 0.6rem;
+    display: grid;
+    gap: 10px;
+    margin-top: 16px;
 }
 
 .loading-step {
     display: flex;
     align-items: center;
-    gap: 1rem;
-    padding: 0.75rem 1rem;
-    background: #1c2333;
-    border: 1px solid rgba(255, 255, 255, 0.06);
-    border-radius: 6px;
-    transition: border-color 0.3s;
+    gap: 12px;
+    padding: 12px 14px;
+    background: #020617;
+    border: 1px solid #1e293b;
+    border-radius: 8px;
 }
 
 .loading-step.active {
-    border-color: #c9a84c;
+    border-color: #475569;
 }
 
 .loading-step.done {
-    border-color: rgba(63, 185, 80, 0.4);
+    border-color: rgba(34, 197, 94, 0.35);
 }
 
-.loading-step.failed {
-    border-color: rgba(248, 81, 73, 0.4);
-}
-
-.loading-step.skipped {
-    opacity: 0.45;
+.loading-step.error {
+    border-color: rgba(248, 113, 113, 0.35);
 }
 
 .loading-step-icon {
-    width: 22px;
-    height: 22px;
+    width: 20px;
     display: flex;
-    align-items: center;
     justify-content: center;
-    font-size: 0.85rem;
+    color: #cbd5e1;
     flex-shrink: 0;
 }
 
-.loading-step.active .loading-step-icon {
-    color: #c9a84c;
+.loading-step-body {
+    display: grid;
+    gap: 2px;
 }
 
-.loading-step.done .loading-step-icon {
-    color: #3fb950;
+.loading-step-body strong {
+    font-size: 0.92rem;
+    color: #f8fafc;
 }
 
-.loading-step.failed .loading-step-icon {
-    color: #f85149;
+.loading-step-body span {
+    font-size: 0.82rem;
+    color: #94a3b8;
 }
 
-.loading-step.skipped .loading-step-icon {
-    color: #8b949e;
-}
-
-.loading-step-text {
-    display: flex;
-    flex-direction: column;
-    gap: 0.1rem;
-}
-
-.loading-step-name {
-    font-size: 0.88rem;
-    color: #e6edf3;
-}
-
-.loading-step-status {
-    font-size: 0.73rem;
-    color: #8b949e;
-    font-family: 'Courier New', monospace;
-}
-
-.results-panel {
-    border-top: 1px solid rgba(255, 255, 255, 0.08);
-    padding-top: 1.5rem;
-    animation: fadeSlideIn 0.35s ease;
-}
-
-@keyframes fadeSlideIn {
-    from {
-        opacity: 0;
-        transform: translateY(8px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-.results-section-title {
-    font-size: 0.72rem;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    color: #8b949e;
-}
-
-/* Metrics */
-.metric-box {
-    background: #1c2333;
-    border: 1px solid rgba(255, 255, 255, 0.07);
-    border-radius: 8px;
-    padding: 1rem 1.25rem;
-    display: flex;
-    flex-direction: column;
-    gap: 0.3rem;
+.metric-card,
+.signal-card {
+    padding: 14px;
     height: 100%;
+    display: grid;
+    gap: 4px;
 }
 
-.metric-label {
-    font-size: 0.68rem;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: #8b949e;
-}
-
-.metric-value {
-    font-size: 1.75rem;
-    font-weight: 700;
-    line-height: 1;
-}
-
-.metric-value small {
-    font-size: 0.85rem;
-    opacity: 0.55;
-    margin-left: 2px;
-}
-
-.score-good {
-    color: #3fb950;
-}
-
-.score-medium {
-    color: #d29922;
-}
-
-.score-bad {
-    color: #f85149;
-}
-
-.metric-badge {
-    display: inline-block;
-    font-size: 0.78rem;
+.metric-card span,
+.signal-card span {
+    color: #f8fafc;
+    font-size: 1rem;
     font-weight: 600;
-    padding: 0.28rem 0.7rem;
-    border-radius: 20px;
+    word-break: break-word;
 }
 
-.badge-success {
-    background: rgba(63, 185, 80, 0.15);
-    color: #3fb950;
-    border: 1px solid rgba(63, 185, 80, 0.3);
-}
-
-.badge-danger {
-    background: rgba(248, 81, 73, 0.15);
-    color: #f85149;
-    border: 1px solid rgba(248, 81, 73, 0.3);
-}
-
-.badge-warning {
-    background: rgba(210, 153, 34, 0.15);
-    color: #d29922;
-    border: 1px solid rgba(210, 153, 34, 0.3);
-}
-
-.badge-muted {
-    background: rgba(139, 148, 158, 0.1);
-    color: #8b949e;
-    border: 1px solid rgba(139, 148, 158, 0.2);
-}
-
-/* Source cards */
-.source-card {
-    background: #1c2333;
-    border-radius: 8px;
-    padding: 1.25rem;
-    border: 1px solid rgba(255, 255, 255, 0.07);
-    height: 100%;
-}
-
-.source-ok {
-    border-color: rgba(63, 185, 80, 0.25);
-}
-
-.source-fail {
-    border-color: rgba(248, 81, 73, 0.2);
-}
-
-.source-skipped {
-    opacity: 0.6;
-}
-
-.source-card-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 0.5rem;
-}
-
-.source-name {
-    font-size: 0.88rem;
-    font-weight: 600;
-    color: #e6edf3;
-}
-
-.source-desc {
-    font-size: 0.78rem;
-    color: #8b949e;
-    margin-bottom: 0.75rem;
+.metric-card small,
+.signal-card small,
+.source-card small {
+    color: #94a3b8;
     line-height: 1.5;
 }
 
-.source-data {
+.subsection-title {
+    margin: 24px 0 14px;
+    color: #e2e8f0;
+    font-size: 0.92rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+}
+
+.source-card {
+    padding: 16px;
+    height: 100%;
+    display: grid;
+    gap: 8px;
+}
+
+.source-card.tone-success {
+    border-color: rgba(34, 197, 94, 0.28);
+}
+
+.source-card.tone-warning {
+    border-color: rgba(245, 158, 11, 0.28);
+}
+
+.source-card.tone-danger {
+    border-color: rgba(248, 113, 113, 0.28);
+}
+
+.source-head {
     display: flex;
-    flex-direction: column;
-    gap: 0.2rem;
-    font-size: 0.8rem;
-    color: #8b949e;
+    justify-content: space-between;
+    gap: 10px;
+    align-items: center;
 }
 
-.source-data strong {
-    color: #e6edf3;
+.source-head span:first-child {
+    color: #f8fafc;
+    font-weight: 600;
 }
 
-.link-gold {
-    color: #c9a84c;
-    text-decoration: none;
+.source-card p {
+    margin: 0;
+    color: #d6dde7;
+    line-height: 1.6;
+    font-size: 0.9rem;
 }
 
-.link-gold:hover {
-    text-decoration: underline;
+.mini-badge {
+    background: rgba(71, 85, 105, 0.35);
+    border: 1px solid #334155;
+    border-radius: 999px;
+    color: #cbd5e1;
+    font-size: 0.72rem;
+    padding: 4px 10px;
+    white-space: nowrap;
 }
 
-/* Breach tags */
-.breach-tag {
-    background: #1c2333;
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 5px;
-    padding: 0.4rem 0.7rem;
-    font-size: 0.76rem;
-    color: #8b949e;
+.verdict-card {
+    display: flex;
+    gap: 14px;
+    border-radius: 10px;
+    padding: 16px 18px;
+    border: 1px solid rgba(148, 163, 184, 0.22);
+    margin-bottom: 18px;
+}
+
+.verdict-card.compact {
+    margin-bottom: 0;
+}
+
+.verdict-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 999px;
     display: flex;
     align-items: center;
-    gap: 0.3rem;
-    flex-wrap: wrap;
+    justify-content: center;
+    background: rgba(15, 23, 42, 0.8);
+    color: #e2e8f0;
+    flex-shrink: 0;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
 }
 
-.breach-tag-recent {
-    border-color: rgba(210, 153, 34, 0.4);
-    color: #d29922;
+.verdict-body strong {
+    display: block;
+    color: #f8fafc;
+    margin-bottom: 4px;
 }
 
-.breach-tag-recent-label {
-    font-size: 0.62rem;
-    background: rgba(210, 153, 34, 0.15);
-    border-radius: 3px;
-    padding: 1px 5px;
-    margin-left: auto;
-}
-
-/* Password verdict */
-.password-verdict {
-    display: flex;
-    align-items: flex-start;
-    gap: 1rem;
-    padding: 1.25rem;
-    border-radius: 8px;
-    border: 1px solid;
+.verdict-body p {
+    margin: 0;
+    color: #c9d4df;
+    line-height: 1.6;
 }
 
 .verdict-success {
-    background: rgba(63, 185, 80, 0.07);
-    border-color: rgba(63, 185, 80, 0.3);
+    background: rgba(22, 101, 52, 0.14);
+    border-color: rgba(34, 197, 94, 0.3);
 }
 
 .verdict-warning {
-    background: rgba(210, 153, 34, 0.07);
-    border-color: rgba(210, 153, 34, 0.3);
+    background: rgba(146, 64, 14, 0.14);
+    border-color: rgba(245, 158, 11, 0.3);
 }
 
 .verdict-danger {
-    background: rgba(248, 81, 73, 0.07);
-    border-color: rgba(248, 81, 73, 0.3);
+    background: rgba(127, 29, 29, 0.14);
+    border-color: rgba(248, 113, 113, 0.3);
 }
 
-.password-verdict-icon {
-    font-size: 1.5rem;
-    line-height: 1;
-    flex-shrink: 0;
-    padding-top: 2px;
+.tool-card {
+    padding: 16px;
+    display: grid;
+    gap: 12px;
+    height: 100%;
 }
 
-.verdict-success .password-verdict-icon {
-    color: #3fb950;
+.stack-panels {
+    display: grid;
+    gap: 16px;
 }
 
-.verdict-warning .password-verdict-icon {
-    color: #d29922;
-}
-
-.verdict-danger .password-verdict-icon {
-    color: #f85149;
-}
-
-.password-verdict-body {
-    font-size: 0.9rem;
-    line-height: 1.6;
-    color: #e6edf3;
-}
-
-.password-verdict-body p {
-    color: #8b949e;
-    font-size: 0.85rem;
-}
-
-/* Gauge */
-.global-score-layout {
+.card-head {
     display: flex;
+    justify-content: space-between;
+    gap: 12px;
     align-items: center;
-    gap: 3rem;
+}
+
+.card-head h5 {
+    margin: 0;
+    color: #f8fafc;
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.output-box {
+    background: #020617;
+    border: 1px solid #1e293b;
+    border-radius: 8px;
+    padding: 14px;
+    max-height: 420px;
+    overflow: auto;
+}
+
+.result-pre {
+    margin: 0;
+    color: #cbd5e1;
+    white-space: pre-wrap;
+    word-break: break-word;
+    font-size: 0.84rem;
+    line-height: 1.6;
+    font-family: 'Courier New', monospace;
+}
+
+.pattern-cloud {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin: 6px 0 2px;
+}
+
+.pattern-chip {
+    background: rgba(51, 65, 85, 0.45);
+    border: 1px solid #334155;
+    border-radius: 999px;
+    color: #dbe7f3;
+    font-size: 0.8rem;
+    padding: 6px 10px;
+}
+
+.global-layout {
+    display: flex;
+    gap: 26px;
+    align-items: center;
     flex-wrap: wrap;
 }
 
-.global-score-gauge {
+.gauge-shell {
     position: relative;
-    width: 140px;
-    height: 140px;
+    width: 150px;
+    height: 150px;
     flex-shrink: 0;
 }
 
@@ -1318,7 +2114,7 @@ function isRecentBreach(breach) {
 
 .gauge-track {
     fill: none;
-    stroke: #1c2333;
+    stroke: #1f2937;
     stroke-width: 8;
 }
 
@@ -1327,189 +2123,127 @@ function isRecentBreach(breach) {
     stroke-width: 8;
     stroke-linecap: round;
     stroke-dasharray: 314;
-    transition: stroke-dashoffset 1s ease;
-}
-
-.gauge-fill.score-good {
-    stroke: #3fb950;
-}
-
-.gauge-fill.score-medium {
-    stroke: #d29922;
-}
-
-.gauge-fill.score-bad {
-    stroke: #f85149;
+    transition: stroke-dashoffset 0.4s ease;
 }
 
 .gauge-label {
     position: absolute;
     inset: 0;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
+    display: grid;
+    place-content: center;
+    text-align: center;
 }
 
 .gauge-number {
+    color: #f8fafc;
     font-size: 2.2rem;
     font-weight: 700;
     line-height: 1;
-    color: #e6edf3;
 }
 
 .gauge-sub {
-    font-size: 0.75rem;
-    color: #8b949e;
+    color: #94a3b8;
+    font-size: 0.78rem;
 }
 
-.global-score-details {
+.global-side {
     flex: 1;
-    min-width: 200px;
+    min-width: 260px;
+    display: grid;
+    gap: 16px;
 }
 
-.global-verdict-badge {
-    display: inline-block;
-    font-size: 0.88rem;
-    font-weight: 600;
-    padding: 0.4rem 1rem;
-    border-radius: 20px;
+.recommendation-box {
+    background: #020617;
+    border: 1px solid #1e293b;
+    border-radius: 8px;
+    padding: 16px;
 }
 
-.recommendations-list {
+.recommendation-box h5 {
+    margin: 0 0 12px;
+    color: #f8fafc;
+    font-size: 0.95rem;
+    font-weight: 700;
+}
+
+.recommendation-list {
     list-style: none;
-    padding: 0;
     margin: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
+    padding: 0;
+    display: grid;
+    gap: 10px;
 }
 
-.recommendations-list li {
+.recommendation-list li {
     display: flex;
-    align-items: baseline;
-    gap: 0.5rem;
-    font-size: 0.875rem;
-    color: #8b949e;
-    line-height: 1.5;
+    gap: 8px;
+    align-items: flex-start;
+    color: #dbe4ee;
+    line-height: 1.6;
 }
 
-.recommendations-list .bi-chevron-right {
-    color: #c9a84c;
-    font-size: 0.7rem;
+.recommendation-list i {
+    color: #94a3b8;
+    margin-top: 3px;
     flex-shrink: 0;
 }
 
+.tone-success {
+    color: #86efac !important;
+    stroke: #22c55e;
+}
+
+.tone-warning {
+    color: #fcd34d !important;
+    stroke: #f59e0b;
+}
+
+.tone-danger {
+    color: #fca5a5 !important;
+    stroke: #ef4444;
+}
+
+.tone-neutral {
+    color: #cbd5e1 !important;
+    stroke: #94a3b8;
+}
+
+@media (max-width: 1199px) {
+    .guide-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
 @media (max-width: 767px) {
-    .hero-banner {
-        margin-top: 52px;
+    .section-box {
+        padding: 18px;
     }
 
-    .hero-overlay {
-        padding: 1.5rem;
+    .guide-grid {
+        grid-template-columns: 1fr;
     }
 
-    .analysis-card {
-        padding: 1.25rem;
+    .control-row {
+        grid-template-columns: 1fr;
     }
 
-    .api-notice {
+    .action-button {
+        width: 100%;
+    }
+
+    .card-head {
         flex-direction: column;
+        align-items: flex-start;
     }
 
-    .global-score-layout {
-        gap: 1.5rem;
+    .global-layout {
+        gap: 18px;
     }
 
-    .global-score-gauge {
-        width: 110px;
-        height: 110px;
+    .gauge-shell {
+        width: 128px;
+        height: 128px;
     }
-}
-
-.info-card p,
-.api-notice-body p,
-.field-label,
-.loading-step-status,
-.source-desc,
-.source-data,
-.breach-tag,
-.password-verdict-body p,
-.recommendations-list li {
-    color: #c9d1d9 !important;
-}
-
-.analysis-input::placeholder {
-    color: rgba(180, 190, 200, 0.55) !important;
-}
-
-.field-label,
-.metric-label,
-.results-section-title {
-    color: #c9d1d9 !important;
-}
-
-/* ───── FIX VISIBILIDAD TEXTO (EMAIL ANALYSIS) ───── */
-
-.loading-step-status,
-.source-desc,
-.source-data,
-.metric-label,
-.field-label,
-.info-card p,
-.api-notice-body p,
-.breach-tag,
-.password-verdict-body p,
-.recommendations-list li {
-    color: #c9d1d9 !important;
-}
-
-/* Mejor contraste para resultados */
-.metric-value {
-    color: #ffffff;
-}
-
-/* Placeholder más visible */
-.analysis-input::placeholder {
-    color: rgba(200, 210, 220, 0.6) !important;
-}
-
-/* ───── FIX DEFINITIVO TEXTOS ILEGIBLES ───── */
-
-/* Sustituye el gris apagado de Bootstrap */
-.text-muted {
-    color: #c9d1d9 !important;
-}
-
-/* Textos pequeños (errores / fallback APIs) */
-.small {
-    color: #c9d1d9 !important;
-    opacity: 0.9;
-}
-
-/* Mensajes de warning tipo "Requiere API key" */
-.text-warning {
-    color: #ffd166 !important;
-}
-
-/* Mensajes de error */
-.text-danger {
-    color: #ff6b6b !important;
-}
-
-/* Refuerzo específico para bloques de resultados */
-.source-data span {
-    color: #e6edf3 !important;
-}
-
-/* Links dentro de mensajes */
-.source-data a,
-.text-muted a {
-    color: #c9a84c !important;
-}
-
-/* Hover links */
-.source-data a:hover {
-    text-decoration: underline;
 }
 </style>

@@ -30,6 +30,19 @@
                         <p class="info-quote">"Conocimiento, gobierno, orden."</p>
                     </div>
                 </router-link>
+                <router-link :to="{ name: 'el-codice-de-feanor' }" class="option-card card-large">
+                    <div class="corner-tl"></div>
+                    <div class="corner-br"></div>
+                    <div class="option-img-wrap">
+                        <img src="@/assets/logos/feanor.png" class="option-img" />
+                    </div>
+                    <h3>El códice de Fëanor</h3>
+                    <span class="option-tag">Herramientas criptográficas</span>
+                    <div class="option-info">
+                        <p class="info-desc">Herramientas criptográficas y técnicas de codificación y cifrado.</p>
+                        <p class="info-quote">"Fëanor era el más grande de los Noldor en habilidad y saber."</p>
+                    </div>
+                </router-link>
                 <router-link :to="{ name: 'el-hacha-de-gimli' }" class="option-card card-large">
                     <div class="corner-tl"></div>
                     <div class="corner-br"></div>
@@ -56,7 +69,7 @@
                         <p class="info-quote">"Esta ciudad ha resistido durante eras."</p>
                     </div>
                 </router-link>
-                <a href="http://lapipadegandalf.ddns.net:8080" class="option-card card-large" target="_blank">
+                <a href="http://192.168.0.254/#/" class="option-card card-large" target="_blank">
                     <div class="corner-tl"></div>
                     <div class="corner-br"></div>
                     <div class="option-img-wrap">
@@ -84,19 +97,6 @@
                         <p class="info-quote">"El ojo siempre vigila."</p>
                     </div>
                 </router-link>
-                <router-link :to="{ name: 'la-jarra-de-pippin' }" class="option-card card-large">
-                    <div class="corner-tl"></div>
-                    <div class="corner-br"></div>
-                    <div class="option-img-wrap">
-                        <img src="@/assets/logos/pippin.png" class="option-img" />
-                    </div>
-                    <h3>La jarra de Pippin</h3>
-                    <span class="option-tag">Memes</span>
-                    <div class="option-info">
-                        <p class="info-desc">Humor, memes y contenido ligero.</p>
-                        <p class="info-quote">"¿Y el segundo desayuno?"</p>
-                    </div>
-                </router-link>
                 <router-link :to="{ name: 'la-guardia-de-faramir' }" class="option-card card-large">
                     <div class="corner-tl"></div>
                     <div class="corner-br"></div>
@@ -106,7 +106,7 @@
                     <h3>La guardia de Faramir</h3>
                     <span class="option-tag">URLs seguras y malignas</span>
                     <div class="option-info">
-                        <p class="info-desc">Comprobación de la hostilidad y seguridad de URLs</p>
+                        <p class="info-desc">Herramienta de comprobación de la hostilidad y seguridad de URLs.</p>
                         <p class="info-quote">"Mucho daño puede venir de manos bien intencionadas."</p>
                     </div>
                 </router-link>
@@ -134,19 +134,6 @@
                     <div class="option-info">
                         <p class="info-desc">Un lugar protegido para debatir, compartir ideas y tomar decisiones.</p>
                         <p class="info-quote">"Extraños de tierras lejanas, amigos de antaño…"</p>
-                    </div>
-                </router-link>
-                <router-link :to="{ name: 'el-codice-de-feanor' }" class="option-card card-large">
-                    <div class="corner-tl"></div>
-                    <div class="corner-br"></div>
-                    <div class="option-img-wrap">
-                        <img src="@/assets/logos/feanor.png" class="option-img" />
-                    </div>
-                    <h3>El códice de Fëanor</h3>
-                    <span class="option-tag">Herramientas criptográficas</span>
-                    <div class="option-info">
-                        <p class="info-desc">Herramientas criptográficas y técnicas de codificación y cifrado.</p>
-                        <p class="info-quote">"Fëanor era el más grande de los Noldor en habilidad y saber."</p>
                     </div>
                 </router-link>
                 <router-link :to="{ name: 'los-champiñones-de-radagast' }" class="option-card card-large">
@@ -202,6 +189,19 @@
                         <p class="info-quote">"Cosas que fueron… cosas que son… Y algunas que aún no han sucedido."</p>
                     </div>
                 </router-link>
+                <router-link :to="{ name: 'la-jarra-de-pippin' }" class="option-card card-large">
+                    <div class="corner-tl"></div>
+                    <div class="corner-br"></div>
+                    <div class="option-img-wrap">
+                        <img src="@/assets/logos/pippin.png" class="option-img" />
+                    </div>
+                    <h3>La jarra de Pippin</h3>
+                    <span class="option-tag">Humor</span>
+                    <div class="option-info">
+                        <p class="info-desc">Memes, chistes y tonterías.</p>
+                        <p class="info-quote">"¿Y el segundo desayuno?"</p>
+                    </div>
+                </router-link>
                 <router-link :to="{ name: 'la-forja-de-celebrimbor' }" class="option-card card-large">
                     <div class="corner-tl"></div>
                     <div class="corner-br"></div>
@@ -211,7 +211,7 @@
                     <h3>La forja de Celebrimbor</h3>
                     <span class="option-tag">Herramientas</span>
                     <div class="option-info">
-                        <p class="info-desc">Herramientas y recursos.</p>
+                        <p class="info-desc">Herramientas y recursos externos.</p>
                         <p class="info-quote">"La habilidad de los Elfos está más allá de tu imaginación."</p>
                     </div>
                 </router-link>

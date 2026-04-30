@@ -1,5 +1,7 @@
 <template>
     <ThorondorPageShell>
+
+        <!-- ═══ INTRO ═══════════════════════════════════════════════════════ -->
         <section class="section-box intro-box">
             <div class="section-topline">
                 <div class="module-header">
@@ -55,6 +57,20 @@
             </div>
         </section>
 
+        <!-- ═══ DIVISOR FASE A ═══════════════════════════════════════════════ -->
+        <div class="phase-divider">
+            <div class="phase-divider-line"></div>
+            <div class="phase-divider-label">
+                <span class="phase-divider-letter">A</span>
+                <div class="phase-divider-text">
+                    <strong>Fase A</strong>
+                    <span>Instalacion del agente Thorondor</span>
+                </div>
+            </div>
+            <div class="phase-divider-line"></div>
+        </div>
+
+        <!-- ═══ FASE A — INSTALACION DEL AGENTE ═════════════════════════════ -->
         <section class="section-box guide-phase-header">
             <div class="section-topline">
                 <div class="module-header">
@@ -131,10 +147,65 @@
             </div>
         </section>
 
+        <section class="section-box">
+            <div class="section-topline">
+                <div class="module-header">
+                    <span class="section-kicker">Verificacion final — Fase A</span>
+                    <h2 class="module-title">Comprobaciones antes de registrar el agente en el dashboard</h2>
+                    <p class="module-copy">
+                        Valida salud del proceso, estructura del payload de telemetria, estabilidad del servicio
+                        y conectividad de red. Cualquier fallo aqui tiene diagnostico especifico antes de abrir Thorondor.
+                    </p>
+                </div>
+                <div class="phase-badge-block">
+                    <span class="phase-badge">Validate</span>
+                    <small>Proceso, payload, servicio y red.</small>
+                </div>
+            </div>
+
+            <div class="card-grid validation-grid">
+                <article class="tool-card command-card validation-card" v-for="check in validationChecks" :key="check.title">
+                    <div class="card-head">
+                        <h5>{{ check.title }}</h5>
+                        <span class="mini-badge">{{ check.badge }}</span>
+                    </div>
+                    <p class="section-copy mb-0">{{ check.copy }}</p>
+                    <div class="output-box copy-box">
+                        <button class="copy-btn" :class="{ copied: copiedKey === check.title }" @click="copyCmd(check.command, check.title)">{{ copiedKey === check.title ? '✓ Copiado' : 'Copiar' }}</button>
+                        <pre class="result-pre">{{ check.command }}</pre>
+                    </div>
+                    <div class="command-meta">
+                        <div class="meta-line">
+                            <label>Que confirma</label>
+                            <p>{{ check.confirms }}</p>
+                        </div>
+                        <div class="meta-line">
+                            <label>Salida esperada</label>
+                            <p>{{ check.expected }}</p>
+                        </div>
+                    </div>
+                </article>
+            </div>
+        </section>
+
+        <!-- ═══ DIVISOR FASE B ═══════════════════════════════════════════════ -->
+        <div class="phase-divider">
+            <div class="phase-divider-line"></div>
+            <div class="phase-divider-label">
+                <span class="phase-divider-letter">B</span>
+                <div class="phase-divider-text">
+                    <strong>Fase B</strong>
+                    <span>Splunk — instalacion y configuracion para uso desde el navegador</span>
+                </div>
+            </div>
+            <div class="phase-divider-line"></div>
+        </div>
+
+        <!-- ═══ FASE B — SPLUNK ══════════════════════════════════════════════ -->
         <section class="section-box guide-phase-header">
             <div class="section-topline">
                 <div class="module-header">
-                    <span class="section-kicker">Integracion SIEM avanzado</span>
+                    <span class="section-kicker">Fase B — Integracion SIEM</span>
                     <h2 class="module-title">Splunk — Instalacion y configuracion en el servidor</h2>
                     <p class="module-copy">
                         Splunk con licencia Developer (gratuita, 500 MB/dia) expone una REST API completa en el puerto 8089
@@ -142,6 +213,7 @@
                         de telemetria completos, eventos de seguridad individuales y entradas de log del sistema.
                         La licencia Developer se solicita en <a href="https://dev.splunk.com/enterprise/dev_license" target="_blank" rel="noopener noreferrer" class="guide-link">dev.splunk.com</a>
                         y la descarga en <a href="https://www.splunk.com/en_us/download/splunk-enterprise.html" target="_blank" rel="noopener noreferrer" class="guide-link">splunk.com/download</a>.
+                        Los comandos de instalacion se adaptan automaticamente a la distribucion seleccionada en la Fase A.
                     </p>
                 </div>
                 <div class="phase-badge-block">
@@ -164,7 +236,7 @@
         <section class="section-box">
             <div class="section-topline">
                 <div class="module-header">
-                    <span class="section-kicker">Splunk — Fase 1</span>
+                    <span class="section-kicker">Splunk — Paso 1</span>
                     <h2 class="module-title">Instalacion de Splunk Enterprise</h2>
                     <p class="module-copy">
                         Descarga e instalacion de Splunk Enterprise en el servidor. El modo standalone es suficiente
@@ -209,7 +281,7 @@
         <section class="section-box">
             <div class="section-topline">
                 <div class="module-header">
-                    <span class="section-kicker">Splunk — Fase 2</span>
+                    <span class="section-kicker">Splunk — Paso 2</span>
                     <h2 class="module-title">Configuracion del HTTP Event Collector y CORS</h2>
                     <p class="module-copy">
                         El HEC es el canal de ingesta de alta eficiencia de Splunk: acepta eventos JSON via HTTP/S sin
@@ -254,7 +326,7 @@
         <section class="section-box">
             <div class="section-topline">
                 <div class="module-header">
-                    <span class="section-kicker">Splunk — Fase 3</span>
+                    <span class="section-kicker">Splunk — Paso 3</span>
                     <h2 class="module-title">Busquedas SPL de referencia</h2>
                     <p class="module-copy">
                         Estas queries SPL cubren los casos de uso mas criticos para el analisis de los datos que envia Thorondor.
@@ -278,47 +350,6 @@
                     <div class="output-box mt-3 copy-box">
                         <button class="copy-btn" :class="{ copied: copiedKey === q.title }" @click="copyCmd(q.spl, q.title)">{{ copiedKey === q.title ? '✓ Copiado' : 'Copiar' }}</button>
                         <pre class="result-pre">{{ q.spl }}</pre>
-                    </div>
-                </article>
-            </div>
-        </section>
-
-        <section class="section-box">
-            <div class="section-topline">
-                <div class="module-header">
-                    <span class="section-kicker">Verificacion final</span>
-                    <h2 class="module-title">Comprobaciones antes de registrar el agente en el dashboard</h2>
-                    <p class="module-copy">
-                        Valida salud del proceso, estructura del payload de telemetria, estabilidad del servicio
-                        y conectividad de red. Cualquier fallo aqui tiene diagnostico especifico antes de abrir Thorondor.
-                    </p>
-                </div>
-                <div class="phase-badge-block">
-                    <span class="phase-badge">Validate</span>
-                    <small>Proceso, payload, servicio y red.</small>
-                </div>
-            </div>
-
-            <div class="card-grid validation-grid">
-                <article class="tool-card command-card validation-card" v-for="check in validationChecks" :key="check.title">
-                    <div class="card-head">
-                        <h5>{{ check.title }}</h5>
-                        <span class="mini-badge">{{ check.badge }}</span>
-                    </div>
-                    <p class="section-copy mb-0">{{ check.copy }}</p>
-                    <div class="output-box copy-box">
-                        <button class="copy-btn" :class="{ copied: copiedKey === check.title }" @click="copyCmd(check.command, check.title)">{{ copiedKey === check.title ? '✓ Copiado' : 'Copiar' }}</button>
-                        <pre class="result-pre">{{ check.command }}</pre>
-                    </div>
-                    <div class="command-meta">
-                        <div class="meta-line">
-                            <label>Que confirma</label>
-                            <p>{{ check.confirms }}</p>
-                        </div>
-                        <div class="meta-line">
-                            <label>Salida esperada</label>
-                            <p>{{ check.expected }}</p>
-                        </div>
                     </div>
                 </article>
             </div>
@@ -398,20 +429,68 @@
             </div>
         </section>
 
-        <section class="section-box">
+        <!-- ═══ DIVISOR FASE C ═══════════════════════════════════════════════ -->
+        <div class="phase-divider phase-divider--danger">
+            <div class="phase-divider-line"></div>
+            <div class="phase-divider-label">
+                <span class="phase-divider-letter">C</span>
+                <div class="phase-divider-text">
+                    <strong>Fase C</strong>
+                    <span>Desinstalacion del agente Thorondor</span>
+                </div>
+            </div>
+            <div class="phase-divider-line"></div>
+        </div>
+
+        <!-- ═══ FASE C — DESINSTALACION ══════════════════════════════════════ -->
+        <section class="section-box guide-phase-header">
             <div class="section-topline">
                 <div class="module-header">
-                    <span class="section-kicker">Limpieza</span>
+                    <span class="section-kicker">Fase C — Limpieza</span>
                     <h2 class="module-title">Desinstalacion y borrado del agente</h2>
                     <p class="module-copy">
                         Elimina el servicio, los ficheros del agente y la cuenta de sistema sin residuos en systemd ni en disco.
-                        Ninguno de estos pasos requiere reinicio del host. Si se reutilizo un usuario existente en lugar de crear
-                        una cuenta dedicada, omitir el paso de userdel.
+                        Ninguno de estos pasos requiere reinicio del host. Selecciona la distribucion del host del que vas a
+                        desinstalar el agente para ver los comandos exactos.
                     </p>
                 </div>
                 <div class="phase-badge-block">
                     <span class="phase-badge">Cleanup</span>
                     <small>systemd, filesystem, cuenta y datos del navegador.</small>
+                </div>
+            </div>
+            <div class="os-selector-row">
+                <p class="selector-label">Distribucion del host a desinstalar:</p>
+                <div class="os-toggle-group">
+                    <button type="button" class="os-toggle-btn" :class="{ active: uninstallOs === 'ubuntu' }" @click="uninstallOs = 'ubuntu'">
+                        <span class="os-icon">🐧</span> Ubuntu / Debian / Kali
+                    </button>
+                    <button type="button" class="os-toggle-btn" :class="{ active: uninstallOs === 'rhel' }" @click="uninstallOs = 'rhel'">
+                        <span class="os-icon">🎩</span> RHEL / CentOS / Rocky
+                    </button>
+                    <button type="button" class="os-toggle-btn" :class="{ active: uninstallOs === 'arch' }" @click="uninstallOs = 'arch'">
+                        <span class="os-icon">🏹</span> Arch / Manjaro
+                    </button>
+                    <button type="button" class="os-toggle-btn" :class="{ active: uninstallOs === 'windows' }" @click="uninstallOs = 'windows'">
+                        <span class="os-icon">🪟</span> Windows
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <section class="section-box">
+            <div class="section-topline">
+                <div class="module-header">
+                    <span class="section-kicker">Desinstalacion — {{ uninstallOsLabel }}</span>
+                    <h2 class="module-title">Secuencia de desinstalacion</h2>
+                    <p class="module-copy">
+                        Ejecutar los pasos en orden. Detener el servicio antes de eliminar los ficheros.
+                        Si se reutilizo un usuario existente en lugar de crear una cuenta dedicada, omitir el paso de eliminacion de cuenta.
+                    </p>
+                </div>
+                <div class="phase-badge-block">
+                    <span class="phase-badge">{{ uninstallOsLabel }}</span>
+                    <small>Sin reinicio requerido.</small>
                 </div>
             </div>
 
@@ -442,6 +521,7 @@
                 </article>
             </div>
         </section>
+
     </ThorondorPageShell>
 </template>
 
@@ -459,7 +539,8 @@ export default {
         return {
             copiedKey: null,
             hostOs: "ubuntu",
-            clientOs: "ubuntu"
+            clientOs: "ubuntu",
+            uninstallOs: "ubuntu"
         };
     },
 
@@ -1215,8 +1296,13 @@ export default {
             ];
         },
 
+        uninstallOsLabel() {
+            const map = { ubuntu: "Ubuntu / Debian / Kali", rhel: "RHEL / CentOS / Rocky", arch: "Arch / Manjaro", windows: "Windows" };
+            return map[this.uninstallOs] || "Ubuntu / Debian / Kali";
+        },
+
         uninstallCommands() {
-            if (this.hostOs === "windows") {
+            if (this.uninstallOs === "windows") {
                 return [
                     {
                         title: "Detener y eliminar la tarea programada",
@@ -1436,5 +1522,74 @@ export default {
 
 .os-icon {
     font-size: 1rem;
+}
+
+.phase-divider {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    padding: 2.5rem 0 1.5rem;
+}
+
+.phase-divider-line {
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(94, 156, 255, 0.35), transparent);
+}
+
+.phase-divider--danger .phase-divider-line {
+    background: linear-gradient(90deg, transparent, rgba(239, 100, 80, 0.3), transparent);
+}
+
+.phase-divider-label {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-shrink: 0;
+}
+
+.phase-divider-letter {
+    width: 2.8rem;
+    height: 2.8rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    border: 2px solid rgba(94, 156, 255, 0.45);
+    background: linear-gradient(135deg, rgba(22, 42, 76, 0.95), rgba(10, 20, 40, 0.98));
+    color: #8db8ff;
+    font-size: 1.15rem;
+    font-weight: 700;
+    letter-spacing: 0;
+    box-shadow: 0 0 18px rgba(80, 140, 255, 0.12);
+}
+
+.phase-divider--danger .phase-divider-letter {
+    border-color: rgba(239, 100, 80, 0.4);
+    color: rgba(239, 150, 130, 0.9);
+    box-shadow: 0 0 18px rgba(239, 80, 60, 0.1);
+}
+
+.phase-divider-text {
+    display: flex;
+    flex-direction: column;
+    gap: 0.18rem;
+}
+
+.phase-divider-text strong {
+    color: #c9e3ff;
+    font-size: 0.9rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.phase-divider--danger .phase-divider-text strong {
+    color: rgba(239, 160, 140, 0.9);
+}
+
+.phase-divider-text span {
+    color: rgba(180, 210, 250, 0.55);
+    font-size: 0.8rem;
 }
 </style>

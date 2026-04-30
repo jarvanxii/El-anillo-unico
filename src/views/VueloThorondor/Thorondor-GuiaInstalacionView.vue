@@ -74,7 +74,8 @@
                         <h5>{{ command.title }}</h5>
                         <span class="mini-badge">{{ command.badge }}</span>
                     </div>
-                    <div class="output-box mb-3">
+                    <div class="output-box mb-3 copy-box">
+                        <button class="copy-btn" :class="{ copied: copiedKey === command.command }" @click="copyCmd(command.command, command.command)">{{ copiedKey === command.command ? '✓ Copiado' : 'Copiar' }}</button>
                         <pre class="result-pre">{{ command.command }}</pre>
                     </div>
                     <div class="command-meta">
@@ -118,7 +119,8 @@
                         <span class="mini-badge">{{ check.badge }}</span>
                     </div>
                     <p class="section-copy mb-0">{{ check.copy }}</p>
-                    <div class="output-box">
+                    <div class="output-box copy-box">
+                        <button class="copy-btn" :class="{ copied: copiedKey === check.title }" @click="copyCmd(check.command, check.title)">{{ copiedKey === check.title ? '✓ Copiado' : 'Copiar' }}</button>
                         <pre class="result-pre">{{ check.command }}</pre>
                     </div>
                     <div class="command-meta">
@@ -137,6 +139,157 @@
         <section class="section-box">
             <div class="section-topline">
                 <div class="module-header">
+                    <span class="section-kicker">Integracion SIEM avanzado</span>
+                    <h2 class="module-title">Splunk — HTTP Event Collector e ingesta de telemetria</h2>
+                    <p class="module-copy">
+                        Splunk con licencia Developer (gratuita, 500 MB/dia) expone una REST API completa en el puerto 8089
+                        y un HTTP Event Collector (HEC) en el puerto 8088. Thorondor puede enviar tres flujos de datos: snapshots
+                        de telemetria completos, eventos de seguridad individuales y entradas de log del sistema. Una vez ingestados,
+                        las busquedas SPL permiten correlacion temporal, deteccion de anomalias y alertas cruzadas entre hosts.
+                    </p>
+                </div>
+                <div class="phase-badge-block">
+                    <span class="phase-badge">SIEM+</span>
+                    <small>HEC · REST API · SPL · 500 MB/dia</small>
+                </div>
+            </div>
+
+            <div class="card-grid">
+                <article class="tool-card" v-for="item in splunkHighlights" :key="item.label">
+                    <div class="card-head">
+                        <h5>{{ item.label }}</h5>
+                        <span class="mini-badge">{{ item.badge }}</span>
+                    </div>
+                    <p class="section-copy mb-0">{{ item.copy }}</p>
+                </article>
+            </div>
+        </section>
+
+        <section class="section-box">
+            <div class="section-topline">
+                <div class="module-header">
+                    <span class="section-kicker">Splunk — Fase 1</span>
+                    <h2 class="module-title">Instalacion y configuracion inicial</h2>
+                    <p class="module-copy">
+                        Descarga e instalacion de Splunk Enterprise en el host de analisis. El modo standalone es suficiente
+                        para correlacionar la telemetria de todos los hosts monitorizados. La licencia Developer no requiere
+                        registro de infraestructura ni conexion continua a Internet una vez activada.
+                    </p>
+                </div>
+                <div class="phase-badge-block">
+                    <span class="phase-badge">Install</span>
+                    <small>Linux x86_64 · splunk.com/download</small>
+                </div>
+            </div>
+
+            <div class="command-stack">
+                <article class="tool-card command-card" v-for="cmd in splunkInstallCommands" :key="cmd.title">
+                    <div class="card-head">
+                        <h5>{{ cmd.title }}</h5>
+                        <span class="mini-badge">{{ cmd.badge }}</span>
+                    </div>
+                    <div class="output-box mb-3 copy-box">
+                        <button class="copy-btn" :class="{ copied: copiedKey === cmd.title }" @click="copyCmd(cmd.command, cmd.title)">{{ copiedKey === cmd.title ? '✓ Copiado' : 'Copiar' }}</button>
+                        <pre class="result-pre">{{ cmd.command }}</pre>
+                    </div>
+                    <div class="command-meta">
+                        <div class="meta-line">
+                            <label>Que hace</label>
+                            <p>{{ cmd.purpose }}</p>
+                        </div>
+                        <div class="meta-line">
+                            <label>Notas</label>
+                            <p>{{ cmd.when }}</p>
+                        </div>
+                        <div class="meta-line">
+                            <label>Salida esperada</label>
+                            <p>{{ cmd.expected }}</p>
+                        </div>
+                    </div>
+                </article>
+            </div>
+        </section>
+
+        <section class="section-box">
+            <div class="section-topline">
+                <div class="module-header">
+                    <span class="section-kicker">Splunk — Fase 2</span>
+                    <h2 class="module-title">Configuracion del HTTP Event Collector y CORS</h2>
+                    <p class="module-copy">
+                        El HEC es el canal de ingesta de alta eficiencia de Splunk: acepta eventos JSON via HTTP/S sin
+                        autenticacion basica, usando un token unico por fuente. CORS debe habilitarse explicitamente en
+                        <code>web.conf</code> para que el navegador pueda enviar eventos directamente al HEC sin un relay intermedio.
+                    </p>
+                </div>
+                <div class="phase-badge-block">
+                    <span class="phase-badge">HEC</span>
+                    <small>Puerto 8088 · token auth</small>
+                </div>
+            </div>
+
+            <div class="command-stack">
+                <article class="tool-card command-card" v-for="cmd in splunkHecCommands" :key="cmd.title">
+                    <div class="card-head">
+                        <h5>{{ cmd.title }}</h5>
+                        <span class="mini-badge">{{ cmd.badge }}</span>
+                    </div>
+                    <div class="output-box mb-3 copy-box">
+                        <button class="copy-btn" :class="{ copied: copiedKey === cmd.title }" @click="copyCmd(cmd.command, cmd.title)">{{ copiedKey === cmd.title ? '✓ Copiado' : 'Copiar' }}</button>
+                        <pre class="result-pre">{{ cmd.command }}</pre>
+                    </div>
+                    <div class="command-meta">
+                        <div class="meta-line">
+                            <label>Que hace</label>
+                            <p>{{ cmd.purpose }}</p>
+                        </div>
+                        <div class="meta-line">
+                            <label>Notas</label>
+                            <p>{{ cmd.when }}</p>
+                        </div>
+                        <div class="meta-line">
+                            <label>Salida esperada</label>
+                            <p>{{ cmd.expected }}</p>
+                        </div>
+                    </div>
+                </article>
+            </div>
+        </section>
+
+        <section class="section-box">
+            <div class="section-topline">
+                <div class="module-header">
+                    <span class="section-kicker">Splunk — Fase 3</span>
+                    <h2 class="module-title">Busquedas SPL de referencia</h2>
+                    <p class="module-copy">
+                        Estas queries SPL cubren los casos de uso mas criticos para el analisis de los datos que envia Thorondor.
+                        Todas asumen el indice <code>thorondor</code> y los sourcetypes definidos en la fase de HEC.
+                        Adaptarlas al rango temporal con <code>earliest</code> y <code>latest</code> segun el contexto de la investigacion.
+                    </p>
+                </div>
+                <div class="phase-badge-block">
+                    <span class="phase-badge">SPL</span>
+                    <small>index=thorondor</small>
+                </div>
+            </div>
+
+            <div class="card-grid">
+                <article class="tool-card command-card" v-for="q in splunkSplQueries" :key="q.title">
+                    <div class="card-head">
+                        <h5>{{ q.title }}</h5>
+                        <span class="mini-badge">{{ q.badge }}</span>
+                    </div>
+                    <p class="section-copy mb-0">{{ q.description }}</p>
+                    <div class="output-box mt-3 copy-box">
+                        <button class="copy-btn" :class="{ copied: copiedKey === q.title }" @click="copyCmd(q.spl, q.title)">{{ copiedKey === q.title ? '✓ Copiado' : 'Copiar' }}</button>
+                        <pre class="result-pre">{{ q.spl }}</pre>
+                    </div>
+                </article>
+            </div>
+        </section>
+
+        <section class="section-box">
+            <div class="section-topline">
+                <div class="module-header">
                     <span class="section-kicker">Limpieza</span>
                     <h2 class="module-title">Desinstalacion y borrado del agente</h2>
                     <p class="module-copy">
@@ -152,104 +305,27 @@
             </div>
 
             <div class="command-stack">
-                <article class="tool-card command-card">
+                <article class="tool-card command-card" v-for="cmd in uninstallCommands" :key="cmd.title">
                     <div class="card-head">
-                        <h5>Detener, deshabilitar y eliminar la unidad systemd</h5>
-                        <span class="mini-badge">systemd</span>
+                        <h5>{{ cmd.title }}</h5>
+                        <span class="mini-badge">{{ cmd.badge }}</span>
                     </div>
-                    <div class="output-box mb-3">
-                        <pre class="result-pre">sudo systemctl stop &lt;AGENTE&gt;.service
-sudo systemctl disable &lt;AGENTE&gt;.service
-sudo rm /etc/systemd/system/&lt;AGENTE&gt;.service
-sudo systemctl daemon-reload
-sudo systemctl reset-failed</pre>
+                    <div class="output-box mb-3 copy-box">
+                        <button class="copy-btn" :class="{ copied: copiedKey === cmd.title }" @click="copyCmd(cmd.command, cmd.title)">{{ copiedKey === cmd.title ? '✓ Copiado' : 'Copiar' }}</button>
+                        <pre class="result-pre">{{ cmd.command }}</pre>
                     </div>
                     <div class="command-meta">
                         <div class="meta-line">
                             <label>Que hace</label>
-                            <p>Para el proceso, elimina la habilitacion de arranque, borra la unidad del sistema y limpia el estado del indice de systemd. Sin daemon-reload y reset-failed, la referencia al servicio eliminado puede persistir en el indice y aparecer como "not-found" en futuras consultas.</p>
+                            <p>{{ cmd.purpose }}</p>
                         </div>
                         <div class="meta-line">
                             <label>Notas</label>
-                            <p>Si hay varios agentes instalados con distintos nombres de servicio, ejecutar el bloque para cada uno. Verificar unidades residuales con: systemctl list-units --type=service | grep thorondor.</p>
+                            <p>{{ cmd.when }}</p>
                         </div>
                         <div class="meta-line">
                             <label>Salida esperada</label>
-                            <p>systemctl status &lt;AGENTE&gt;.service devuelve "Unit &lt;AGENTE&gt;.service could not be found".</p>
-                        </div>
-                    </div>
-                </article>
-
-                <article class="tool-card command-card">
-                    <div class="card-head">
-                        <h5>Eliminar ficheros del agente</h5>
-                        <span class="mini-badge">Filesystem</span>
-                    </div>
-                    <div class="output-box mb-3">
-                        <pre class="result-pre">sudo rm -rf /opt/thorondor-agent</pre>
-                    </div>
-                    <div class="command-meta">
-                        <div class="meta-line">
-                            <label>Que hace</label>
-                            <p>Elimina el directorio de trabajo completo: el agente .py, el fichero de baseline de integridad de archivos y cualquier artefacto persistido por el servicio en disco.</p>
-                        </div>
-                        <div class="meta-line">
-                            <label>Notas</label>
-                            <p>El fichero de baseline (integrity_baseline.json) es el unico dato persistente que escribe el agente en disco. Si contiene informacion que quieras conservar como evidencia forense, exportarlo antes de ejecutar este comando.</p>
-                        </div>
-                        <div class="meta-line">
-                            <label>Salida esperada</label>
-                            <p>ls /opt/thorondor-agent devuelve "No such file or directory".</p>
-                        </div>
-                    </div>
-                </article>
-
-                <article class="tool-card command-card">
-                    <div class="card-head">
-                        <h5>Eliminar la cuenta de servicio</h5>
-                        <span class="mini-badge">useradd</span>
-                    </div>
-                    <div class="output-box mb-3">
-                        <pre class="result-pre">sudo userdel --remove &lt;USUARIO&gt;</pre>
-                    </div>
-                    <div class="command-meta">
-                        <div class="meta-line">
-                            <label>Que hace</label>
-                            <p>Elimina la cuenta de servicio y su directorio HOME. --remove borra el HOME; ficheros del usuario en otras rutas del sistema permanecen intactos. El UID queda liberado y puede ser reasignado por el sistema.</p>
-                        </div>
-                        <div class="meta-line">
-                            <label>Notas</label>
-                            <p>Verificar con "getent passwd &lt;USUARIO&gt;" antes de ejecutar para confirmar que la cuenta es exclusiva del agente. Omitir este paso si se reutilizo un usuario existente. Ficheros huerfanos (propiedad del UID eliminado) pueden quedar en el sistema: localizarlos con: find / -user &lt;UID&gt; 2>/dev/null.</p>
-                        </div>
-                        <div class="meta-line">
-                            <label>Salida esperada</label>
-                            <p>id &lt;USUARIO&gt; devuelve "no such user". El directorio home del usuario ya no existe en /home/ o en la ruta configurada.</p>
-                        </div>
-                    </div>
-                </article>
-
-                <article class="tool-card command-card">
-                    <div class="card-head">
-                        <h5>Eliminar datos del navegador (IndexedDB)</h5>
-                        <span class="mini-badge">IndexedDB</span>
-                    </div>
-                    <div class="output-box mb-3">
-                        <pre class="result-pre"># Desde el panel de Thorondor: Agentes → Eliminar agente
-# O desde DevTools del navegador:
-# Application → Storage → IndexedDB → thorondor-siem-db → [clic derecho] Delete database</pre>
-                    </div>
-                    <div class="command-meta">
-                        <div class="meta-line">
-                            <label>Que hace</label>
-                            <p>Elimina snapshots, logs, eventos de seguridad, alertas, historial de conexiones y metadata de retension del agente que persisten en IndexedDB del navegador. La base de datos es local al perfil del navegador y no se elimina al desinstalar el agente del host.</p>
-                        </div>
-                        <div class="meta-line">
-                            <label>Notas</label>
-                            <p>Cada perfil de navegador tiene su propia IndexedDB. Si Thorondor se ha abierto desde varios perfiles o maquinas, los datos persisten de forma independiente en cada uno. Eliminar el agente desde el panel de Thorondor limpia los datos en la sesion activa. La base de datos completa se llama "thorondor-siem-db".</p>
-                        </div>
-                        <div class="meta-line">
-                            <label>Salida esperada</label>
-                            <p>El agente desaparece del dashboard. En Application → IndexedDB del navegador, thorondor-siem-db no contiene registros del agente eliminado o la base de datos completa ha sido borrada.</p>
+                            <p>{{ cmd.expected }}</p>
                         </div>
                     </div>
                 </article>
@@ -402,7 +478,7 @@ export default {
                         {
                             title: "Desplegar los artefactos generados",
                             badge: "Deploy",
-                            command: "sudo cp <AGENTE>.py <AGENTE>.service /opt/thorondor-agent/\nsudo chmod 750 /opt/thorondor-agent/<AGENTE>.py",
+                            command: "sudo cp thorondor-agent.py thorondor-agent.service /opt/thorondor-agent/\nsudo chmod 750 /opt/thorondor-agent/thorondor-agent.py",
                             purpose: "Copia el agente Python y la unidad systemd al directorio de trabajo. chmod 750 limita la ejecucion al propietario y al grupo, evitando que otros usuarios del sistema lean el codigo del agente.",
                             when: "Verificar que los ficheros son los generados para este host especifico: revisar SYSTEM_NAME, LISTEN_PORT y LISTEN_HOST en las primeras lineas del .py antes de copiar.",
                             expected: "Los ficheros quedan en /opt/thorondor-agent/ con el usuario de servicio como propietario. Confirmar con: ls -la /opt/thorondor-agent/."
@@ -452,7 +528,7 @@ export default {
                         {
                             title: "Arranque en foreground como usuario de servicio",
                             badge: "Foreground",
-                            command: "sudo -u <USUARIO> python3 /opt/thorondor-agent/<AGENTE>.py",
+                            command: "sudo -u <USUARIO> python3 /opt/thorondor-agent/thorondor-agent.py",
                             purpose: "Ejecuta el agente con la identidad exacta con la que lo hara systemd. El stderr queda visible en el terminal. Permite detectar ImportError, PermissionError en lectura de logs o conflictos de puerto antes de obscurecer el output en el journal.",
                             when: "Ejecutar en un terminal separado mientras se hacen los curl de validacion desde otro. Interrumpir con Ctrl+C una vez validado.",
                             expected: "Linea de arranque indicando host, puerto y nombre del sistema. Sin tracebacks. El proceso debe permanecer en foreground sin reiniciarse."
@@ -468,7 +544,7 @@ export default {
                         {
                             title: "Instalar unidad systemd y verificar estabilidad",
                             badge: "systemd",
-                            command: "sudo cp /opt/thorondor-agent/<AGENTE>.service /etc/systemd/system/\nsudo systemctl daemon-reload\nsudo systemctl enable --now <AGENTE>.service\nsudo systemctl show <AGENTE>.service -p ActiveState,NRestarts,ExecMainStatus --value",
+                            command: "sudo cp /opt/thorondor-agent/thorondor-agent.service /etc/systemd/system/\nsudo systemctl daemon-reload\nsudo systemctl enable --now thorondor-agent.service\nsudo systemctl show thorondor-agent.service -p ActiveState,NRestarts,ExecMainStatus --value",
                             purpose: "Instala la unidad, recarga el daemon, habilita el servicio en arranque y lo inicia inmediatamente. El ultimo comando verifica estado activo, contador de reinicios y codigo de salida del proceso principal sin parsear la salida verbosa de systemctl status.",
                             when: "NRestarts > 0 inmediatamente despues de enable --now indica que el proceso esta fallando y entrando en el loop de restart. Diagnosticar con: journalctl -u <AGENTE>.service -n 30 --no-pager.",
                             expected: "ActiveState=active, NRestarts=0, ExecMainStatus=0. Si NRestarts sube, el proceso esta crasheando: ver el journal para el traceback."

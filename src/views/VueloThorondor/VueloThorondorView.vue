@@ -3,12 +3,13 @@
         <section class="section-box intro-box">
             <div class="intro-layout">
                 <div class="section-heading">
-                    <span class="section-kicker">SIEM personal Linux sin backend</span>
-                    <h1 class="section-name">Vuelo de Thorondor</h1>
+                    <span class="section-kicker">SIEM personal para sistemas Linux</span>
+                    <h1 class="section-name">El vuelo de Thorondor</h1>
                     <p class="section-copy">
-                        Este apartado principal es la puerta de entrada para cualquier usuario inexperto. Explica como
-                        funciona la monitorizacion, que papel juega el agente Python, que guarda el navegador, como se
-                        conectan los hosts y por que este modulo esta planteado como un SIEM personal y no corporativo.
+                        Este apartado de información es la puerta de entrada para cualquier usuario que quiera
+                        monitorizar una red local con un sistema Linux. Aquí se explica como funciona la monitorizacion,
+                        que papel juega el agente Python, que guarda el navegador, como se conectan los hosts y por que
+                        este modulo esta planteado como un SIEM personal y no corporativo.
                     </p>
                 </div>
 
@@ -17,7 +18,7 @@
                     <span>Monitorizacion desde el navegador</span>
                     <small>
                         Todo gira alrededor de tu navegador, la IP privada del host Linux y un agente Python
-                        autocontenido que responde peticiones HTTP en tu red.
+                        autocontenido que responde peticiones HTTP en tu red local.
                     </small>
                 </div>
             </div>
@@ -76,7 +77,7 @@
             <div class="section-topline">
                 <div class="module-header">
                     <span class="section-kicker">Arquitectura</span>
-                    <h2 class="module-title">Resumen tecnico para usuarios no expertos</h2>
+                    <h2 class="module-title">Resumen técnico</h2>
                     <p class="module-copy">
                         Si nunca has montado algo parecido, piensa en Thorondor como una combinacion de generador,
                         sonda local y panel de control. El frontend genera el agente, el host Linux lo ejecuta y tu

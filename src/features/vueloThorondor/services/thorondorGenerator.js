@@ -20,9 +20,9 @@ export function buildThorondorAgentFiles(draft) {
   };
 
   return {
-    agentFileName: `${sanitizeFileName(config.serviceName || config.systemName || "thorondor-agent")}.py`,
-    serviceFileName: `${sanitizeFileName(config.serviceName || "thorondor-agent")}.service`,
-    installFileName: `install-${sanitizeFileName(config.serviceName || "thorondor-agent")}.sh`,
+    agentFileName: "thorondor-agent.py",
+    serviceFileName: "thorondor-agent.service",
+    installFileName: "install-thorondor-agent.sh",
     python: buildThorondorPythonAgent(config),
     systemd: buildThorondorSystemdUnit(config),
     installScript: buildThorondorInstallScript(config),
@@ -497,7 +497,6 @@ if __name__ == "__main__":
 }
 
 export function buildThorondorSystemdUnit(config) {
-  const serviceName = sanitizeFileName(config.serviceName || "thorondor-agent");
   return `[Unit]
 Description=Thorondor SIEM Agent (${config.systemName})
 After=network-online.target
@@ -507,7 +506,7 @@ Wants=network-online.target
 Type=simple
 User=${config.installUser || "thorondor"}
 WorkingDirectory=/opt/thorondor-agent
-ExecStart=/usr/bin/python3 /opt/thorondor-agent/${serviceName}.py
+ExecStart=/usr/bin/python3 /opt/thorondor-agent/thorondor-agent.py
 Restart=always
 RestartSec=10
 TimeoutStopSec=10
@@ -520,28 +519,26 @@ WantedBy=multi-user.target
 }
 
 export function buildThorondorInstallScript(config) {
-  const serviceName = sanitizeFileName(config.serviceName || "thorondor-agent");
   const systemdBlock = config.generateSystemd
     ? `
-cat > "/tmp/${serviceName}.service" <<'UNIT'
+cat > "/tmp/thorondor-agent.service" <<'UNIT'
 ${buildThorondorSystemdUnit(config)}
 UNIT
 
-sudo cp "/tmp/${serviceName}.service" "/etc/systemd/system/${serviceName}.service"
+sudo cp "/tmp/thorondor-agent.service" "/etc/systemd/system/thorondor-agent.service"
 sudo systemctl daemon-reload
-sudo systemctl enable --now "${serviceName}.service"
+sudo systemctl enable --now "thorondor-agent.service"
 `
     : "";
   const completionMessage = config.generateSystemd
     ? `echo "Instalacion completada. Comprueba el servicio con:"
-echo "sudo systemctl status ${serviceName}.service"`
+echo "sudo systemctl status thorondor-agent.service"`
     : `echo "Instalacion completada. Prueba el agente manualmente con:"
-echo "python3 $INSTALL_DIR/${serviceName}.py"`;
+echo "python3 $INSTALL_DIR/thorondor-agent.py"`;
 
   return `#!/usr/bin/env bash
 set -euo pipefail
 
-SERVICE_NAME="${serviceName}"
 INSTALL_DIR="/opt/thorondor-agent"
 INSTALL_USER="${config.installUser || "thorondor"}"
 PORT="${Number(config.port) || 8765}"
@@ -551,9 +548,9 @@ if ! id "$INSTALL_USER" >/dev/null 2>&1; then
 fi
 
 sudo mkdir -p "$INSTALL_DIR"
-sudo cp "./${serviceName}.py" "$INSTALL_DIR/${serviceName}.py"
+sudo cp "./thorondor-agent.py" "$INSTALL_DIR/thorondor-agent.py"
 sudo chown -R "$INSTALL_USER:$INSTALL_USER" "$INSTALL_DIR"
-sudo chmod 750 "$INSTALL_DIR/${serviceName}.py"
+sudo chmod 750 "$INSTALL_DIR/thorondor-agent.py"
 
 sudo usermod -aG adm "$INSTALL_USER" || true
 sudo usermod -aG systemd-journal "$INSTALL_USER" || true
@@ -581,10 +578,9 @@ ${completionMessage}
 }
 
 export function buildThorondorInstallInstructions(config) {
-  const serviceName = sanitizeFileName(config.serviceName || "thorondor-agent");
   const installUser = config.installUser || "thorondor";
   const systemdBlock = config.generateSystemd
-    ? `\n5. Crear el servicio systemd:\n\`\`\`bash\nsudo cp ${serviceName}.service /etc/systemd/system/${serviceName}.service\nsudo systemctl daemon-reload\nsudo systemctl enable --now ${serviceName}.service\nsudo systemctl status ${serviceName}.service\n\`\`\`\n`
+    ? `\n5. Crear el servicio systemd:\n\`\`\`bash\nsudo cp thorondor-agent.service /etc/systemd/system/thorondor-agent.service\nsudo systemctl daemon-reload\nsudo systemctl enable --now thorondor-agent.service\nsudo systemctl status thorondor-agent.service\n\`\`\`\n`
     : "";
 
   return `## Instalacion guiada para ${config.systemName}
@@ -596,7 +592,7 @@ sudo chown -R $USER:$USER /opt/thorondor-agent
 cd /opt/thorondor-agent
 \`\`\`
 
-2. Copiar el agente generado como \`${serviceName}.py\`.
+2. Copiar el agente generado como \`thorondor-agent.py\`.
 
 3. Instalar dependencias:
 \`\`\`bash
@@ -608,7 +604,7 @@ python3 -m pip install psutil
 \`\`\`bash
 sudo usermod -aG adm ${installUser}
 sudo usermod -aG systemd-journal ${installUser}
-python3 ${serviceName}.py
+python3 thorondor-agent.py
 \`\`\`
 ${systemdBlock}
 6. Validar respuesta HTTP:

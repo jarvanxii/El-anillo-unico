@@ -470,9 +470,14 @@ class ThorondorHandler(BaseHTTPRequestHandler):
         return
 
 
+class ThorondorHTTPServer(ThreadingHTTPServer):
+    allow_reuse_address = True
+    allow_reuse_port = True
+
+
 def main():
     print(f"[thorondor] iniciando agente {SYSTEM_NAME} en 0.0.0.0:{LISTEN_PORT}")
-    server = ThreadingHTTPServer((LISTEN_HOST, LISTEN_PORT), ThorondorHandler)
+    server = ThorondorHTTPServer((LISTEN_HOST, LISTEN_PORT), ThorondorHandler)
     server.serve_forever()
 
 
@@ -492,9 +497,11 @@ Wants=network-online.target
 Type=simple
 User=${config.installUser || "thorondor"}
 WorkingDirectory=/opt/thorondor-agent
-ExecStart=/usr/bin/env python3 /opt/thorondor-agent/${serviceName}.py
+ExecStart=/usr/bin/python3 /opt/thorondor-agent/${serviceName}.py
 Restart=always
-RestartSec=5
+RestartSec=10
+TimeoutStopSec=10
+KillMode=mixed
 Environment=PYTHONUNBUFFERED=1
 
 [Install]
@@ -504,6 +511,23 @@ WantedBy=multi-user.target
 
 export function buildThorondorInstallScript(config) {
   const serviceName = sanitizeFileName(config.serviceName || "thorondor-agent");
+  const systemdBlock = config.generateSystemd
+    ? `
+cat > "/tmp/${serviceName}.service" <<'UNIT'
+${buildThorondorSystemdUnit(config)}
+UNIT
+
+sudo cp "/tmp/${serviceName}.service" "/etc/systemd/system/${serviceName}.service"
+sudo systemctl daemon-reload
+sudo systemctl enable --now "${serviceName}.service"
+`
+    : "";
+  const completionMessage = config.generateSystemd
+    ? `echo "Instalacion completada. Comprueba el servicio con:"
+echo "sudo systemctl status ${serviceName}.service"`
+    : `echo "Instalacion completada. Prueba el agente manualmente con:"
+echo "python3 $INSTALL_DIR/${serviceName}.py"`;
+
   return `#!/usr/bin/env bash
 set -euo pipefail
 
@@ -536,20 +560,13 @@ fi
 sudo python3 -m pip install --upgrade pip
 sudo python3 -m pip install psutil
 
-cat > "/tmp/${serviceName}.service" <<'UNIT'
-${buildThorondorSystemdUnit(config)}
-UNIT
-
-sudo cp "/tmp/${serviceName}.service" "/etc/systemd/system/${serviceName}.service"
-sudo systemctl daemon-reload
-sudo systemctl enable --now "${serviceName}.service"
+${systemdBlock}
 
 if command -v ufw >/dev/null 2>&1; then
   sudo ufw allow "$PORT/tcp" || true
 fi
 
-echo "Instalacion completada. Comprueba el servicio con:"
-echo "sudo systemctl status ${serviceName}.service"
+${completionMessage}
 `;
 }
 

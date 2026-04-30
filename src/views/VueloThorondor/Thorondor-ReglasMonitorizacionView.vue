@@ -20,7 +20,7 @@
         <section class="section-box">
             <div class="row g-3">
                 <div class="col-xl-7">
-                    <div class="tool-card h-100">
+                    <div class="tool-card h-100 active-rules-card">
                         <div class="card-head">
                             <h5>Reglas activas</h5>
                             <span class="mini-badge">JS</span>
@@ -170,7 +170,7 @@
                     <h5>Alertas activas globales</h5>
                     <span class="mini-badge">{{ activeAlerts.length }}</span>
                 </div>
-                <div class="table-wrap">
+                <div class="table-wrap scrollable-wrap">
                     <table class="table table-dark align-middle mb-0">
                         <thead>
                             <tr>
@@ -234,11 +234,11 @@ export default {
 
         rulePresets() {
             return [
-                { label: "CPU alta", type: "cpu", threshold: 85, durationMinutes: 5, description: "Alerta si la CPU permanece alta varios minutos." },
-                { label: "RAM alta", type: "ram", threshold: 90, durationMinutes: 3, description: "Detecta presion de memoria sostenida." },
-                { label: "Disco alto", type: "disk", threshold: 90, durationMinutes: 10, description: "Advierte de particiones cerca del limite." },
-                { label: "Heartbeat perdido", type: "heartbeat", threshold: 3, durationMinutes: 3, description: "Marca agentes sin respuesta reciente." },
-                { label: "Logins fallidos", type: "failedLogins", threshold: 5, durationMinutes: 10, description: "Detecta rafagas de autenticacion fallida." }
+                { label: "CPU alta", name: "CPU sostenida alta", type: "cpu", threshold: 85, durationMinutes: 5, description: "Alerta si la CPU permanece alta varios minutos." },
+                { label: "RAM alta", name: "RAM alta sostenida", type: "ram", threshold: 90, durationMinutes: 3, description: "Detecta presion de memoria sostenida." },
+                { label: "Disco alto", name: "Disco en nivel alto", type: "disk", threshold: 90, durationMinutes: 10, description: "Advierte de particiones cerca del limite." },
+                { label: "Heartbeat perdido", name: "Agente sin heartbeat reciente", type: "heartbeat", threshold: 3, durationMinutes: 3, description: "Marca agentes sin respuesta reciente." },
+                { label: "Logins fallidos", name: "Rafaga de logins fallidos", type: "failedLogins", threshold: 5, durationMinutes: 10, description: "Detecta rafagas de autenticacion fallida." }
             ];
         },
 
@@ -306,11 +306,11 @@ export default {
         applyPreset(preset) {
             this.ruleDraft = {
                 ...this.ruleDraft,
+                name: preset.name || preset.label,
                 type: preset.type,
                 threshold: preset.threshold,
                 durationMinutes: preset.durationMinutes,
-                description: preset.description,
-                name: this.ruleDraft.name || preset.label
+                description: preset.description
             };
         },
 
@@ -366,6 +366,14 @@ export default {
 .rule-studio {
     display: grid;
     gap: 1rem;
+}
+
+.active-rules-card {
+    align-content: start;
+}
+
+.active-rules-card .table-wrap {
+    align-self: start;
 }
 
 .rule-helper-card,

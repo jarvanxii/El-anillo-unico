@@ -14,11 +14,11 @@
 }
 
 .thorondor-content.with-banner {
-    padding-top: 48px;
+    padding-top: 45px;
 }
 
 .hero-banner {
-    margin-top: 106px;
+    margin-top: 110px;
 }
 
 .hero-banner img {
@@ -562,6 +562,36 @@
 .compact-timeline {
     max-height: 360px;
     overflow: auto;
+}
+
+.scrollable-wrap {
+    max-height: 380px;
+    overflow-y: auto;
+}
+
+.scrollable-wrap::-webkit-scrollbar,
+.compact-timeline::-webkit-scrollbar,
+.output-box::-webkit-scrollbar {
+    width: 6px;
+}
+
+.scrollable-wrap::-webkit-scrollbar-track,
+.compact-timeline::-webkit-scrollbar-track,
+.output-box::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.scrollable-wrap::-webkit-scrollbar-thumb,
+.compact-timeline::-webkit-scrollbar-thumb,
+.output-box::-webkit-scrollbar-thumb {
+    background: rgba(56, 189, 248, 0.32);
+    border-radius: 10px;
+}
+
+.scrollable-wrap::-webkit-scrollbar-thumb:hover,
+.compact-timeline::-webkit-scrollbar-thumb:hover,
+.output-box::-webkit-scrollbar-thumb:hover {
+    background: rgba(56, 189, 248, 0.56);
 }
 
 .empty-box {

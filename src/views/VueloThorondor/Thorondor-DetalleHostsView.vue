@@ -131,7 +131,7 @@
                     <h5>Timeline de eventos de seguridad</h5>
                     <span class="mini-badge">Timeline</span>
                 </div>
-                <div class="timeline-list">
+                <div class="timeline-list scrollable-wrap">
                     <article v-for="event in selectedSecurityEvents" :key="event.id" class="timeline-entry">
                         <div class="timeline-dot"></div>
                         <div class="timeline-body">
@@ -148,10 +148,10 @@
                 <div class="col-xl-6">
                     <div class="tool-card">
                         <div class="card-head">
-                            <h5>Logins fallidos</h5>
+                            <h5>Logs de autenticacion fallidos</h5>
                             <span class="mini-badge">Auth</span>
                         </div>
-                        <div class="table-wrap">
+                        <div class="table-wrap scrollable-wrap">
                             <table class="table table-dark table-sm align-middle mb-0">
                                 <thead>
                                     <tr>
@@ -227,7 +227,7 @@
         </section>
 
         <section v-else-if="selectedAgent && detailTab === 'alerts'" class="section-box">
-            <div class="table-wrap">
+            <div class="table-wrap scrollable-wrap">
                 <table class="table table-dark align-middle mb-0">
                     <thead>
                         <tr>
@@ -265,7 +265,7 @@
                 <ThorondorLineChart chart-id="thorondor-history-only-chart" :labels="selectedHistoryChart.labels" :datasets="selectedHistoryChart.datasets" title="Historico del sistema" />
             </div>
 
-            <div class="table-wrap">
+            <div class="table-wrap scrollable-wrap">
                 <table class="table table-dark table-sm align-middle mb-0">
                     <thead>
                         <tr>

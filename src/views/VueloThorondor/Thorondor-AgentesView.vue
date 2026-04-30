@@ -66,7 +66,7 @@
                     <h5>Historial de conexiones del sistema seleccionado</h5>
                     <span class="mini-badge">{{ selectedAgent ? selectedAgent.displayName : "Sin seleccion" }}</span>
                 </div>
-                <div class="table-wrap">
+                <div class="table-wrap scrollable-wrap">
                     <table class="table table-dark table-sm align-middle mb-0">
                         <thead>
                             <tr>

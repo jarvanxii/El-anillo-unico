@@ -102,6 +102,50 @@ export function evaluateThorondorRules({ agent, rules, snapshots, securityEvents
         alerts.push(buildAlert(agent, rule, `Puerto sensible en escucha: ${suspicious.port}/${suspicious.proto || "tcp"}.`));
       }
     }
+
+    if (rule.type === "failedService") {
+      const snapshot = snapshots?.[snapshots.length - 1];
+      const failed = (snapshot?.failedServices || []).filter((s) => s.activeState === "failed" || s.activeState === "stopped");
+      if (failed.length >= rule.threshold) {
+        alerts.push(buildAlert(agent, rule, `${failed.length} servicio(s) en estado anomalo: ${failed.slice(0, 3).map((s) => s.name).join(", ")}.`));
+      }
+    }
+
+    if (rule.type === "pendingUpdates") {
+      const snapshot = snapshots?.[snapshots.length - 1];
+      const count = snapshot?.pendingUpdates?.count || 0;
+      if (count >= rule.threshold) {
+        alerts.push(buildAlert(agent, rule, `${count} actualizaciones pendientes sin aplicar.`));
+      }
+    }
+
+    if (rule.type === "dnsFailure") {
+      const snapshot = snapshots?.[snapshots.length - 1];
+      const dns = snapshot?.dns || [];
+      const failed = dns.filter((d) => !d.ok);
+      if (failed.length >= rule.threshold) {
+        alerts.push(buildAlert(agent, rule, `Fallo DNS en: ${failed.map((d) => d.target).join(", ")}.`));
+      }
+    }
+
+    if (rule.type === "tempCritical") {
+      const snapshot = snapshots?.[snapshots.length - 1];
+      const temps = snapshot?.temperatures || [];
+      const hot = temps.find((t) => (t.current || 0) >= rule.threshold);
+      if (hot) {
+        alerts.push(buildAlert(agent, rule, `Temperatura critica en ${hot.label || hot.source}: ${hot.current?.toFixed(1)}°C.`));
+      }
+    }
+
+    if (rule.type === "highNetworkRate") {
+      const recent = getRecentSnapshots(snapshots, rule.durationMinutes);
+      const maxRate = Math.max(...recent.flatMap((snap) =>
+        (snap.networkRates || []).map((r) => Math.max(r.sendBytesPerSec || 0, r.recvBytesPerSec || 0))
+      ), 0);
+      if (maxRate >= rule.threshold) {
+        alerts.push(buildAlert(agent, rule, `Trafico de red maximo detectado: ${(maxRate / 1048576).toFixed(1)} MB/s.`));
+      }
+    }
   });
 
   return dedupeAlerts(alerts);

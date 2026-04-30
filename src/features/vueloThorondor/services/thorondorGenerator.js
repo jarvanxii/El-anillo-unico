@@ -75,6 +75,13 @@ MODULES = {
     "fileIntegrity": ${serializeBoolean(moduleFlags.fileIntegrity)},
     "networkConnections": ${serializeBoolean(moduleFlags.networkConnections)},
     "applicationLogs": ${serializeBoolean(moduleFlags.applicationLogs)},
+    "networkRates": ${serializeBoolean(moduleFlags.networkRates)},
+    "establishedConnections": ${serializeBoolean(moduleFlags.establishedConnections)},
+    "hardwareMonitor": ${serializeBoolean(moduleFlags.hardwareMonitor)},
+    "dockerMonitor": ${serializeBoolean(moduleFlags.dockerMonitor)},
+    "updateMonitor": ${serializeBoolean(moduleFlags.updateMonitor)},
+    "loginHistory": ${serializeBoolean(moduleFlags.loginHistory)},
+    "smartMonitor": ${serializeBoolean(moduleFlags.smartMonitor)},
 }
 ADDITIONAL_LOG_PATHS = ${pythonList(config.logPaths)}
 CRITICAL_FILES = (
@@ -83,7 +90,7 @@ CRITICAL_FILES = (
         os.path.join(os.environ.get("SystemRoot", "C:\\\\Windows"), "System32", "drivers", "etc", "services"),
     ]
     if IS_WINDOWS
-    else ["/etc/passwd", "/etc/shadow", "/etc/sudoers"]
+    else ["/etc/passwd", "/etc/shadow", "/etc/sudoers", "/etc/hosts"]
 )
 BASELINE_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".thorondor-baseline.json")
 MAX_LOG_LINES = 60
@@ -261,15 +268,17 @@ def collect_integrity_events():
 
 def collect_processes():
     processes = []
-    for process in psutil.process_iter(["pid", "name", "username", "cpu_percent", "memory_percent"]):
+    for process in psutil.process_iter(["pid", "name", "username", "cpu_percent", "memory_percent", "cmdline"]):
         try:
             info = process.info
+            cmdline = info.get("cmdline") or []
             processes.append({
                 "pid": info.get("pid"),
                 "name": info.get("name"),
                 "user": info.get("username"),
                 "cpuPercent": round(info.get("cpu_percent") or 0, 2),
-                "memoryPercent": round(info.get("memory_percent") or 0, 2)
+                "memoryPercent": round(info.get("memory_percent") or 0, 2),
+                "cmdline": " ".join(cmdline[:8]) if cmdline else ""
             })
         except Exception:
             continue
@@ -427,6 +436,276 @@ def collect_logs():
     }
 
 
+_NET_IO_PREV = {}
+_NET_IO_LOCK = threading.Lock()
+
+
+def collect_network_rates():
+    global _NET_IO_PREV
+    counters = psutil.net_io_counters(pernic=True)
+    now = time.time()
+    rates = []
+    with _NET_IO_LOCK:
+        for name, stats in counters.items():
+            prev = _NET_IO_PREV.get(name)
+            elapsed = now - prev["ts"] if prev else 0
+            if prev and elapsed > 0:
+                send_rate = (stats.bytes_sent - prev["sent"]) / elapsed
+                recv_rate = (stats.bytes_recv - prev["recv"]) / elapsed
+            else:
+                send_rate = 0
+                recv_rate = 0
+            rates.append({
+                "name": name,
+                "sendBytesPerSec": round(max(send_rate, 0), 1),
+                "recvBytesPerSec": round(max(recv_rate, 0), 1)
+            })
+            _NET_IO_PREV[name] = {"ts": now, "sent": stats.bytes_sent, "recv": stats.bytes_recv}
+    return rates
+
+
+def collect_established_connections():
+    result = []
+    try:
+        for conn in psutil.net_connections(kind="inet"):
+            if conn.status == "ESTABLISHED" and conn.raddr:
+                proc_name = ""
+                try:
+                    if conn.pid:
+                        proc_name = psutil.Process(conn.pid).name()
+                except Exception:
+                    pass
+                result.append({
+                    "pid": conn.pid,
+                    "process": proc_name,
+                    "localAddr": f"{conn.laddr.ip}:{conn.laddr.port}" if conn.laddr else "",
+                    "remoteAddr": f"{conn.raddr.ip}:{conn.raddr.port}" if conn.raddr else "",
+                    "status": conn.status
+                })
+    except Exception:
+        pass
+    return result[:50]
+
+
+def collect_failed_services():
+    if IS_WINDOWS:
+        try:
+            ps = "Get-Service | Where-Object {$_.Status -eq 'Stopped' -and $_.StartType -eq 'Automatic'} | Select-Object Name,DisplayName | ConvertTo-Json -Compress"
+            result = subprocess.run(["powershell", "-NoProfile", "-NonInteractive", "-Command", ps], capture_output=True, text=True, timeout=10)
+            if result.returncode == 0 and result.stdout.strip():
+                raw = json.loads(result.stdout)
+                if isinstance(raw, dict):
+                    raw = [raw]
+                return [{"name": s.get("Name", ""), "description": s.get("DisplayName", ""), "activeState": "stopped"} for s in raw]
+        except Exception:
+            pass
+        return []
+    try:
+        out = run_command(["systemctl", "--failed", "--no-pager", "--no-legend", "--plain"])
+        services = []
+        for line in out.splitlines():
+            parts = line.split()
+            if parts:
+                services.append({
+                    "name": parts[0],
+                    "activeState": parts[1] if len(parts) > 1 else "failed",
+                    "subState": parts[2] if len(parts) > 2 else ""
+                })
+        return services
+    except Exception:
+        return []
+
+
+def collect_fans():
+    if IS_WINDOWS:
+        return []
+    try:
+        fans = psutil.sensors_fans()
+        result = []
+        for source, readings in fans.items():
+            for reading in readings:
+                result.append({"source": source, "label": reading.label or source, "rpm": reading.current})
+        return result
+    except Exception:
+        return []
+
+
+def collect_battery():
+    try:
+        bat = psutil.sensors_battery()
+        if bat is None:
+            return None
+        secs = bat.secsleft if bat.secsleft not in (psutil.POWER_TIME_UNLIMITED, psutil.POWER_TIME_UNKNOWN) else -1
+        return {
+            "percent": round(bat.percent, 1),
+            "secsLeft": secs,
+            "powerPlugged": bat.power_plugged
+        }
+    except Exception:
+        return None
+
+
+def collect_smart_data():
+    if IS_WINDOWS:
+        return []
+    if not shutil.which("smartctl"):
+        return []
+    try:
+        lsblk = run_command(["lsblk", "-dno", "NAME,TYPE"])
+        disks = []
+        for line in lsblk.splitlines():
+            parts = line.split()
+            if len(parts) >= 2 and parts[1] == "disk":
+                dev = f"/dev/{parts[0]}"
+                out = run_command(["smartctl", "-A", "-j", dev])
+                try:
+                    data = json.loads(out)
+                    attrs = data.get("ata_smart_attributes", {}).get("table", [])
+                    useful = {}
+                    for attr in attrs:
+                        name = attr.get("name", "")
+                        if name in ("Reallocated_Sector_Ct", "Pending_Sector_Count",
+                                    "Uncorrectable_Sector_Count", "Temperature_Celsius", "Power_On_Hours"):
+                            useful[name] = attr.get("raw", {}).get("value", 0)
+                    disks.append({"device": dev, "attributes": useful})
+                except Exception:
+                    disks.append({"device": dev, "attributes": {}})
+        return disks
+    except Exception:
+        return []
+
+
+def collect_login_history():
+    if IS_WINDOWS:
+        return []
+    try:
+        out = run_command(["last", "-n", "30", "-F"])
+        lines = [line for line in out.splitlines()
+                 if line.strip() and not line.startswith("wtmp") and "reboot" not in line.lower()]
+        return lines[:30]
+    except Exception:
+        return []
+
+
+def collect_pending_updates():
+    if IS_WINDOWS:
+        try:
+            ps = "(New-Object -ComObject Microsoft.Update.Session).CreateUpdateSearcher().Search('IsInstalled=0').Updates | ForEach-Object {$_.Title} | ConvertTo-Json -Compress"
+            result = subprocess.run(["powershell", "-NoProfile", "-NonInteractive", "-Command", ps], capture_output=True, text=True, timeout=30)
+            if result.returncode == 0 and result.stdout.strip():
+                raw = json.loads(result.stdout)
+                if isinstance(raw, str):
+                    raw = [raw]
+                return {"count": len(raw), "updates": raw[:10]}
+        except Exception:
+            pass
+        return {"count": 0, "updates": []}
+    try:
+        if shutil.which("apt"):
+            out = run_command(["apt", "list", "--upgradable", "-qq"])
+            lines = [line for line in out.splitlines() if line.strip() and line != "Listing..."]
+            return {"count": len(lines), "updates": lines[:10]}
+        if shutil.which("dnf"):
+            out = run_command(["dnf", "check-update", "-q"])
+            lines = [line for line in out.splitlines() if line.strip()]
+            return {"count": len(lines), "updates": lines[:10]}
+        if shutil.which("pacman"):
+            out = run_command(["checkupdates"])
+            lines = [line for line in out.splitlines() if line.strip()]
+            return {"count": len(lines), "updates": lines[:10]}
+    except Exception:
+        pass
+    return {"count": 0, "updates": []}
+
+
+def collect_hardware_info():
+    info = {
+        "cpuModel": "",
+        "cpuCoresPhysical": psutil.cpu_count(logical=False),
+        "cpuCoresLogical": psutil.cpu_count(logical=True),
+        "cpuFreqMhz": 0,
+        "totalRamGb": round(psutil.virtual_memory().total / 1024 ** 3, 2)
+    }
+    try:
+        freq = psutil.cpu_freq()
+        if freq:
+            info["cpuFreqMhz"] = round(freq.current, 0)
+    except Exception:
+        pass
+    if IS_WINDOWS:
+        out = run_command(["powershell", "-NoProfile", "-NonInteractive", "-Command", "(Get-CimInstance Win32_Processor).Name"])
+        info["cpuModel"] = out.strip()
+    else:
+        out = run_command(["sh", "-c", "grep 'model name' /proc/cpuinfo 2>/dev/null | head -1 | cut -d: -f2"])
+        info["cpuModel"] = out.strip()
+    return info
+
+
+def collect_docker_containers():
+    if not shutil.which("docker"):
+        return []
+    try:
+        out = run_command(["docker", "ps", "-a", "--format", "{{.ID}}|{{.Names}}|{{.Image}}|{{.Status}}|{{.Ports}}"])
+        containers = []
+        for line in out.splitlines():
+            parts = line.split("|")
+            if len(parts) >= 4:
+                containers.append({
+                    "id": parts[0][:12],
+                    "name": parts[1],
+                    "image": parts[2],
+                    "status": parts[3],
+                    "ports": parts[4] if len(parts) > 4 else ""
+                })
+        return containers
+    except Exception:
+        return []
+
+
+def collect_gpu_info():
+    if IS_WINDOWS:
+        try:
+            ps = "Get-CimInstance Win32_VideoController | Select-Object Name,AdapterRAM,DriverVersion | ConvertTo-Json -Compress"
+            result = subprocess.run(["powershell", "-NoProfile", "-NonInteractive", "-Command", ps], capture_output=True, text=True, timeout=10)
+            if result.returncode == 0 and result.stdout.strip():
+                raw = json.loads(result.stdout)
+                if isinstance(raw, dict):
+                    raw = [raw]
+                return [{"name": g.get("Name", ""), "vramBytes": g.get("AdapterRAM", 0), "driver": g.get("DriverVersion", "")} for g in raw]
+        except Exception:
+            pass
+        return []
+    if shutil.which("nvidia-smi"):
+        try:
+            out = run_command(["nvidia-smi", "--query-gpu=name,memory.total,temperature.gpu,utilization.gpu", "--format=csv,noheader,nounits"])
+            gpus = []
+            for line in out.splitlines():
+                parts = [p.strip() for p in line.split(",")]
+                if len(parts) >= 4:
+                    gpus.append({
+                        "name": parts[0],
+                        "vramMb": int(parts[1]) if parts[1].isdigit() else 0,
+                        "tempC": int(parts[2]) if parts[2].isdigit() else 0,
+                        "utilPercent": int(parts[3]) if parts[3].isdigit() else 0
+                    })
+            return gpus
+        except Exception:
+            pass
+    return []
+
+
+def collect_dns_check():
+    targets = ["google.com", "cloudflare.com", "1.1.1.1"]
+    result = []
+    for target in targets:
+        try:
+            addr = socket.getaddrinfo(target, None, socket.AF_INET, proto=socket.IPPROTO_TCP)[0][4][0]
+            result.append({"target": target, "resolved": addr, "ok": True})
+        except Exception as exc:
+            result.append({"target": target, "resolved": "", "ok": False, "error": str(exc)})
+    return result
+
+
 VIRTUAL_FSTYPES = {
     "tmpfs", "squashfs", "devtmpfs", "proc", "sysfs", "cgroup", "cgroup2",
     "pstore", "debugfs", "tracefs", "securityfs", "binfmt_misc", "overlay",
@@ -499,7 +778,19 @@ def collect_payload():
             "processes": collect_processes(),
             "interfaces": collect_network_interfaces(),
             "temperatures": collect_temperatures(),
-            "openPorts": collect_open_ports()
+            "openPorts": collect_open_ports(),
+            "networkRates": collect_network_rates() if MODULES.get("networkRates") else [],
+            "establishedConnections": collect_established_connections() if MODULES.get("establishedConnections") else [],
+            "failedServices": collect_failed_services(),
+            "fans": collect_fans() if MODULES.get("hardwareMonitor") else [],
+            "battery": collect_battery() if MODULES.get("hardwareMonitor") else None,
+            "gpu": collect_gpu_info() if MODULES.get("hardwareMonitor") else [],
+            "hardware": collect_hardware_info(),
+            "docker": collect_docker_containers() if MODULES.get("dockerMonitor") else [],
+            "dns": collect_dns_check(),
+            "smartData": collect_smart_data() if MODULES.get("smartMonitor") else [],
+            "loginHistory": collect_login_history() if MODULES.get("loginHistory") else [],
+            "pendingUpdates": collect_pending_updates() if MODULES.get("updateMonitor") else {"count": 0, "updates": []}
         },
         "security": security,
         "logs": logs,

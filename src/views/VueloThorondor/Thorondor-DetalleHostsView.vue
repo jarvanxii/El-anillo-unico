@@ -114,6 +114,70 @@
                 </div>
             </div>
 
+            <div class="row g-3 mb-4" v-if="snapshotHardware">
+                <div class="col-xl-6">
+                    <div class="tool-card">
+                        <div class="card-head">
+                            <h5>Inventario hardware</h5>
+                            <span class="mini-badge">CPU / RAM</span>
+                        </div>
+                        <dl class="kv-list">
+                            <div class="kv-row"><dt>Modelo CPU</dt><dd>{{ snapshotHardware.cpuModel || 'N/D' }}</dd></div>
+                            <div class="kv-row"><dt>Nucleos fisicos</dt><dd>{{ snapshotHardware.cpuCoresPhysical }}</dd></div>
+                            <div class="kv-row"><dt>Nucleos logicos</dt><dd>{{ snapshotHardware.cpuCoresLogical }}</dd></div>
+                            <div class="kv-row"><dt>Frecuencia actual</dt><dd>{{ snapshotHardware.cpuFreqMhz ? snapshotHardware.cpuFreqMhz + ' MHz' : 'N/D' }}</dd></div>
+                            <div class="kv-row"><dt>RAM total</dt><dd>{{ snapshotHardware.totalRamGb }} GB</dd></div>
+                        </dl>
+                    </div>
+                </div>
+                <div class="col-xl-6">
+                    <div class="tool-card" v-if="snapshotGpu.length">
+                        <div class="card-head">
+                            <h5>GPU detectada</h5>
+                            <span class="mini-badge">{{ snapshotGpu.length }} GPU</span>
+                        </div>
+                        <div v-for="gpu in snapshotGpu" :key="gpu.name" class="gpu-card">
+                            <div class="kv-list">
+                                <div class="kv-row"><dt>Modelo</dt><dd>{{ gpu.name }}</dd></div>
+                                <div class="kv-row" v-if="gpu.vramMb"><dt>VRAM</dt><dd>{{ gpu.vramMb }} MB</dd></div>
+                                <div class="kv-row" v-if="gpu.vramBytes"><dt>VRAM</dt><dd>{{ formatBytes(gpu.vramBytes) }}</dd></div>
+                                <div class="kv-row" v-if="gpu.tempC"><dt>Temperatura</dt><dd :class="tempColorClass(gpu.tempC)">{{ gpu.tempC }}°C</dd></div>
+                                <div class="kv-row" v-if="gpu.utilPercent != null"><dt>Utilizacion</dt><dd>{{ gpu.utilPercent }}%</dd></div>
+                                <div class="kv-row" v-if="gpu.driver"><dt>Driver</dt><dd>{{ gpu.driver }}</dd></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="tool-card" v-else-if="snapshotBattery">
+                        <div class="card-head">
+                            <h5>Bateria / UPS</h5>
+                            <span class="mini-badge" :class="snapshotBattery.powerPlugged ? 'badge-ok' : 'badge-warn'">{{ snapshotBattery.powerPlugged ? 'AC conectado' : 'Bateria' }}</span>
+                        </div>
+                        <dl class="kv-list">
+                            <div class="kv-row"><dt>Nivel</dt><dd :class="snapshotBattery.percent < 20 ? 'tone-danger' : snapshotBattery.percent < 50 ? 'tone-warning' : 'tone-success'">{{ snapshotBattery.percent }}%</dd></div>
+                            <div class="kv-row"><dt>Tiempo restante</dt><dd>{{ batteryTimeLabel }}</dd></div>
+                        </dl>
+                    </div>
+                    <div class="tool-card" v-if="snapshotFans.length">
+                        <div class="card-head">
+                            <h5>Ventiladores</h5>
+                            <span class="mini-badge">{{ snapshotFans.length }} fan(s)</span>
+                        </div>
+                        <div class="table-wrap">
+                            <table class="table table-dark table-sm align-middle mb-0">
+                                <thead><tr><th>Fuente</th><th>Etiqueta</th><th>RPM</th></tr></thead>
+                                <tbody>
+                                    <tr v-for="fan in snapshotFans" :key="`${fan.source}-${fan.label}`">
+                                        <td><code class="small-code">{{ fan.source }}</code></td>
+                                        <td>{{ fan.label }}</td>
+                                        <td>{{ fan.rpm }}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <div class="tool-card mb-4">
                 <div class="card-head">
                     <h5>Evolucion temporal del sistema seleccionado</h5>
@@ -191,6 +255,182 @@
                             </table>
                         </div>
                     </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ═══ TAB RED ═══════════════════════════════════════════════════════ -->
+        <section v-else-if="selectedAgent && detailTab === 'network'" class="section-box">
+            <div class="tool-card mb-4">
+                <div class="card-head">
+                    <h5>Velocidad de red en tiempo real</h5>
+                    <span class="mini-badge">Bytes/s</span>
+                </div>
+                <div class="table-wrap">
+                    <table class="table table-dark table-sm align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th>Interfaz</th>
+                                <th>TX (envia)</th>
+                                <th>RX (recibe)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="rate in snapshotNetworkRates" :key="rate.name">
+                                <td><code class="small-code">{{ rate.name }}</code></td>
+                                <td>{{ formatBytes(rate.sendBytesPerSec) }}/s</td>
+                                <td>{{ formatBytes(rate.recvBytesPerSec) }}/s</td>
+                            </tr>
+                            <tr v-if="!snapshotNetworkRates.length">
+                                <td colspan="3" class="text-muted text-center">Sin datos de velocidad de red. Activa el modulo networkRates en el generador.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="tool-card">
+                <div class="card-head">
+                    <h5>Conexiones TCP establecidas</h5>
+                    <span class="mini-badge">{{ snapshotEstablished.length }} ESTABLISHED</span>
+                </div>
+                <div class="table-wrap scrollable-wrap">
+                    <table class="table table-dark table-sm align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th>Proceso</th>
+                                <th>PID</th>
+                                <th>Local</th>
+                                <th>Remoto</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="conn in snapshotEstablished" :key="`${conn.pid}-${conn.remoteAddr}`">
+                                <td>{{ conn.process || '—' }}</td>
+                                <td>{{ conn.pid }}</td>
+                                <td><code class="small-code">{{ conn.localAddr }}</code></td>
+                                <td><code class="small-code">{{ conn.remoteAddr }}</code></td>
+                            </tr>
+                            <tr v-if="!snapshotEstablished.length">
+                                <td colspan="4" class="text-muted text-center">Sin conexiones ESTABLISHED activas o modulo desactivado.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- ═══ TAB INFRAESTRUCTURA ══════════════════════════════════════════ -->
+        <section v-else-if="selectedAgent && detailTab === 'infra'" class="section-box">
+            <div class="row g-3 mb-4">
+                <div class="col-xl-6">
+                    <div class="tool-card">
+                        <div class="card-head">
+                            <h5>Servicios en estado anomalo</h5>
+                            <span class="mini-badge" :class="snapshotFailedServices.length ? 'badge-danger' : 'badge-ok'">{{ snapshotFailedServices.length }} FAILED</span>
+                        </div>
+                        <div class="table-wrap">
+                            <table class="table table-dark table-sm align-middle mb-0">
+                                <thead><tr><th>Servicio</th><th>Estado</th></tr></thead>
+                                <tbody>
+                                    <tr v-for="svc in snapshotFailedServices" :key="svc.name">
+                                        <td><code class="small-code">{{ svc.name }}</code></td>
+                                        <td><span class="state-chip state-chip--danger">{{ svc.activeState }}</span></td>
+                                    </tr>
+                                    <tr v-if="!snapshotFailedServices.length">
+                                        <td colspan="2" class="text-muted text-center">Todos los servicios responden correctamente.</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-6">
+                    <div class="tool-card">
+                        <div class="card-head">
+                            <h5>Resolucion DNS</h5>
+                            <span class="mini-badge">Conectividad</span>
+                        </div>
+                        <div class="table-wrap">
+                            <table class="table table-dark table-sm align-middle mb-0">
+                                <thead><tr><th>Target</th><th>IP resuelta</th><th>Estado</th></tr></thead>
+                                <tbody>
+                                    <tr v-for="d in snapshotDns" :key="d.target">
+                                        <td><code class="small-code">{{ d.target }}</code></td>
+                                        <td>{{ d.resolved || '—' }}</td>
+                                        <td><span class="state-chip" :class="d.ok ? 'state-chip--ok' : 'state-chip--danger'">{{ d.ok ? 'OK' : 'FAIL' }}</span></td>
+                                    </tr>
+                                    <tr v-if="!snapshotDns.length">
+                                        <td colspan="3" class="text-muted text-center">Sin datos DNS.</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row g-3 mb-4">
+                <div class="col-xl-6">
+                    <div class="tool-card">
+                        <div class="card-head">
+                            <h5>Actualizaciones pendientes</h5>
+                            <span class="mini-badge" :class="snapshotPendingUpdates.count > 20 ? 'badge-danger' : snapshotPendingUpdates.count > 5 ? 'badge-warn' : 'badge-ok'">{{ snapshotPendingUpdates.count }} paquetes</span>
+                        </div>
+                        <div v-if="snapshotPendingUpdates.updates?.length" class="output-box" style="max-height:200px;overflow-y:auto;">
+                            <pre class="result-pre">{{ snapshotPendingUpdates.updates.join('\n') }}</pre>
+                        </div>
+                        <div v-else class="empty-box compact-empty">{{ snapshotPendingUpdates.count === 0 ? 'Sistema actualizado.' : 'Lista no disponible.' }}</div>
+                    </div>
+                </div>
+                <div class="col-xl-6">
+                    <div class="tool-card">
+                        <div class="card-head">
+                            <h5>Historial de logins (last)</h5>
+                            <span class="mini-badge">{{ snapshotLoginHistory.length }} entradas</span>
+                        </div>
+                        <div class="output-box scrollable-wrap" style="max-height:200px;">
+                            <pre class="result-pre">{{ snapshotLoginHistory.join('\n') || 'Sin historial de logins o modulo desactivado.' }}</pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tool-card mb-4" v-if="snapshotDocker.length">
+                <div class="card-head">
+                    <h5>Contenedores Docker</h5>
+                    <span class="mini-badge">{{ snapshotDocker.length }} contenedores</span>
+                </div>
+                <div class="table-wrap">
+                    <table class="table table-dark table-sm align-middle mb-0">
+                        <thead><tr><th>ID</th><th>Nombre</th><th>Imagen</th><th>Estado</th><th>Puertos</th></tr></thead>
+                        <tbody>
+                            <tr v-for="c in snapshotDocker" :key="c.id">
+                                <td><code class="small-code">{{ c.id }}</code></td>
+                                <td>{{ c.name }}</td>
+                                <td><code class="small-code">{{ c.image }}</code></td>
+                                <td><span class="state-chip" :class="c.status.toLowerCase().includes('up') ? 'state-chip--ok' : 'state-chip--danger'">{{ c.status }}</span></td>
+                                <td><code class="small-code">{{ c.ports || '—' }}</code></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="tool-card" v-if="snapshotSmartData.length">
+                <div class="card-head">
+                    <h5>Estado SMART de discos</h5>
+                    <span class="mini-badge">{{ snapshotSmartData.length }} disco(s)</span>
+                </div>
+                <div v-for="disk in snapshotSmartData" :key="disk.device" class="mb-3">
+                    <div class="section-kicker mb-1">{{ disk.device }}</div>
+                    <dl class="kv-list" v-if="Object.keys(disk.attributes || {}).length">
+                        <div class="kv-row" v-for="(val, attr) in disk.attributes" :key="attr">
+                            <dt>{{ attr.replace(/_/g, ' ') }}</dt>
+                            <dd :class="(attr.includes('Error') || attr.includes('Sector')) && val > 0 ? 'tone-danger' : 'tone-neutral'">{{ val }}</dd>
+                        </div>
+                    </dl>
+                    <p v-else class="text-muted" style="font-size:0.82rem">Sin atributos SMART disponibles para este dispositivo.</p>
                 </div>
             </div>
         </section>
@@ -416,6 +656,8 @@ export default {
             return [
                 { id: "overview", label: "Vision general" },
                 { id: "security", label: "Seguridad" },
+                { id: "network", label: "Red" },
+                { id: "infra", label: "Infraestructura" },
                 { id: "logs", label: "Logs" },
                 { id: "alerts", label: "Alertas" },
                 { id: "history", label: "Historico" }
@@ -522,6 +764,63 @@ export default {
         formattedFilteredLogs() {
             if (!this.filteredLogs.length) return "Sin logs para el filtro actual.";
             return this.filteredLogs.slice().reverse().map((entry) => `[${entry.timestamp}] [${entry.level}] [${entry.source}] ${entry.message}`).join("\n");
+        },
+
+        snapshotHardware() {
+            return this.selectedLatestSnapshot?.hardware || null;
+        },
+
+        snapshotGpu() {
+            return this.selectedLatestSnapshot?.gpu || [];
+        },
+
+        snapshotFans() {
+            return this.selectedLatestSnapshot?.fans || [];
+        },
+
+        snapshotBattery() {
+            return this.selectedLatestSnapshot?.battery || null;
+        },
+
+        snapshotNetworkRates() {
+            return this.selectedLatestSnapshot?.networkRates || [];
+        },
+
+        snapshotEstablished() {
+            return this.selectedLatestSnapshot?.establishedConnections || [];
+        },
+
+        snapshotFailedServices() {
+            return this.selectedLatestSnapshot?.failedServices || [];
+        },
+
+        snapshotDocker() {
+            return this.selectedLatestSnapshot?.docker || [];
+        },
+
+        snapshotPendingUpdates() {
+            return this.selectedLatestSnapshot?.pendingUpdates || { count: 0, updates: [] };
+        },
+
+        snapshotDns() {
+            return this.selectedLatestSnapshot?.dns || [];
+        },
+
+        snapshotSmartData() {
+            return this.selectedLatestSnapshot?.smartData || [];
+        },
+
+        snapshotLoginHistory() {
+            return this.selectedLatestSnapshot?.loginHistory || [];
+        },
+
+        batteryTimeLabel() {
+            const bat = this.snapshotBattery;
+            if (!bat) return "";
+            if (bat.secsLeft < 0) return bat.powerPlugged ? "Cargando / AC" : "Tiempo desconocido";
+            const h = Math.floor(bat.secsLeft / 3600);
+            const m = Math.floor((bat.secsLeft % 3600) / 60);
+            return `${h}h ${m}m restantes`;
         }
     },
 
@@ -724,5 +1023,78 @@ export default {
     font-weight: 700;
     letter-spacing: -0.02em;
     line-height: 1;
+}
+
+.kv-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    margin: 0;
+}
+
+.kv-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 0.75rem;
+    padding: 0.25rem 0;
+    border-bottom: 1px solid rgba(51, 65, 85, 0.25);
+    font-size: 0.83rem;
+}
+
+.kv-row:last-child {
+    border-bottom: none;
+}
+
+.kv-row dt {
+    color: #64748b;
+    font-weight: 500;
+    flex-shrink: 0;
+}
+
+.kv-row dd {
+    color: #cbd5e1;
+    text-align: right;
+    margin: 0;
+    font-variant-numeric: tabular-nums;
+}
+
+.gpu-card {
+    padding: 0.6rem 0;
+    border-bottom: 1px solid rgba(51, 65, 85, 0.3);
+}
+
+.gpu-card:last-child {
+    border-bottom: none;
+}
+
+.badge-ok {
+    background: rgba(34, 197, 94, 0.18);
+    color: #4ade80;
+    border-color: rgba(34, 197, 94, 0.3);
+}
+
+.badge-warn {
+    background: rgba(234, 179, 8, 0.18);
+    color: #facc15;
+    border-color: rgba(234, 179, 8, 0.3);
+}
+
+.badge-danger {
+    background: rgba(239, 68, 68, 0.18);
+    color: #f87171;
+    border-color: rgba(239, 68, 68, 0.3);
+}
+
+.state-chip--ok {
+    background: rgba(34, 197, 94, 0.15);
+    color: #4ade80;
+    border: 1px solid rgba(34, 197, 94, 0.25);
+}
+
+.state-chip--danger {
+    background: rgba(239, 68, 68, 0.15);
+    color: #f87171;
+    border: 1px solid rgba(239, 68, 68, 0.25);
 }
 </style>

@@ -18,7 +18,14 @@ export const THORONDOR_MODULE_KEYS = [
   { key: "sudoCommands", label: "Comandos sudo" },
   { key: "fileIntegrity", label: "Integridad de archivos" },
   { key: "networkConnections", label: "Conexiones de red" },
-  { key: "applicationLogs", label: "Logs de aplicacion" }
+  { key: "applicationLogs", label: "Logs de aplicacion" },
+  { key: "networkRates", label: "Velocidad de red en tiempo real" },
+  { key: "establishedConnections", label: "Conexiones ESTABLISHED con PID" },
+  { key: "hardwareMonitor", label: "Hardware (fans, bateria, GPU)" },
+  { key: "dockerMonitor", label: "Contenedores Docker" },
+  { key: "updateMonitor", label: "Parches y actualizaciones pendientes" },
+  { key: "loginHistory", label: "Historial de logins (last)" },
+  { key: "smartMonitor", label: "Estado SMART de discos" }
 ];
 
 export const THORONDOR_DISTRO_OPTIONS = [
@@ -58,7 +65,14 @@ export const THORONDOR_ALERT_TYPES = {
   heartbeat: "Agente sin heartbeat",
   sudoUnauthorized: "Comando sudo no autorizado",
   newUser: "Nuevo usuario creado",
-  networkExposure: "Puerto en escucha sospechoso"
+  networkExposure: "Puerto en escucha sospechoso",
+  failedService: "Servicio systemd en estado FAILED",
+  pendingUpdates: "Actualizaciones criticas pendientes",
+  dockerUnhealthy: "Contenedor Docker en estado anomalo",
+  dnsFailure: "Fallo de resolucion DNS",
+  smartError: "Atributo SMART de disco en estado critico",
+  highNetworkRate: "Trafico de red inusualmente elevado",
+  tempCritical: "Temperatura de componente critica"
 };
 
 export function buildDefaultThorondorRuleSet() {
@@ -154,6 +168,56 @@ export function buildDefaultThorondorRuleSet() {
       sensitivePorts: [21, 23, 3306, 5432, 6379],
       scope: "all",
       description: "Marca puertos sensibles en escucha."
+    },
+    {
+      id: "rule-failed-service",
+      name: "Servicio systemd en estado FAILED",
+      type: "failedService",
+      enabled: true,
+      threshold: 1,
+      durationMinutes: 1,
+      scope: "all",
+      description: "Detecta servicios del sistema que han fallado y no han sido relanzados."
+    },
+    {
+      id: "rule-pending-updates",
+      name: "Mas de 20 actualizaciones pendientes",
+      type: "pendingUpdates",
+      enabled: true,
+      threshold: 20,
+      durationMinutes: 1,
+      scope: "all",
+      description: "Avisa cuando el numero de parches sin aplicar supera el umbral."
+    },
+    {
+      id: "rule-dns-failure",
+      name: "Fallo de resolucion DNS",
+      type: "dnsFailure",
+      enabled: true,
+      threshold: 1,
+      durationMinutes: 1,
+      scope: "all",
+      description: "Detecta cuando el host no puede resolver nombres DNS esenciales."
+    },
+    {
+      id: "rule-temp-critical",
+      name: "Temperatura de componente por encima de 85C",
+      type: "tempCritical",
+      enabled: true,
+      threshold: 85,
+      durationMinutes: 1,
+      scope: "all",
+      description: "Dispara alerta cuando cualquier sensor de temperatura supera el umbral."
+    },
+    {
+      id: "rule-high-network-rate",
+      name: "Trafico saliente por encima de 100 MB/s",
+      type: "highNetworkRate",
+      enabled: true,
+      threshold: 104857600,
+      durationMinutes: 2,
+      scope: "all",
+      description: "Detecta exfiltracion de datos o trafico de red inusualmente alto."
     }
   ];
 }
@@ -175,7 +239,14 @@ export function buildThorondorAgentDraft() {
       sudoCommands: true,
       fileIntegrity: true,
       networkConnections: true,
-      applicationLogs: true
+      applicationLogs: true,
+      networkRates: true,
+      establishedConnections: true,
+      hardwareMonitor: true,
+      dockerMonitor: false,
+      updateMonitor: true,
+      loginHistory: true,
+      smartMonitor: false
     },
     generateSystemd: true,
     hostIp: "",

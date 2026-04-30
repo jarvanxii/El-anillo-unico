@@ -33,7 +33,8 @@ export default {
     data() {
         return {
             chart: null,
-            showFallback: false
+            showFallback: false,
+            _destroyed: false
         };
     },
 
@@ -44,10 +45,13 @@ export default {
     },
 
     mounted() {
-        this.renderChart();
+        this.$nextTick(() => {
+            this.renderChart();
+        });
     },
 
     beforeUnmount() {
+        this._destroyed = true;
         this.destroyChart();
     },
 
@@ -55,7 +59,9 @@ export default {
         chartData: {
             deep: true,
             handler() {
-                this.renderChart();
+                this.$nextTick(() => {
+                    this.renderChart();
+                });
             }
         }
     },
@@ -69,14 +75,21 @@ export default {
         },
 
         renderChart() {
+            if (this._destroyed) return;
+
             const ChartLib = typeof window !== "undefined" ? window.Chart : null;
             if (!ChartLib || !this.$refs.canvas) {
                 this.showFallback = true;
                 return;
             }
 
-            this.showFallback = false;
             const canvas = this.$refs.canvas;
+
+            const ctx = canvas.getContext("2d");
+            if (!ctx) {
+                this.showFallback = true;
+                return;
+            }
 
             this.destroyChart();
 
@@ -87,6 +100,10 @@ export default {
                 }
             }
 
+            if (this._destroyed) return;
+
+            this.showFallback = false;
+
             try {
                 this.chart = new ChartLib(canvas, {
                     type: "line",
@@ -95,6 +112,7 @@ export default {
                         datasets: this.datasets
                     },
                     options: {
+                        animation: false,
                         responsive: true,
                         maintainAspectRatio: false,
                         interaction: {

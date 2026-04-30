@@ -35,6 +35,13 @@ import {
 
 const BILBO_STORAGE_KEY = 'el-anillo-bilbo-progress'
 
+const VIRTUAL_FSTYPES = new Set([
+  'tmpfs', 'squashfs', 'devtmpfs', 'proc', 'sysfs', 'cgroup', 'cgroup2',
+  'pstore', 'debugfs', 'tracefs', 'securityfs', 'binfmt_misc', 'overlay',
+  'aufs', 'ramfs', 'hugetlbfs', 'fusectl', 'bpf', 'nsfs', 'configfs',
+  'rpc_pipefs', 'mqueue', 'efivarfs'
+])
+
 function loadBilboAcademyState() {
   if (typeof window === 'undefined') {
     return { levels: {} }
@@ -105,7 +112,8 @@ function mapByAgent(items, keyName = 'agentId') {
 function toSummarySnapshot(agentId, telemetry) {
   const metrics = telemetry?.metrics || {}
   const system = telemetry?.system || {}
-  const disks = Array.isArray(metrics.disks) ? metrics.disks : []
+  const allDisks = Array.isArray(metrics.disks) ? metrics.disks : []
+  const disks = allDisks.filter((d) => d.fstype && !VIRTUAL_FSTYPES.has(d.fstype))
   const topDisk = disks.reduce((max, item) => Math.max(max, Number(item.percent) || 0), 0)
 
   return {

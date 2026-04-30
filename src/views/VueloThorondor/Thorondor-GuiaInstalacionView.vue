@@ -134,6 +134,127 @@
                 </article>
             </div>
         </section>
+        <section class="section-box">
+            <div class="section-topline">
+                <div class="module-header">
+                    <span class="section-kicker">Limpieza</span>
+                    <h2 class="module-title">Desinstalacion y borrado del agente</h2>
+                    <p class="module-copy">
+                        Elimina el servicio, los ficheros del agente y la cuenta de sistema sin residuos en systemd ni en disco.
+                        Ninguno de estos pasos requiere reinicio del host. Si se reutilizo un usuario existente en lugar de crear
+                        una cuenta dedicada, omitir el paso de userdel.
+                    </p>
+                </div>
+                <div class="phase-badge-block">
+                    <span class="phase-badge">Cleanup</span>
+                    <small>systemd, filesystem, cuenta y datos del navegador.</small>
+                </div>
+            </div>
+
+            <div class="command-stack">
+                <article class="tool-card command-card">
+                    <div class="card-head">
+                        <h5>Detener, deshabilitar y eliminar la unidad systemd</h5>
+                        <span class="mini-badge">systemd</span>
+                    </div>
+                    <div class="output-box mb-3">
+                        <pre class="result-pre">sudo systemctl stop &lt;AGENTE&gt;.service
+sudo systemctl disable &lt;AGENTE&gt;.service
+sudo rm /etc/systemd/system/&lt;AGENTE&gt;.service
+sudo systemctl daemon-reload
+sudo systemctl reset-failed</pre>
+                    </div>
+                    <div class="command-meta">
+                        <div class="meta-line">
+                            <label>Que hace</label>
+                            <p>Para el proceso, elimina la habilitacion de arranque, borra la unidad del sistema y limpia el estado del indice de systemd. Sin daemon-reload y reset-failed, la referencia al servicio eliminado puede persistir en el indice y aparecer como "not-found" en futuras consultas.</p>
+                        </div>
+                        <div class="meta-line">
+                            <label>Notas</label>
+                            <p>Si hay varios agentes instalados con distintos nombres de servicio, ejecutar el bloque para cada uno. Verificar unidades residuales con: systemctl list-units --type=service | grep thorondor.</p>
+                        </div>
+                        <div class="meta-line">
+                            <label>Salida esperada</label>
+                            <p>systemctl status &lt;AGENTE&gt;.service devuelve "Unit &lt;AGENTE&gt;.service could not be found".</p>
+                        </div>
+                    </div>
+                </article>
+
+                <article class="tool-card command-card">
+                    <div class="card-head">
+                        <h5>Eliminar ficheros del agente</h5>
+                        <span class="mini-badge">Filesystem</span>
+                    </div>
+                    <div class="output-box mb-3">
+                        <pre class="result-pre">sudo rm -rf /opt/thorondor-agent</pre>
+                    </div>
+                    <div class="command-meta">
+                        <div class="meta-line">
+                            <label>Que hace</label>
+                            <p>Elimina el directorio de trabajo completo: el agente .py, el fichero de baseline de integridad de archivos y cualquier artefacto persistido por el servicio en disco.</p>
+                        </div>
+                        <div class="meta-line">
+                            <label>Notas</label>
+                            <p>El fichero de baseline (integrity_baseline.json) es el unico dato persistente que escribe el agente en disco. Si contiene informacion que quieras conservar como evidencia forense, exportarlo antes de ejecutar este comando.</p>
+                        </div>
+                        <div class="meta-line">
+                            <label>Salida esperada</label>
+                            <p>ls /opt/thorondor-agent devuelve "No such file or directory".</p>
+                        </div>
+                    </div>
+                </article>
+
+                <article class="tool-card command-card">
+                    <div class="card-head">
+                        <h5>Eliminar la cuenta de servicio</h5>
+                        <span class="mini-badge">useradd</span>
+                    </div>
+                    <div class="output-box mb-3">
+                        <pre class="result-pre">sudo userdel --remove &lt;USUARIO&gt;</pre>
+                    </div>
+                    <div class="command-meta">
+                        <div class="meta-line">
+                            <label>Que hace</label>
+                            <p>Elimina la cuenta de servicio y su directorio HOME. --remove borra el HOME; ficheros del usuario en otras rutas del sistema permanecen intactos. El UID queda liberado y puede ser reasignado por el sistema.</p>
+                        </div>
+                        <div class="meta-line">
+                            <label>Notas</label>
+                            <p>Verificar con "getent passwd &lt;USUARIO&gt;" antes de ejecutar para confirmar que la cuenta es exclusiva del agente. Omitir este paso si se reutilizo un usuario existente. Ficheros huerfanos (propiedad del UID eliminado) pueden quedar en el sistema: localizarlos con: find / -user &lt;UID&gt; 2>/dev/null.</p>
+                        </div>
+                        <div class="meta-line">
+                            <label>Salida esperada</label>
+                            <p>id &lt;USUARIO&gt; devuelve "no such user". El directorio home del usuario ya no existe en /home/ o en la ruta configurada.</p>
+                        </div>
+                    </div>
+                </article>
+
+                <article class="tool-card command-card">
+                    <div class="card-head">
+                        <h5>Eliminar datos del navegador (IndexedDB)</h5>
+                        <span class="mini-badge">IndexedDB</span>
+                    </div>
+                    <div class="output-box mb-3">
+                        <pre class="result-pre"># Desde el panel de Thorondor: Agentes → Eliminar agente
+# O desde DevTools del navegador:
+# Application → Storage → IndexedDB → thorondor-siem-db → [clic derecho] Delete database</pre>
+                    </div>
+                    <div class="command-meta">
+                        <div class="meta-line">
+                            <label>Que hace</label>
+                            <p>Elimina snapshots, logs, eventos de seguridad, alertas, historial de conexiones y metadata de retension del agente que persisten en IndexedDB del navegador. La base de datos es local al perfil del navegador y no se elimina al desinstalar el agente del host.</p>
+                        </div>
+                        <div class="meta-line">
+                            <label>Notas</label>
+                            <p>Cada perfil de navegador tiene su propia IndexedDB. Si Thorondor se ha abierto desde varios perfiles o maquinas, los datos persisten de forma independiente en cada uno. Eliminar el agente desde el panel de Thorondor limpia los datos en la sesion activa. La base de datos completa se llama "thorondor-siem-db".</p>
+                        </div>
+                        <div class="meta-line">
+                            <label>Salida esperada</label>
+                            <p>El agente desaparece del dashboard. En Application → IndexedDB del navegador, thorondor-siem-db no contiene registros del agente eliminado o la base de datos completa ha sido borrada.</p>
+                        </div>
+                    </div>
+                </article>
+            </div>
+        </section>
     </ThorondorPageShell>
 </template>
 

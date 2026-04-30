@@ -55,10 +55,59 @@
                 </div>
             </div>
 
+            <div class="tool-card mb-4" v-if="selectedLatestSnapshot?.disks?.length">
+                <div class="card-head">
+                    <h5>Particiones de disco</h5>
+                    <span class="mini-badge">{{ selectedLatestSnapshot.disks.length }} particion{{ selectedLatestSnapshot.disks.length !== 1 ? 'es' : '' }}</span>
+                </div>
+                <div class="table-wrap">
+                    <table class="table table-dark table-sm align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th>Dispositivo</th>
+                                <th>Punto de montaje</th>
+                                <th>Tipo</th>
+                                <th>Uso</th>
+                                <th>Usado</th>
+                                <th>Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="disk in selectedLatestSnapshot.disks" :key="disk.mountpoint">
+                                <td><code class="small-code">{{ disk.device }}</code></td>
+                                <td><code class="small-code">{{ disk.mountpoint }}</code></td>
+                                <td><span class="mini-badge">{{ disk.fstype }}</span></td>
+                                <td>
+                                    <div class="disk-bar-row">
+                                        <div class="disk-bar-track">
+                                            <div class="disk-bar-fill" :style="{ width: (disk.percent || 0) + '%', background: diskBarColor(disk.percent) }"></div>
+                                        </div>
+                                        <span class="disk-bar-pct">{{ (disk.percent || 0).toFixed(1) }}%</span>
+                                    </div>
+                                </td>
+                                <td>{{ formatBytes(disk.used) }}</td>
+                                <td>{{ formatBytes(disk.total) }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
             <div class="tool-card mb-4">
                 <div class="card-head">
                     <h5>Evolucion temporal del sistema seleccionado</h5>
                     <span class="mini-badge">{{ historyRangeDays }}d</span>
+                </div>
+                <div v-if="uniqueDiskMountpoints.length > 1" class="disk-toggles">
+                    <span class="disk-toggle-label">Disco:</span>
+                    <button
+                        v-for="mp in uniqueDiskMountpoints"
+                        :key="mp"
+                        class="disk-toggle-btn"
+                        :class="{ 'disk-toggle-active': diskToggles[mp] !== false }"
+                        :style="{ '--tcol': diskColorMap[mp]?.border }"
+                        @click="toggleDiskMountpoint(mp)"
+                    >{{ mp }}</button>
                 </div>
                 <ThorondorLineChart chart-id="thorondor-agent-history-chart" :labels="selectedHistoryChart.labels" :datasets="selectedHistoryChart.datasets" title="CPU, RAM y disco" />
             </div>
@@ -262,6 +311,17 @@
                     <h5>Historico de metricas</h5>
                     <span class="mini-badge">{{ historyRangeDays }}d</span>
                 </div>
+                <div v-if="uniqueDiskMountpoints.length > 1" class="disk-toggles">
+                    <span class="disk-toggle-label">Disco:</span>
+                    <button
+                        v-for="mp in uniqueDiskMountpoints"
+                        :key="mp"
+                        class="disk-toggle-btn"
+                        :class="{ 'disk-toggle-active': diskToggles[mp] !== false }"
+                        :style="{ '--tcol': diskColorMap[mp]?.border }"
+                        @click="toggleDiskMountpoint(mp)"
+                    >{{ mp }}</button>
+                </div>
                 <ThorondorLineChart chart-id="thorondor-history-only-chart" :labels="selectedHistoryChart.labels" :datasets="selectedHistoryChart.datasets" title="Historico del sistema" />
             </div>
 
@@ -317,6 +377,7 @@ export default {
         return {
             detailTab: "overview",
             historyRangeDays: 7,
+            diskToggles: {},
             logFilters: {
                 level: "all",
                 text: "",
@@ -361,6 +422,49 @@ export default {
             return this.selectedAgentSnapshots.filter((snapshot) => new Date(snapshot.timestamp).getTime() >= cutoff);
         },
 
+        uniqueDiskMountpoints() {
+            const seen = new Set();
+            this.historicalSnapshots.forEach((snapshot) => {
+                (snapshot.disks || []).forEach((d) => seen.add(d.mountpoint));
+            });
+            return [...seen].sort();
+        },
+
+        diskColorMap() {
+            const palette = [
+                { border: "rgba(251, 191, 36, 1)", bg: "rgba(251, 191, 36, 0.15)" },
+                { border: "rgba(249, 115, 22, 1)", bg: "rgba(249, 115, 22, 0.15)" },
+                { border: "rgba(239, 68, 68, 1)", bg: "rgba(239, 68, 68, 0.15)" },
+                { border: "rgba(168, 85, 247, 1)", bg: "rgba(168, 85, 247, 0.15)" },
+                { border: "rgba(236, 72, 153, 1)", bg: "rgba(236, 72, 153, 0.15)" },
+                { border: "rgba(20, 184, 166, 1)", bg: "rgba(20, 184, 166, 0.15)" }
+            ];
+            return this.uniqueDiskMountpoints.reduce((acc, mp, i) => {
+                acc[mp] = palette[i % palette.length];
+                return acc;
+            }, {});
+        },
+
+        diskDatasets() {
+            const snapshots = this.historicalSnapshots;
+            return this.uniqueDiskMountpoints
+                .filter((mp) => this.diskToggles[mp] !== false)
+                .map((mp) => {
+                    const color = this.diskColorMap[mp] || { border: "rgba(251, 191, 36, 1)", bg: "rgba(251, 191, 36, 0.15)" };
+                    return {
+                        label: `Disco ${mp}`,
+                        data: snapshots.map((snapshot) => {
+                            const d = (snapshot.disks || []).find((disk) => disk.mountpoint === mp);
+                            return d != null ? d.percent : null;
+                        }),
+                        borderColor: color.border,
+                        backgroundColor: color.bg,
+                        tension: 0.25,
+                        spanGaps: true
+                    };
+                });
+        },
+
         selectedHistoryChart() {
             const snapshots = this.historicalSnapshots;
             return {
@@ -368,7 +472,7 @@ export default {
                 datasets: [
                     { label: "CPU", data: snapshots.map((snapshot) => snapshot.cpuTotal), borderColor: "rgba(56, 189, 248, 1)", backgroundColor: "rgba(56, 189, 248, 0.18)", tension: 0.25, spanGaps: true },
                     { label: "RAM", data: snapshots.map((snapshot) => snapshot.memoryPercent), borderColor: "rgba(74, 222, 128, 1)", backgroundColor: "rgba(74, 222, 128, 0.18)", tension: 0.25, spanGaps: true },
-                    { label: "Disco", data: snapshots.map((snapshot) => snapshot.diskPercent), borderColor: "rgba(251, 191, 36, 1)", backgroundColor: "rgba(251, 191, 36, 0.18)", tension: 0.25, spanGaps: true }
+                    ...this.diskDatasets
                 ]
             };
         },
@@ -454,6 +558,19 @@ export default {
 
         async setAlertStatus(id, status) {
             await this.$store.dispatch("setThorondorAlertStatus", { id, status });
+        },
+
+        toggleDiskMountpoint(mp) {
+            this.diskToggles = {
+                ...this.diskToggles,
+                [mp]: this.diskToggles[mp] === false ? true : false
+            };
+        },
+
+        diskBarColor(percent) {
+            if (percent >= 90) return "rgba(239, 68, 68, 0.85)";
+            if (percent >= 75) return "rgba(251, 191, 36, 0.85)";
+            return "rgba(74, 222, 128, 0.85)";
         }
     }
 };
@@ -461,4 +578,81 @@ export default {
 
 <style scoped>
 @import "@/features/vueloThorondor/styles/thorondor-theme.css";
+
+.small-code {
+    font-size: 0.78rem;
+    color: #94a3b8;
+    background: rgba(255, 255, 255, 0.04);
+    padding: 0.1rem 0.3rem;
+    border-radius: 3px;
+}
+
+.disk-bar-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.disk-bar-track {
+    flex: 1;
+    height: 5px;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 4px;
+    overflow: hidden;
+    min-width: 60px;
+}
+
+.disk-bar-fill {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.35s ease;
+}
+
+.disk-bar-pct {
+    font-size: 0.78rem;
+    color: #94a3b8;
+    min-width: 40px;
+    text-align: right;
+}
+
+.disk-toggles {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.4rem;
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.6rem;
+    border-bottom: 1px solid rgba(51, 65, 85, 0.4);
+}
+
+.disk-toggle-label {
+    font-size: 0.72rem;
+    color: #64748b;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    margin-right: 0.15rem;
+}
+
+.disk-toggle-btn {
+    font-size: 0.74rem;
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+    padding: 0.18rem 0.55rem;
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: transparent;
+    color: #475569;
+    cursor: pointer;
+    transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
+}
+
+.disk-toggle-btn.disk-toggle-active {
+    border-color: var(--tcol, rgba(56, 189, 248, 0.55));
+    color: var(--tcol, rgba(56, 189, 248, 1));
+    background: rgba(255, 255, 255, 0.04);
+}
+
+.disk-toggle-btn:hover {
+    border-color: rgba(255, 255, 255, 0.22);
+    color: #94a3b8;
+}
 </style>

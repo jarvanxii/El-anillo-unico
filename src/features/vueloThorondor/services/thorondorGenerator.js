@@ -355,11 +355,21 @@ def collect_logs():
     }
 
 
+VIRTUAL_FSTYPES = {
+    "tmpfs", "squashfs", "devtmpfs", "proc", "sysfs", "cgroup", "cgroup2",
+    "pstore", "debugfs", "tracefs", "securityfs", "binfmt_misc", "overlay",
+    "aufs", "ramfs", "hugetlbfs", "fusectl", "bpf", "nsfs", "configfs",
+    "rpc_pipefs", "mqueue", "efivarfs"
+}
+
+
 def collect_payload():
     vm = psutil.virtual_memory()
     swap = psutil.swap_memory()
     partitions = []
     for partition in psutil.disk_partitions():
+        if not partition.fstype or partition.fstype in VIRTUAL_FSTYPES:
+            continue
         try:
             usage = psutil.disk_usage(partition.mountpoint)
             partitions.append({

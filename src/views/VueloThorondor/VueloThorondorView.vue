@@ -3,13 +3,15 @@
         <section class="section-box intro-box">
             <div class="intro-layout">
                 <div class="section-heading">
-                    <span class="section-kicker">SIEM personal para sistemas Linux</span>
+                    <span class="section-kicker">SIEM personal — Linux · Windows · Splunk</span>
                     <h1 class="section-name">El vuelo de Thorondor</h1>
                     <p class="section-copy">
-                        Este apartado de información es la puerta de entrada para cualquier usuario que quiera
-                        monitorizar una red local con un sistema Linux. Aquí se explica como funciona la monitorizacion,
-                        que papel juega el agente Python, que guarda el navegador, como se conectan los hosts y por que
-                        este modulo esta planteado como un SIEM personal y no corporativo.
+                        Thorondor es un SIEM personal sin backend: un agente Python autocontenido expone dos endpoints
+                        HTTP (<code>/health</code>, <code>/telemetry</code>) sobre la IP privada del host. El frontend realiza
+                        polling HTTP directo desde el navegador, persiste la telemetria en IndexedDB y aplica reglas de
+                        correlacion en JavaScript puro. Compatible con Linux (systemd, Debian/Ubuntu/RHEL/Arch) y Windows
+                        (Task Scheduler). Integracion opcional con Splunk Enterprise Developer via HTTP Event Collector
+                        para correlacion SPL sobre todos los hosts monitorizados.
                     </p>
                 </div>
 
@@ -17,8 +19,8 @@
                     <img src="@/assets/logos/thorondor.png" alt="Sello de Thorondor" />
                     <span>Monitorizacion desde el navegador</span>
                     <small>
-                        Todo gira alrededor de tu navegador, la IP privada del host Linux y un agente Python
-                        autocontenido que responde peticiones HTTP en tu red local.
+                        Arquitectura pull sin backend: el navegador consulta directamente a cada agente por su IP
+                        privada y puerto TCP. Soporta Linux (systemd) y Windows (Task Scheduler). Sin relay, sin broker.
                     </small>
                 </div>
             </div>
@@ -37,9 +39,10 @@
                     <span class="section-kicker">Vision general</span>
                     <h2 class="module-title">Que hace Thorondor y para quien sirve</h2>
                     <p class="module-copy">
-                        Thorondor te ayuda a vigilar varios sistemas Linux desde una web local, sin desplegar un
-                        backend tradicional ni una plataforma centralizada. Es util para laboratorios, equipos caseros,
-                        servidores propios y entornos donde prefieres visibilidad directa sin compartir datos.
+                        Thorondor monitoriza hosts Linux y Windows desde el navegador sin infraestructura centralizada.
+                        El agente Python expone telemetria via HTTP; el frontend la consume por polling, la persiste en
+                        IndexedDB y aplica reglas de correlacion localmente. Orientado a laboratorios, homelab, servidores
+                        propios y entornos donde la telemetria no puede atravesar infraestructura de terceros.
                     </p>
                 </div>
                 <div class="phase-badge-block">
@@ -63,11 +66,11 @@
                     <span>Uso</span>
                 </div>
                 <div class="verdict-body">
-                    <strong>Solo en tu navegador, pero con varios hosts</strong>
+                    <strong>Datos locales, correlacion local, sin dependencia de red externa</strong>
                     <p>
-                        Puedes registrar varios agentes y monitorizar varios usuarios o varias maquinas, pero los datos
-                        viven en tu navegador y en tu IndexedDB local. No se ha planteado como consola multiempresa ni
-                        como servicio para compartir telemetria entre terceros.
+                        La telemetria de todos los hosts reside en IndexedDB del navegador. No existe canal de exfiltrado
+                        ni servidor central: cada agente es un endpoint HTTP independiente. La integracion con Splunk
+                        es opt-in y utiliza un canal HEC directo desde el navegador al servidor Splunk local.
                     </p>
                 </div>
             </div>
@@ -77,11 +80,12 @@
             <div class="section-topline">
                 <div class="module-header">
                     <span class="section-kicker">Arquitectura</span>
-                    <h2 class="module-title">Resumen técnico</h2>
+                    <h2 class="module-title">Flujo tecnico extremo a extremo</h2>
                     <p class="module-copy">
-                        Si nunca has montado algo parecido, piensa en Thorondor como una combinacion de generador,
-                        sonda local y panel de control. El frontend genera el agente, el host Linux lo ejecuta y tu
-                        navegador hace las consultas.
+                        El generador produce un agente Python parametrizado (host, puerto, modulos, usuario de servicio)
+                        que se despliega en el sistema destino. El frontend realiza polling HTTP al agente, decodifica
+                        el JSON de telemetria, lo persiste en IndexedDB y aplica las reglas de correlacion registradas.
+                        Sin dependencia de red externa salvo la conectividad LAN directa al host.
                     </p>
                 </div>
                 <div class="phase-badge-block">
@@ -182,20 +186,20 @@ export default {
         foundationalNotes() {
             return [
                 {
-                    label: "Solo en tu navegador",
-                    copy: "La consola guarda los datos en IndexedDB del cliente. No dependes de un backend central para usarla."
+                    label: "Arquitectura pull sin backend",
+                    copy: "El agente es stateless. No mantiene sesion ni abre conexiones salientes. El navegador realiza polling HTTP directo contra /health y /telemetry. No existe relay, broker ni canal inverso."
                 },
                 {
-                    label: "Varios hosts o usuarios",
-                    copy: "Puedes registrar varios sistemas Linux, cada uno con su IP privada, puerto, modulos activos y politicas propias de monitorizacion."
+                    label: "Multi-plataforma: Linux y Windows",
+                    copy: "En Linux se despliega como unidad systemd con cuenta sin shell interactivo. En Windows como tarea programada en Task Scheduler. El agente Python es identico en ambos casos."
                 },
                 {
-                    label: "No compartes datos",
-                    copy: "La telemetria queda pensada para uso personal. No esta orientada a enviar datos a terceros ni a un panel corporativo."
+                    label: "Persistencia en IndexedDB",
+                    copy: "Snapshots, logs, eventos de seguridad, alertas y reglas se persisten en IndexedDB del navegador con cursor sweep automatico. Sin escrituras en servidor central ni telemetria a terceros."
                 },
                 {
-                    label: "Reglas en JavaScript",
-                    copy: "El frontend define las peticiones a los agentes, interpreta sus respuestas y dispara alertas localmente."
+                    label: "Correlacion local + Splunk",
+                    copy: "Las reglas de correlacion se ejecutan en JavaScript puro en el navegador. Para correlacion avanzada multi-host, la integracion con Splunk Developer via HEC permite busquedas SPL sobre la telemetria completa."
                 }
             ];
         },
@@ -261,34 +265,34 @@ export default {
         architectureCards() {
             return [
                 {
-                    label: "1. Generas el agente",
+                    label: "1. Genera el agente",
                     badge: "Frontend",
-                    copy: "Desde la vista de generador defines nombre del host, distro, puerto, logs, modulos y usuario del servicio. La web compone un .py y un .service listos para descargar."
+                    copy: "El generador parametriza el agente Python con hostname, puerto, IP de escucha, usuario de servicio, distro, modulos activos y rutas de log. Produce thorondor-agent.py y thorondor-agent.service (Linux) o una tarea PS1 (Windows)."
                 },
                 {
-                    label: "2. Lo instalas en Linux",
+                    label: "2. Despliega en el host",
                     badge: "Host",
-                    copy: "Copias los archivos al servidor o equipo Linux, instalas Python y psutil, das permisos al usuario y dejas el agente como servicio systemd."
+                    copy: "Linux: cuenta sin shell, /opt/thorondor-agent/, grupos adm+systemd-journal, psutil via apt/dnf/pacman, unidad systemd. Windows: C:\\ProgramData\\Thorondor-Agent\\, psutil via pip, tarea en Task Scheduler con RunLevel Highest."
                 },
                 {
-                    label: "3. El navegador consulta",
+                    label: "3. El navegador hace polling",
                     badge: "Polling",
-                    copy: "Tu navegador hace peticiones HTTP al host Linux a traves de su IP privada y del puerto configurado. El agente responde JSON con metricas, logs y eventos."
+                    copy: "Peticion HTTP GET al /telemetry del agente cada N segundos. El agente responde JSON con system, metrics (CPU, RAM, disco por particion, temperatura), security (logins, sudo, file integrity) y logs."
                 },
                 {
-                    label: "4. Se guarda lo importante",
+                    label: "4. Persistencia en IndexedDB",
                     badge: "Storage",
-                    copy: "El frontend resume, persiste y limpia snapshots, logs y alertas con IndexedDB. Vuex sostiene el estado vivo para dashboard, detalle y reglas."
+                    copy: "El store Vuex decodifica el payload y lo distribuye en IndexedDB: hasta 500 snapshots, 2000 logs y 1000 eventos por agente. Un cursor sweep con cooldown de 1h poda los registros mas antiguos."
                 },
                 {
-                    label: "5. Se evalua el riesgo",
+                    label: "5. Correlacion y alertas",
                     badge: "Rules",
-                    copy: "Las reglas JavaScript vigilan CPU, RAM, heartbeat, fallos de login, sudo y cambios criticos para disparar alertas sin depender de un backend."
+                    copy: "El motor de reglas JavaScript evalua thresholds de CPU, RAM, heartbeat, frecuencia de fallos de autenticacion, sudo fuera de whitelist y cambios en el baseline de integridad de archivos."
                 },
                 {
-                    label: "6. Revisas cada host",
-                    badge: "UX",
-                    copy: "Desde dashboard y detalle por host puedes bajar a procesos, logs, timeline de seguridad, historico, estado del agente y eventos exportables."
+                    label: "6. Correlacion avanzada con Splunk",
+                    badge: "SIEM+",
+                    copy: "Opcional: la ingesta via HEC envia snapshots, eventos de seguridad y logs a Splunk Developer (500 MB/dia gratuitos). Las busquedas SPL permiten correlacion temporal multi-host, deteccion de anomalias y series temporales."
                 }
             ];
         },
@@ -296,20 +300,20 @@ export default {
         startSteps() {
             return [
                 {
-                    label: "Paso 1 - Lee la guia",
-                    copy: "Empieza por la informacion principal y la guia de instalacion para entender de donde sacar IP, logs, permisos y paquetes del sistema."
+                    label: "Paso 1 — Guia de instalacion",
+                    copy: "Selecciona la distribucion del host (Ubuntu/Debian, RHEL/Rocky, Arch, Windows) y sigue las fases: fingerprint, cuenta de servicio, dependencias Python, smoke test y registro en systemd o Task Scheduler."
                 },
                 {
-                    label: "Paso 2 - Genera el agente",
-                    copy: "Configura un solo host Linux con un puerto sencillo, por ejemplo 8765, y con un intervalo de 30 segundos para validar el flujo."
+                    label: "Paso 2 — Generador de agentes",
+                    copy: "Rellena el formulario con el hostname, IP privada, puerto (ej. 8765), distro, usuario de servicio y modulos activos. Descarga el .py y el fichero de servicio generados para este host especifico."
                 },
                 {
-                    label: "Paso 3 - Activa systemd",
-                    copy: "Haz que el servicio arranque al encender el equipo. Asi el host seguira accesible para el navegador sin lanzar manualmente el script."
+                    label: "Paso 3 — Despliega y valida",
+                    copy: "Copia los ficheros al host, instala dependencias segun la distro, ejecuta el smoke test en foreground (curl /health y /telemetry), despues instala el servicio y verifica NRestarts=0."
                 },
                 {
-                    label: "Paso 4 - Revisa dashboard",
-                    copy: "Comprueba heartbeat, CPU, RAM, disco y eventos recientes. Si todo responde, anade mas hosts o ajusta reglas de monitorizacion."
+                    label: "Paso 4 — Dashboard y alertas",
+                    copy: "El host aparece en el dashboard con heartbeat, CPU, RAM y disco. Ajusta las reglas de monitorizacion y, opcionalmente, configura la integracion con Splunk para correlacion SPL avanzada."
                 }
             ];
         }

@@ -55,34 +55,42 @@
             </div>
         </section>
 
-        <section class="section-box">
+        <section class="section-box guide-phase-header">
             <div class="section-topline">
                 <div class="module-header">
-                    <span class="section-kicker">Plataforma objetivo</span>
-                    <h2 class="module-title">Sistema operativo del host</h2>
+                    <span class="section-kicker">Fase A — Servidor</span>
+                    <h2 class="module-title">Instalacion en el host monitorizado</h2>
                     <p class="module-copy">
-                        Selecciona el sistema operativo del host donde se va a instalar el agente.
-                        Los comandos, rutas y el gestor de servicios varian entre Linux y Windows.
+                        Selecciona la distribucion del host donde se instalara el agente Thorondor.
+                        Los comandos de gestion de paquetes, permisos de grupos, configuracion del servicio
+                        y sintaxis del firewall varian segun la distribucion. Selecciona antes de ejecutar.
                     </p>
                 </div>
                 <div class="phase-badge-block">
-                    <span class="phase-badge">Platform</span>
-                    <small>Linux (systemd) &middot; Windows (Task Scheduler)</small>
+                    <span class="phase-badge">Host</span>
+                    <small>systemd &middot; Task Scheduler</small>
                 </div>
             </div>
             <div class="os-selector-row">
+                <p class="selector-label">Distribucion del host:</p>
                 <div class="os-toggle-group">
-                    <button type="button" class="os-toggle-btn" :class="{ active: guideOs === 'linux' }" @click="guideOs = 'linux'">
-                        <span class="os-icon">🐧</span> Linux
+                    <button type="button" class="os-toggle-btn" :class="{ active: hostOs === 'ubuntu' }" @click="hostOs = 'ubuntu'">
+                        <span class="os-icon">🐧</span> Ubuntu / Debian / Kali
                     </button>
-                    <button type="button" class="os-toggle-btn" :class="{ active: guideOs === 'windows' }" @click="guideOs = 'windows'">
+                    <button type="button" class="os-toggle-btn" :class="{ active: hostOs === 'rhel' }" @click="hostOs = 'rhel'">
+                        <span class="os-icon">🎩</span> RHEL / CentOS / Rocky
+                    </button>
+                    <button type="button" class="os-toggle-btn" :class="{ active: hostOs === 'arch' }" @click="hostOs = 'arch'">
+                        <span class="os-icon">🏹</span> Arch / Manjaro
+                    </button>
+                    <button type="button" class="os-toggle-btn" :class="{ active: hostOs === 'windows' }" @click="hostOs = 'windows'">
                         <span class="os-icon">🪟</span> Windows
                     </button>
                 </div>
             </div>
         </section>
 
-        <section v-for="section in commandSections" :key="section.title" class="section-box">
+        <section v-for="section in hostCommandSections" :key="section.title" class="section-box">
             <div class="section-topline">
                 <div class="module-header">
                     <span class="section-kicker">{{ section.kicker }}</span>
@@ -123,16 +131,17 @@
             </div>
         </section>
 
-        <section class="section-box">
+        <section class="section-box guide-phase-header">
             <div class="section-topline">
                 <div class="module-header">
                     <span class="section-kicker">Integracion SIEM avanzado</span>
-                    <h2 class="module-title">Splunk — HTTP Event Collector e ingesta de telemetria</h2>
+                    <h2 class="module-title">Splunk — Instalacion y configuracion en el servidor</h2>
                     <p class="module-copy">
                         Splunk con licencia Developer (gratuita, 500 MB/dia) expone una REST API completa en el puerto 8089
                         y un HTTP Event Collector (HEC) en el puerto 8088. Thorondor puede enviar tres flujos de datos: snapshots
-                        de telemetria completos, eventos de seguridad individuales y entradas de log del sistema. Una vez ingestados,
-                        las busquedas SPL permiten correlacion temporal, deteccion de anomalias y alertas cruzadas entre hosts.
+                        de telemetria completos, eventos de seguridad individuales y entradas de log del sistema.
+                        La licencia Developer se solicita en <a href="https://dev.splunk.com/enterprise/dev_license" target="_blank" rel="noopener noreferrer" class="guide-link">dev.splunk.com</a>
+                        y la descarga en <a href="https://www.splunk.com/en_us/download/splunk-enterprise.html" target="_blank" rel="noopener noreferrer" class="guide-link">splunk.com/download</a>.
                     </p>
                 </div>
                 <div class="phase-badge-block">
@@ -156,16 +165,16 @@
             <div class="section-topline">
                 <div class="module-header">
                     <span class="section-kicker">Splunk — Fase 1</span>
-                    <h2 class="module-title">Instalacion y configuracion inicial</h2>
+                    <h2 class="module-title">Instalacion de Splunk Enterprise</h2>
                     <p class="module-copy">
-                        Descarga e instalacion de Splunk Enterprise en el host de analisis. El modo standalone es suficiente
-                        para correlacionar la telemetria de todos los hosts monitorizados. La licencia Developer no requiere
-                        registro de infraestructura ni conexion continua a Internet una vez activada.
+                        Descarga e instalacion de Splunk Enterprise en el servidor. El modo standalone es suficiente
+                        para correlacionar la telemetria de todos los hosts monitorizados. Los comandos mostrados
+                        corresponden a la distribucion seleccionada para el host (<strong>{{ hostOsLabel }}</strong>).
                     </p>
                 </div>
                 <div class="phase-badge-block">
                     <span class="phase-badge">Install</span>
-                    <small>Linux x86_64 · splunk.com/download</small>
+                    <small>{{ hostOsLabel }}</small>
                 </div>
             </div>
 
@@ -315,6 +324,80 @@
             </div>
         </section>
 
+        <section class="section-box guide-phase-header">
+            <div class="section-topline">
+                <div class="module-header">
+                    <span class="section-kicker">Fase B — Cliente</span>
+                    <h2 class="module-title">Configuracion del equipo cliente</h2>
+                    <p class="module-copy">
+                        El cliente es el equipo desde el que se accede al dashboard de Thorondor y desde el que
+                        el navegador realiza el polling a los agentes. Selecciona el sistema operativo del cliente
+                        para ver los comandos de verificacion de conectividad y configuracion de acceso a Splunk.
+                    </p>
+                </div>
+                <div class="phase-badge-block">
+                    <span class="phase-badge">Cliente</span>
+                    <small>Navegador · Splunk CORS</small>
+                </div>
+            </div>
+            <div class="os-selector-row">
+                <p class="selector-label">Distribucion del cliente:</p>
+                <div class="os-toggle-group">
+                    <button type="button" class="os-toggle-btn" :class="{ active: clientOs === 'ubuntu' }" @click="clientOs = 'ubuntu'">
+                        <span class="os-icon">🐧</span> Ubuntu / Debian
+                    </button>
+                    <button type="button" class="os-toggle-btn" :class="{ active: clientOs === 'rhel' }" @click="clientOs = 'rhel'">
+                        <span class="os-icon">🎩</span> RHEL / CentOS
+                    </button>
+                    <button type="button" class="os-toggle-btn" :class="{ active: clientOs === 'arch' }" @click="clientOs = 'arch'">
+                        <span class="os-icon">🏹</span> Arch / Manjaro
+                    </button>
+                    <button type="button" class="os-toggle-btn" :class="{ active: clientOs === 'macos' }" @click="clientOs = 'macos'">
+                        <span class="os-icon">🍎</span> macOS
+                    </button>
+                    <button type="button" class="os-toggle-btn" :class="{ active: clientOs === 'windows' }" @click="clientOs = 'windows'">
+                        <span class="os-icon">🪟</span> Windows
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <section v-for="section in clientSetupSections" :key="section.title" class="section-box">
+            <div class="section-topline">
+                <div class="module-header">
+                    <span class="section-kicker">{{ section.kicker }}</span>
+                    <h2 class="module-title">{{ section.title }}</h2>
+                    <p class="module-copy">{{ section.copy }}</p>
+                </div>
+                <div class="phase-badge-block">
+                    <span class="phase-badge">{{ section.badge }}</span>
+                    <small>{{ section.note }}</small>
+                </div>
+            </div>
+            <div class="command-stack">
+                <article class="tool-card command-card" v-for="command in section.commands" :key="command.command">
+                    <div class="card-head">
+                        <h5>{{ command.title }}</h5>
+                        <span class="mini-badge">{{ command.badge }}</span>
+                    </div>
+                    <div class="output-box mb-3 copy-box">
+                        <button class="copy-btn" :class="{ copied: copiedKey === command.command }" @click="copyCmd(command.command, command.command)">{{ copiedKey === command.command ? '✓ Copiado' : 'Copiar' }}</button>
+                        <pre class="result-pre">{{ command.command }}</pre>
+                    </div>
+                    <div class="command-meta">
+                        <div class="meta-line">
+                            <label>Que hace</label>
+                            <p>{{ command.purpose }}</p>
+                        </div>
+                        <div class="meta-line">
+                            <label>Notas</label>
+                            <p>{{ command.when }}</p>
+                        </div>
+                    </div>
+                </article>
+            </div>
+        </section>
+
         <section class="section-box">
             <div class="section-topline">
                 <div class="module-header">
@@ -375,7 +458,8 @@ export default {
     data() {
         return {
             copiedKey: null,
-            guideOs: "linux"
+            hostOs: "ubuntu",
+            clientOs: "ubuntu"
         };
     },
 
@@ -446,8 +530,91 @@ export default {
             ];
         },
 
-        commandSections() {
-            return this.guideOs === "windows" ? this.windowsCommandSections : this.linuxCommandSections;
+        hostOsLabel() {
+            const labels = {
+                ubuntu: "Ubuntu / Debian / Kali",
+                rhel: "RHEL / CentOS / Rocky",
+                arch: "Arch / Manjaro",
+                windows: "Windows"
+            };
+            return labels[this.hostOs] || this.hostOs;
+        },
+
+        hostCommandSections() {
+            if (this.hostOs === "windows") return this.windowsCommandSections;
+            return this.linuxCommandSectionsForDistro;
+        },
+
+        clientSetupSections() {
+            const isWin = this.clientOs === "windows";
+            const isMac = this.clientOs === "macos";
+            const curlCmd = isWin
+                ? "Test-NetConnection -ComputerName <IP_SPLUNK> -Port 8088\nTest-NetConnection -ComputerName <IP_SPLUNK> -Port 8089"
+                : "curl -s -o /dev/null -w '%{http_code}' http://<IP_SPLUNK>:8088/services/collector/health\ncurl -k -s -o /dev/null -w '%{http_code}' https://<IP_SPLUNK>:8089/services/server/info?output_mode=json";
+
+            const openBrowserCmd = isWin
+                ? "Start-Process 'http://<IP_SPLUNK>:8000'"
+                : isMac
+                ? "open http://<IP_SPLUNK>:8000"
+                : "xdg-open http://<IP_SPLUNK>:8000 2>/dev/null || firefox http://<IP_SPLUNK>:8000 &";
+
+            return [
+                {
+                    kicker: "Cliente — Verificacion",
+                    title: "Conectividad a Splunk y al agente",
+                    copy: "Verifica que el equipo cliente tiene acceso TCP a los puertos del agente Thorondor (configurado en el generador) y a los puertos de Splunk (8088 HEC, 8089 REST API, 8000 Web UI).",
+                    badge: "Network",
+                    note: `${this.clientOs === 'windows' ? 'PowerShell' : 'curl/bash'}`,
+                    commands: [
+                        {
+                            title: "Verificar puertos de Splunk",
+                            badge: "TCP",
+                            command: curlCmd,
+                            purpose: "Comprueba que el cliente tiene acceso TCP a los puertos de Splunk. HTTP 200 en el HEC y una respuesta JSON en la REST API indican accesibilidad correcta.",
+                            when: "Si los puertos no responden, verificar el firewall del servidor Splunk, la ruta de red y que Splunk esta corriendo (systemctl status Splunkd o Get-Service Splunkd)."
+                        },
+                        {
+                            title: "Abrir la UI de Splunk en el navegador",
+                            badge: "Browser",
+                            command: openBrowserCmd,
+                            purpose: "Abre el panel web de Splunk (puerto 8000). Util para verificar que la UI es accesible antes de intentar las conexiones desde Thorondor.",
+                            when: "Si la UI no carga, verificar que Splunk esta arrancado y que el puerto 8000 no esta filtrado. La REST API (8089) y el HEC (8088) son diferentes al puerto web (8000)."
+                        }
+                    ]
+                },
+                {
+                    kicker: "Cliente — CORS",
+                    title: "Configurar CORS en Splunk para acceso desde el navegador",
+                    copy: "El navegador bloquea peticiones cross-origin a Splunk salvo que el servidor responda con los headers CORS adecuados. Esta configuracion se aplica en el SERVIDOR Splunk pero es necesaria por el cliente. Editar el fichero web.conf en el servidor.",
+                    badge: "CORS",
+                    note: "Cambio en el servidor Splunk",
+                    commands: [
+                        {
+                            title: "Editar web.conf en el servidor Splunk (Linux)",
+                            badge: "Config",
+                            command: "sudo tee /opt/splunk/etc/system/local/web.conf > /dev/null <<'EOF'\n[settings]\nenableSplunkWebSSL = false\ncrossOriginSharingPolicy = *\ncrossOriginSharingHeaders = Authorization, Content-Type, X-Splunk-Form-Key\nEOF\nsudo systemctl restart Splunkd",
+                            purpose: "Configura Splunk para responder con los headers CORS necesarios. crossOriginSharingPolicy=* permite cualquier origen (aceptable en LAN privada). En produccion, sustituir el wildcard por el origen exacto del frontend.",
+                            when: "En produccion: sustituir '*' por 'http://<IP_CLIENTE>:<PUERTO>' para restringir CORS al origen exacto. Reiniciar Splunk tras cada cambio en web.conf."
+                        },
+                        {
+                            title: "Editar web.conf en el servidor Splunk (Windows)",
+                            badge: "Config PS",
+                            command: "$webConf = @'\n[settings]\nenableSplunkWebSSL = false\ncrossOriginSharingPolicy = *\ncrossOriginSharingHeaders = Authorization, Content-Type, X-Splunk-Form-Key\n'@\n$webConf | Set-Content 'C:\\Program Files\\Splunk\\etc\\system\\local\\web.conf'\nRestart-Service Splunkd",
+                            purpose: "Equivalente PowerShell para modificar web.conf en Splunk sobre Windows. Aplica los mismos headers CORS que en Linux.",
+                            when: "Si Splunk esta instalado en una ruta diferente, ajustar la ruta del fichero. Verificar con Get-Content 'C:\\Program Files\\Splunk\\etc\\system\\local\\web.conf'."
+                        },
+                        {
+                            title: "Verificar que CORS funciona desde el cliente",
+                            badge: "Test",
+                            command: isWin
+                                ? "Invoke-WebRequest -Uri 'https://<IP_SPLUNK>:8089/services/server/info?output_mode=json' -Headers @{Authorization='Basic ' + [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes('admin:<PASS>'))} -SkipCertificateCheck"
+                                : "curl -k -u admin:<PASS> 'https://<IP_SPLUNK>:8089/services/server/info?output_mode=json' | python3 -m json.tool | head -20",
+                            purpose: "Prueba la REST API de Splunk con autenticacion desde la maquina cliente. Si CORS esta bien configurado, el navegador podra hacer la misma llamada.",
+                            when: "Si el curl funciona pero el navegador da error de CORS, es porque el navegador envia el header Origin que curl no envia. Asegurar que web.conf tiene crossOriginSharingPolicy correctamente configurado."
+                        }
+                    ]
+                }
+            ];
         },
 
         windowsCommandSections() {
@@ -570,7 +737,46 @@ export default {
             ];
         },
 
-        linuxCommandSections() {
+        linuxCommandSectionsForDistro() {
+            const distro = this.hostOs;
+            const pythonDepsCmd = distro === "rhel"
+                ? "sudo dnf install -y python3 python3-pip lm_sensors\npip3 install psutil"
+                : distro === "arch"
+                ? "sudo pacman -Sy --noconfirm python python-pip lm_sensors python-psutil"
+                : "sudo apt update && sudo apt install -y python3 python3-pip lm-sensors\npip3 install --break-system-packages psutil";
+
+            const pythonDepsPurpose = distro === "rhel"
+                ? "Instala el runtime y psutil en la familia RHEL. lm_sensors usa guion bajo como nombre de paquete en dnf. En RHEL 8/9 con suscripcion activa, python3-psutil puede estar disponible desde los repos."
+                : distro === "arch"
+                ? "En Arch, python-psutil esta en los repositorios oficiales. Instalar desde pacman evita conflictos con el sistema de paquetes. Usar el paquete del sistema es preferible a pip sin virtualenv en Arch."
+                : "Instala el runtime y psutil en sistemas basados en Debian. '--break-system-packages' es necesario en Debian 12+ y Ubuntu 23.10+ donde pip esta restringido por PEP 668.";
+
+            const pythonDepsWhen = distro === "rhel"
+                ? "En RHEL 8/9, verificar primero con: dnf list python3-psutil. Si esta disponible en repos, instalar con dnf en lugar de pip para mejor integracion con el sistema."
+                : distro === "arch"
+                ? "Si se usa pip en Arch sin virtualenv puede aparecer 'externally-managed-environment'. Usar el paquete del sistema (python-psutil desde pacman) es la opcion correcta."
+                : "Alternativa sin el flag: 'sudo apt install python3-psutil' instala psutil desde los repositorios del sistema, lo que puede instalar una version ligeramente anterior.";
+
+            const adm_group = distro === "rhel"
+                ? "sudo usermod -aG wheel,systemd-journal <USUARIO>"
+                : "sudo usermod -aG adm,systemd-journal <USUARIO>";
+
+            const adm_group_note = distro === "rhel"
+                ? "En RHEL/Rocky el grupo equivalente para lectura de auth.log es wheel o adm segun la configuracion. systemd-journal es igual en todas las distros."
+                : "Necesario si el agente tiene habilitados securityLogs o applicationLogs. Los grupos no aplican hasta reiniciar el servicio systemd del agente.";
+
+            const firewall_command = distro === "rhel"
+                ? "sudo firewall-cmd --permanent --add-rich-rule='rule family=ipv4 source address=<SUBRED>/24 port port=<PUERTO> protocol=tcp accept'\nsudo firewall-cmd --reload"
+                : distro === "arch"
+                ? "# nftables (si activo)\nsudo nft add rule ip filter input ip saddr <SUBRED>/24 tcp dport <PUERTO> accept\n# Si usa ufw\nsudo ufw allow from <SUBRED>/24 to any port <PUERTO> proto tcp"
+                : "sudo ufw allow from <SUBRED>/24 to any port <PUERTO> proto tcp";
+
+            const firewall_note = distro === "rhel"
+                ? "RHEL/CentOS/Rocky usa firewalld. Si no esta activo (sudo firewall-cmd --state), omitir este paso."
+                : distro === "arch"
+                ? "Arch no activa firewall por defecto. Verificar con: sudo systemctl is-active nftables o sudo ufw status. Solo ejecutar el bloque del firewall que este activo."
+                : "UFW es el firewall por defecto en Ubuntu/Debian. Verificar con: sudo ufw status. Si no esta activo, omitir este paso.";
+
             return [
                 {
                     kicker: "Fase 1",
@@ -639,10 +845,10 @@ export default {
                         {
                             title: "Acceso a logs del sistema",
                             badge: "Groups",
-                            command: "sudo usermod -aG adm,systemd-journal <USUARIO>",
-                            purpose: "Otorga acceso de lectura a auth.log (grupo adm en Debian/Ubuntu) y al journal del sistema (grupo systemd-journal). En RHEL/Rocky el grupo equivalente a adm es wheel o adm segun la configuracion.",
-                            when: "Necesario si el agente tiene habilitados los modulos securityLogs o applicationLogs. Los grupos no aplican hasta reiniciar la sesion del usuario o el servicio systemd.",
-                            expected: "'id <USUARIO>' debe listar adm y systemd-journal. Si el servicio ya estaba corriendo, reiniciarlo con systemctl restart para que el proceso herede los grupos nuevos."
+                            command: adm_group,
+                            purpose: "Otorga acceso de lectura a los logs de autenticacion y al journal del sistema. El grupo varia segun la distribucion: adm en Debian/Ubuntu/Kali, wheel en RHEL/Rocky.",
+                            when: adm_group_note,
+                            expected: "'id <USUARIO>' debe listar los grupos configurados. Si el servicio ya estaba corriendo, reiniciarlo con systemctl restart para que el proceso herede los grupos nuevos."
                         },
                         {
                             title: "Desplegar los artefactos generados",
@@ -656,34 +862,18 @@ export default {
                 },
                 {
                     kicker: "Fase 3",
-                    title: "Dependencias Python por distribucion",
-                    copy: "El agente solo requiere Python 3.8+ y psutil. Instalar en el entorno del sistema (no en virtualenv) para que la unidad systemd use el interprete del sistema directamente. lm-sensors es opcional: solo aporta datos si el hardware expone sensores accesibles.",
+                    title: "Dependencias Python",
+                    copy: "El agente solo requiere Python 3.8+ y psutil. Instalar en el entorno del sistema (no en virtualenv) para que la unidad systemd use el interprete del sistema directamente. lm-sensors es opcional: solo aporta datos si el hardware expone sensores termicos accesibles.",
                     badge: "Runtime",
-                    note: "Instalar solo el bloque correspondiente a la distro del host.",
+                    note: `${this.hostOsLabel}`,
                     commands: [
                         {
-                            title: "Ubuntu, Debian, Kali",
-                            badge: "apt",
-                            command: "sudo apt update && sudo apt install -y python3 python3-pip lm-sensors\npip3 install --break-system-packages psutil",
-                            purpose: "Instala el runtime y psutil en sistemas basados en Debian. '--break-system-packages' es necesario en Debian 12+ y Ubuntu 23.10+ donde pip esta restringido por PEP 668.",
-                            when: "En entornos donde pip rechaza la instalacion sin ese flag, alternativa valida: 'sudo apt install python3-psutil' instala psutil desde los repositorios del sistema.",
-                            expected: "'python3 -c \"import psutil; print(psutil.__version__)\"' debe devolver la version instalada sin ImportError."
-                        },
-                        {
-                            title: "CentOS, RHEL, Rocky Linux",
-                            badge: "dnf",
-                            command: "sudo dnf install -y python3 python3-pip lm_sensors\npip3 install psutil",
-                            purpose: "Instala dependencias en la familia RHEL. lm_sensors usa guion bajo como nombre de paquete en dnf.",
-                            when: "En RHEL 8/9 con suscripcion activa, python3-psutil puede estar disponible directamente en los repos. Verificar con: dnf list python3-psutil.",
-                            expected: "python3 disponible como /usr/bin/python3. psutil importable sin errores."
-                        },
-                        {
-                            title: "Arch Linux",
-                            badge: "pacman",
-                            command: "sudo pacman -Sy --noconfirm python python-pip lm_sensors python-psutil",
-                            purpose: "En Arch, python-psutil esta en los repositorios oficiales. Instalar desde pacman en lugar de pip evita conflictos con el sistema de paquetes.",
-                            when: "Si se usa pip en Arch sin virtualenv, puede aparecer el error 'externally-managed-environment'. Usar el paquete del sistema es la opcion correcta aqui.",
-                            expected: "python3 --version >= 3.8 y python3 -c 'import psutil' sin errores."
+                            title: `Instalar dependencias — ${this.hostOsLabel}`,
+                            badge: distro === "rhel" ? "dnf" : distro === "arch" ? "pacman" : "apt",
+                            command: pythonDepsCmd,
+                            purpose: pythonDepsPurpose,
+                            when: pythonDepsWhen,
+                            expected: "python3 -c \"import psutil; print(psutil.__version__)\" debe devolver la version instalada sin ImportError."
                         }
                     ]
                 },
@@ -802,38 +992,147 @@ export default {
         },
 
         splunkInstallCommands() {
+            const os = this.hostOs;
+            if (os === "windows") {
+                return [
+                    {
+                        title: "Descargar Splunk Enterprise (Windows x64)",
+                        badge: "PowerShell",
+                        command: "Invoke-WebRequest -Uri 'https://download.splunk.com/products/splunk/releases/9.2.0/windows/splunk-9.2.0-d8ae995bf219-x64-release.msi' -OutFile splunk-installer.msi",
+                        purpose: "Descarga el instalador MSI de Splunk Enterprise para Windows x64. Sustituir la URL por la version mas reciente disponible en splunk.com/download.",
+                        when: "En entornos sin acceso directo a Internet, descargar en otro equipo y transferir el .msi al servidor. Requiere PowerShell 3.0+ o posterior.",
+                        expected: "Fichero splunk-installer.msi de aproximadamente 250 MB en el directorio actual."
+                    },
+                    {
+                        title: "Instalar via MSI en modo silencioso",
+                        badge: "msiexec",
+                        command: "msiexec.exe /i splunk-installer.msi AGREETOLICENSE=Yes SPLUNKPASSWORD=Admin1234! /quiet /l*v splunk-install.log",
+                        purpose: "Instala Splunk en modo silencioso aceptando la licencia y estableciendo la contrasena del administrador. El log de instalacion queda en splunk-install.log para diagnostico.",
+                        when: "Ejecutar como Administrador. Cambiar Admin1234! por una contrasena segura. Splunk se instala en C:\\Program Files\\Splunk por defecto.",
+                        expected: "Splunk arranca como servicio de Windows y queda accesible en http://localhost:8000 (UI) y https://localhost:8089 (REST API)."
+                    },
+                    {
+                        title: "Verificar el servicio de Splunk",
+                        badge: "PowerShell",
+                        command: "Get-Service -Name 'SplunkForwarder','Splunkd' | Select-Object Name,Status\nInvoke-RestMethod -Uri 'https://localhost:8089/services/server/info?output_mode=json' -Credential (Get-Credential) -SkipCertificateCheck",
+                        purpose: "Comprueba que el servicio Splunkd esta corriendo y que la REST API responde correctamente.",
+                        when: "Si el servicio no arranca, revisar el log en C:\\Program Files\\Splunk\\var\\log\\splunk\\splunkd.log.",
+                        expected: "El servicio Splunkd aparece en estado Running y la REST API responde con informacion del servidor."
+                    },
+                    {
+                        title: "Activar licencia Developer",
+                        badge: "License",
+                        command: "Invoke-RestMethod -Method POST -Uri 'https://localhost:8089/services/licenser/licenses?output_mode=json' -Body @{payload='<licensekey>'} -Credential (Get-Credential) -SkipCertificateCheck",
+                        purpose: "Aplica la licencia Developer descargada desde my.splunk.com via REST API. Alternativa: Settings > Licensing en la UI web.",
+                        when: "La licencia Developer se obtiene gratuitamente en dev.splunk.com. Sin licencia activa, Splunk funciona en modo Trial de 60 dias.",
+                        expected: "Splunk confirma la aplicacion de la licencia. El cupo queda establecido en 500 MB/dia."
+                    }
+                ];
+            }
+            if (os === "rhel") {
+                return [
+                    {
+                        title: "Descargar Splunk Enterprise (RPM x86_64)",
+                        badge: "wget",
+                        command: "wget -O splunk-latest.x86_64.rpm 'https://download.splunk.com/products/splunk/releases/9.2.0/linux/splunk-9.2.0-d8ae995bf219.x86_64.rpm'",
+                        purpose: "Descarga el paquete RPM de Splunk Enterprise para RHEL/CentOS/Rocky. Sustituir la URL por la version mas reciente en splunk.com/download.",
+                        when: "En entornos sin acceso a Internet, descargar en otra maquina y transferir via scp. Verificar integridad con el SHA256 publicado.",
+                        expected: "Fichero .rpm de aproximadamente 250 MB. Verificar con: sha256sum splunk-latest.x86_64.rpm."
+                    },
+                    {
+                        title: "Instalar el paquete RPM",
+                        badge: "dnf",
+                        command: "sudo dnf install -y ./splunk-latest.x86_64.rpm\nsudo /opt/splunk/bin/splunk start --accept-license --answer-yes --no-prompt --seed-passwd Admin1234!",
+                        purpose: "Instala Splunk via dnf y lo arranca por primera vez. --seed-passwd establece la contrasena de admin evitando el asistente interactivo.",
+                        when: "Cambiar Admin1234! por una contrasena segura. En RHEL con SELinux en modo enforcing puede ser necesario ajustar el contexto de /opt/splunk.",
+                        expected: "Splunk arranca correctamente y es accesible en http://localhost:8000 y https://localhost:8089."
+                    },
+                    {
+                        title: "Habilitar arranque automatico con systemd",
+                        badge: "systemd",
+                        command: "sudo /opt/splunk/bin/splunk enable boot-start -systemd-managed 1 --accept-license\nsudo systemctl start Splunkd",
+                        purpose: "Registra Splunk como unidad systemd gestionada para arranque automatico.",
+                        when: "Con SELinux activo, puede requerir: setsebool -P nis_enabled 1 o ajuste de politica para el socket de Splunk.",
+                        expected: "systemctl status Splunkd muestra active (running). Persiste tras reinicios."
+                    },
+                    {
+                        title: "Activar licencia Developer",
+                        badge: "License",
+                        command: "curl -k -u admin:Admin1234! -X POST https://localhost:8089/services/licenser/licenses -d 'payload=<licensekey>' -d 'output_mode=json'",
+                        purpose: "Aplica la licencia Developer. Sin licencia activa, Splunk opera en Trial de 60 dias con funcionalidad completa.",
+                        when: "Licencia gratuita disponible en dev.splunk.com. Alternativa: Settings > Licensing en la UI web.",
+                        expected: "Respuesta JSON confirma la aplicacion. Cupo de 500 MB/dia activo."
+                    }
+                ];
+            }
+            if (os === "arch") {
+                return [
+                    {
+                        title: "Descargar Splunk Enterprise (tgz x86_64)",
+                        badge: "wget",
+                        command: "wget -O splunk-latest-linux-x86_64.tgz 'https://download.splunk.com/products/splunk/releases/9.2.0/linux/splunk-9.2.0-d8ae995bf219-Linux-x86_64.tgz'",
+                        purpose: "Descarga el tarball generico de Splunk. Arch no tiene paquete nativo; la instalacion desde tgz es el metodo oficial para distribuciones no soportadas directamente.",
+                        when: "Splunk no esta en los repositorios oficiales de Arch ni en AUR con soporte oficial. Usar siempre el tgz de splunk.com/download.",
+                        expected: "Fichero .tgz de aproximadamente 250 MB."
+                    },
+                    {
+                        title: "Extraer e instalar",
+                        badge: "tar",
+                        command: "sudo tar -xzf splunk-latest-linux-x86_64.tgz -C /opt\nsudo /opt/splunk/bin/splunk start --accept-license --answer-yes --no-prompt --seed-passwd Admin1234!",
+                        purpose: "Extrae Splunk en /opt/splunk y lo arranca estableciendo la contrasena de admin.",
+                        when: "Cambiar Admin1234! por una contrasena segura. En Arch con systemd, usar el metodo enable boot-start para integracion correcta.",
+                        expected: "Splunk accesible en http://localhost:8000 y https://localhost:8089."
+                    },
+                    {
+                        title: "Habilitar arranque automatico con systemd",
+                        badge: "systemd",
+                        command: "sudo /opt/splunk/bin/splunk enable boot-start -systemd-managed 1 --accept-license\nsudo systemctl start Splunkd",
+                        purpose: "Registra Splunk como unidad systemd para inicio automatico en Arch.",
+                        when: "Arch usa systemd nativo. El flag -systemd-managed 1 genera la unidad correctamente.",
+                        expected: "systemctl status Splunkd muestra active (running)."
+                    },
+                    {
+                        title: "Activar licencia Developer",
+                        badge: "License",
+                        command: "curl -k -u admin:Admin1234! -X POST https://localhost:8089/services/licenser/licenses -d 'payload=<licensekey>' -d 'output_mode=json'",
+                        purpose: "Aplica la licencia Developer. Sin licencia, Trial de 60 dias con funcionalidad completa.",
+                        when: "Licencia gratuita en dev.splunk.com.",
+                        expected: "Cupo de 500 MB/dia activo."
+                    }
+                ];
+            }
             return [
                 {
-                    title: "Descargar Splunk Enterprise (Linux x86_64)",
+                    title: "Descargar Splunk Enterprise (DEB x86_64)",
                     badge: "wget",
-                    command: "wget -O splunk-latest-linux-x86_64.tgz 'https://download.splunk.com/products/splunk/releases/9.2.0/linux/splunk-9.2.0-d8ae995bf219-Linux-x86_64.tgz'",
-                    purpose: "Descarga el paquete de Splunk Enterprise. Sustituir la URL por la version mas reciente disponible en splunk.com/download. La cuenta Splunk gratuita es necesaria para obtener el enlace de descarga.",
-                    when: "En entornos sin acceso directo a Internet, descargar en la maquina cliente y transferir via scp. En RHEL/Rocky existe el paquete .rpm que se instala con dnf.",
-                    expected: "Fichero .tgz de aproximadamente 250 MB. Verificar integridad con el MD5/SHA256 publicado en la pagina de descarga."
+                    command: "wget -O splunk-latest-linux-x86_64.deb 'https://download.splunk.com/products/splunk/releases/9.2.0/linux/splunk-9.2.0-d8ae995bf219-linux-2.6-amd64.deb'",
+                    purpose: "Descarga el paquete DEB de Splunk Enterprise para Ubuntu/Debian/Kali. Sustituir la URL por la version mas reciente en splunk.com/download.",
+                    when: "En entornos sin acceso a Internet, descargar en otra maquina y transferir via scp. Verificar integridad con el SHA256 publicado.",
+                    expected: "Fichero .deb de aproximadamente 250 MB. Verificar con: sha256sum splunk-latest-linux-x86_64.deb."
                 },
                 {
-                    title: "Extraer e instalar",
-                    badge: "Install",
-                    command: "sudo tar -xzf splunk-latest-linux-x86_64.tgz -C /opt\nsudo /opt/splunk/bin/splunk start --accept-license --answer-yes --no-prompt --seed-passwd Admin1234!",
-                    purpose: "Extrae Splunk en /opt/splunk y lo arranca por primera vez estableciendo la contrasena del usuario admin. El flag --seed-passwd evita el asistente interactivo.",
-                    when: "Cambiar Admin1234! por una contrasena segura. En produccion, gestionar la contrasena via /opt/splunk/etc/passwd o mediante LDAP.",
-                    expected: "Splunk arranca y queda accesible en http://localhost:8000 (UI web) y https://localhost:8089 (REST API)."
+                    title: "Instalar el paquete DEB",
+                    badge: "dpkg",
+                    command: "sudo dpkg -i splunk-latest-linux-x86_64.deb\nsudo /opt/splunk/bin/splunk start --accept-license --answer-yes --no-prompt --seed-passwd Admin1234!",
+                    purpose: "Instala Splunk via dpkg y lo arranca por primera vez. --seed-passwd establece la contrasena de admin evitando el asistente interactivo.",
+                    when: "Cambiar Admin1234! por una contrasena segura. Si dpkg reporta dependencias no satisfechas, ejecutar: sudo apt-get install -f.",
+                    expected: "Splunk arranca correctamente y es accesible en http://localhost:8000 y https://localhost:8089."
                 },
                 {
                     title: "Habilitar arranque automatico con systemd",
                     badge: "systemd",
-                    command: "sudo /opt/splunk/bin/splunk enable boot-start -systemd-managed 1 -user splunk --accept-license\nsudo systemctl start Splunkd",
-                    purpose: "Registra Splunk como unidad systemd para que arranque automaticamente. El flag -systemd-managed 1 genera la unidad gestionada por systemd en lugar del init script legacy.",
-                    when: "Requiere crear previamente el usuario splunk si se usa -user splunk. Alternativa: omitir -user para que corra como root (no recomendado en produccion).",
-                    expected: "systemctl status Splunkd muestra active (running). La UI web es accesible en el puerto 8000."
+                    command: "sudo /opt/splunk/bin/splunk enable boot-start -systemd-managed 1 --accept-license\nsudo systemctl start Splunkd",
+                    purpose: "Registra Splunk como unidad systemd gestionada para arranque automatico en Ubuntu/Debian.",
+                    when: "Alternativa sin systemd (sistemas legacy): /opt/splunk/bin/splunk enable boot-start sin el flag -systemd-managed.",
+                    expected: "systemctl status Splunkd muestra active (running). Persiste tras reinicios."
                 },
                 {
                     title: "Activar licencia Developer",
                     badge: "License",
                     command: "curl -k -u admin:Admin1234! -X POST https://localhost:8089/services/licenser/licenses -d 'payload=<licensekey>' -d 'output_mode=json'",
-                    purpose: "Aplica la licencia Developer descargada desde my.splunk.com. Sin licencia activa, Splunk funciona en modo Trial (60 dias) con todas las funcionalidades.",
-                    when: "La licencia Developer se obtiene gratuitamente registrando una cuenta en dev.splunk.com. Es un fichero .xml o una clave que se aplica via API o desde Settings > Licensing en la UI.",
-                    expected: "Splunk confirma la aplicacion de la licencia y desaparece el banner de Trial. El cupo queda establecido en 500 MB/dia."
+                    purpose: "Aplica la licencia Developer descargada desde my.splunk.com via REST API. Sin licencia activa, Splunk opera en Trial de 60 dias.",
+                    when: "Licencia gratuita en dev.splunk.com. Alternativa: Settings > Licensing en la UI web.",
+                    expected: "Splunk confirma la aplicacion de la licencia. Cupo de 500 MB/dia activo."
                 }
             ];
         },
@@ -917,7 +1216,7 @@ export default {
         },
 
         uninstallCommands() {
-            if (this.guideOs === "windows") {
+            if (this.hostOs === "windows") {
                 return [
                     {
                         title: "Detener y eliminar la tarea programada",
@@ -1087,6 +1386,12 @@ export default {
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
+    align-items: flex-end;
+}
+
+.copy-box .result-pre {
+    width: 100%;
+    align-self: stretch;
 }
 
 .os-selector-row {

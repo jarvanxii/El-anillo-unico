@@ -31,8 +31,45 @@
             <span class="statusbar-dot"></span>
             <span class="statusbar-label">{{ connectionStatusLabel }}</span>
             <span class="statusbar-url">{{ splunkConfig.apiUrl || 'Sin configurar' }}</span>
-            <span v-if="connectionError" class="statusbar-error">{{ connectionError }}</span>
+            <router-link to="/el-vuelo-de-thorondor/configuracion-splunk" class="statusbar-config-link">
+                Configurar conexion →
+            </router-link>
         </div>
+
+        <section class="section-box agent-selector-section">
+            <div class="section-topline">
+                <div class="module-header">
+                    <span class="section-kicker">Scope</span>
+                    <h2 class="module-title">Agente activo</h2>
+                    <p class="module-copy">
+                        Selecciona el agente sobre el que operar. Afecta a la ingesta HEC y a las busquedas SPL
+                        que incluyen filtrado por <code>agentId</code>. Seleccionar "Todos" opera sobre el conjunto completo.
+                    </p>
+                </div>
+                <div class="phase-badge-block">
+                    <span class="phase-badge">Agent</span>
+                    <small>{{ selectedAgentLabel }}</small>
+                </div>
+            </div>
+            <div class="os-toggle-group">
+                <button type="button" class="os-toggle-btn" :class="{ active: selectedAgentId === '' }" @click="selectedAgentId = ''">
+                    Todos los agentes
+                </button>
+                <button
+                    v-for="agent in dashboardCards"
+                    :key="agent.id"
+                    type="button"
+                    class="os-toggle-btn"
+                    :class="{ active: selectedAgentId === agent.id }"
+                    @click="selectedAgentId = agent.id"
+                >
+                    {{ agent.displayName }}
+                </button>
+            </div>
+            <p v-if="!dashboardCards.length" class="empty-box compact-empty mt-2">
+                Sin agentes registrados. Genera uno desde el Generador de agentes y realiza un polling inicial.
+            </p>
+        </section>
 
         <section class="section-box tab-section">
             <div class="detail-tabs">
@@ -42,121 +79,16 @@
             </div>
         </section>
 
-        <section v-if="activeTab === 'config'" class="section-box">
-            <div class="section-topline">
-                <div class="module-header">
-                    <span class="section-kicker">Conexion</span>
-                    <h2 class="module-title">Configuracion de Splunk</h2>
-                    <p class="module-copy">
-                        Introduce los endpoints de tu instancia Splunk. La API REST (puerto 8089) se usa para
-                        ejecutar busquedas SPL. El HEC (puerto 8088) recibe los eventos de telemetria.
-                        Consulta la guia de instalacion para la configuracion completa del HEC y CORS en Splunk.
-                    </p>
-                </div>
-                <div class="phase-badge-block">
-                    <span class="phase-badge">Setup</span>
-                    <small>REST API + HEC</small>
-                </div>
-            </div>
-
-            <div class="control-grid">
-                <div class="control-field">
-                    <label class="field-label" for="splunk-api-url">URL API REST</label>
-                    <input id="splunk-api-url" v-model="splunkConfig.apiUrl" class="form-control input-dark" placeholder="https://localhost:8089" />
-                </div>
-                <div class="control-field">
-                    <label class="field-label" for="splunk-hec-url">URL HTTP Event Collector</label>
-                    <input id="splunk-hec-url" v-model="splunkConfig.hecUrl" class="form-control input-dark" placeholder="https://localhost:8088" />
-                </div>
-                <div class="control-field">
-                    <label class="field-label" for="splunk-user">Usuario</label>
-                    <input id="splunk-user" v-model="splunkConfig.username" class="form-control input-dark" placeholder="admin" autocomplete="username" />
-                </div>
-                <div class="control-field">
-                    <label class="field-label" for="splunk-pass">Contrasena</label>
-                    <input id="splunk-pass" v-model="splunkConfig.password" type="password" class="form-control input-dark" placeholder="••••••••" autocomplete="current-password" />
-                </div>
-                <div class="control-field">
-                    <label class="field-label" for="splunk-hec-token">Token HEC</label>
-                    <input id="splunk-hec-token" v-model="splunkConfig.hecToken" class="form-control input-dark" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" />
-                </div>
-                <div class="control-field">
-                    <label class="field-label" for="splunk-index">Indice</label>
-                    <input id="splunk-index" v-model="splunkConfig.index" class="form-control input-dark" placeholder="thorondor" />
-                </div>
-            </div>
-
-            <div class="inline-actions mt-3">
-                <button class="btn btn-main" :disabled="connectionStatus === 'testing'" @click="testConnection">
-                    {{ connectionStatus === 'testing' ? 'Probando...' : 'Probar conexion' }}
-                </button>
-                <button class="btn btn-subtle" @click="saveConfig">Guardar configuracion</button>
-            </div>
-
-            <div class="section-topline mt-4">
-                <div class="module-header">
-                    <span class="section-kicker">HEC</span>
-                    <h2 class="module-title">Configurar HTTP Event Collector en Splunk</h2>
-                    <p class="module-copy">
-                        El HEC es el canal de ingesta principal para esta integracion. Antes de enviar datos debes
-                        habilitarlo en Splunk y obtener un token. Los source types que usara Thorondor son
-                        <code>thorondor:snapshot</code>, <code>thorondor:events</code> y <code>thorondor:logs</code>.
-                    </p>
-                </div>
-                <div class="phase-badge-block">
-                    <span class="phase-badge">HEC</span>
-                    <small>Settings &gt; Data inputs</small>
-                </div>
-            </div>
-
-            <div class="card-grid">
-                <article class="tool-card" v-for="step in hecSetupSteps" :key="step.title">
-                    <div class="card-head">
-                        <h5>{{ step.title }}</h5>
-                        <span class="mini-badge">{{ step.badge }}</span>
-                    </div>
-                    <p class="section-copy mb-0">{{ step.copy }}</p>
-                </article>
-            </div>
-
-            <div class="section-topline mt-4">
-                <div class="module-header">
-                    <span class="section-kicker">CORS</span>
-                    <h2 class="module-title">Habilitar CORS en Splunk</h2>
-                    <p class="module-copy">
-                        El navegador bloquea peticiones cross-origin a Splunk salvo que el servidor responda con los
-                        headers adecuados. Edita <code>/opt/splunk/etc/system/local/web.conf</code> para permitir
-                        el origen de esta aplicacion.
-                    </p>
-                </div>
-                <div class="phase-badge-block">
-                    <span class="phase-badge">Config</span>
-                    <small>web.conf</small>
-                </div>
-            </div>
-
-            <div class="output-box">
-                <pre class="result-pre">[settings]
-crossOriginSharingPolicy = *
-crossOriginSharingHeaders = Authorization, Content-Type
-enableSplunkWebSSL = false</pre>
-            </div>
-            <p class="section-copy mt-2" style="font-size:0.83rem; color: rgba(203,213,225,0.7);">
-                Reinicia Splunk tras el cambio: <code>sudo /opt/splunk/bin/splunk restart</code>. En produccion restringe
-                <code>crossOriginSharingPolicy</code> al origen exacto de la aplicacion en lugar de usar el wildcard.
-            </p>
-        </section>
-
-        <section v-else-if="activeTab === 'ingest'" class="section-box">
+        <section v-if="activeTab === 'ingest'" class="section-box">
             <div class="section-topline">
                 <div class="module-header">
                     <span class="section-kicker">HTTP Event Collector</span>
                     <h2 class="module-title">Enviar telemetria a Splunk</h2>
                     <p class="module-copy">
-                        Cada agente de Thorondor tiene un snapshot reciente con metricas, eventos de seguridad y
-                        logs. Esta seccion envia ese snapshot al HEC de Splunk como tres tipos de eventos separados:
-                        metricas del sistema, eventos de seguridad y entradas de log. El indice destino es el
-                        configurado en la pestana anterior.
+                        Envia la telemetria de los agentes seleccionados al HEC de Splunk en tres flujos separados:
+                        snapshot de metricas (<code>thorondor:snapshot</code>), eventos de seguridad
+                        (<code>thorondor:events</code>) y entradas de log (<code>thorondor:logs</code>).
+                        El indice y el token HEC se configuran en <em>Configuracion Splunk</em>.
                     </p>
                 </div>
                 <div class="phase-badge-block">
@@ -169,18 +101,23 @@ enableSplunkWebSSL = false</pre>
                 <div class="verdict-icon"><span>HEC</span></div>
                 <div class="verdict-body">
                     <strong>HEC no configurado</strong>
-                    <p>Introduce la URL del HEC y el token en la pestana Configuracion antes de enviar datos.</p>
+                    <p>
+                        Configura la URL del HEC y el token en
+                        <router-link to="/el-vuelo-de-thorondor/configuracion-splunk" class="inline-link">Configuracion Splunk</router-link>
+                        antes de enviar datos. Si aun no has instalado Splunk, consulta la guia de instalacion.
+                    </p>
                 </div>
             </div>
 
             <div v-else>
                 <div class="inline-actions mb-4">
-                    <button class="btn btn-main" :disabled="pushRunning || !dashboardCards.length" @click="pushAllToHec">
-                        {{ pushRunning ? 'Enviando...' : 'Enviar todos los agentes' }}
+                    <button class="btn btn-main" :disabled="pushRunning || !agentsToIngest.length" @click="pushSelectedToHec">
+                        {{ pushRunning ? 'Enviando...' : (selectedAgentId ? `Enviar ${selectedAgentLabel}` : 'Enviar todos los agentes') }}
                     </button>
+                    <span class="form-status-hint">{{ agentsToIngest.length }} agente(s) en scope</span>
                 </div>
 
-                <div class="tool-card" v-for="agent in dashboardCards" :key="agent.id">
+                <div class="tool-card" v-for="agent in agentsToIngest" :key="agent.id">
                     <div class="card-head">
                         <h5>{{ agent.displayName }}</h5>
                         <div class="d-flex gap-2 align-items-center">
@@ -615,7 +552,7 @@ export default {
 
     data() {
         return {
-            activeTab: "config",
+            activeTab: "ingest",
             splunkConfig: {
                 apiUrl: "",
                 hecUrl: "",
@@ -633,7 +570,8 @@ export default {
             queryRunning: false,
             queryResults: null,
             queryError: "",
-            copiedKey: null
+            copiedKey: null,
+            selectedAgentId: ""
         };
     },
 
@@ -661,11 +599,21 @@ export default {
 
         splunkTabs() {
             return [
-                { id: "config", label: "Configuracion" },
                 { id: "ingest", label: "Ingesta HEC" },
                 { id: "queries", label: "Busquedas SPL" },
                 { id: "usecases", label: "Casos de uso" }
             ];
+        },
+
+        selectedAgentLabel() {
+            if (!this.selectedAgentId) return "Todos";
+            const agent = this.dashboardCards.find((a) => a.id === this.selectedAgentId);
+            return agent ? agent.displayName : "Todos";
+        },
+
+        agentsToIngest() {
+            if (!this.selectedAgentId) return this.dashboardCards;
+            return this.dashboardCards.filter((a) => a.id === this.selectedAgentId);
         },
 
         statusBarClass() {
@@ -709,31 +657,6 @@ export default {
 
         useCases() {
             return USE_CASES;
-        },
-
-        hecSetupSteps() {
-            return [
-                {
-                    title: "Habilitar HEC en Splunk",
-                    badge: "Paso 1",
-                    copy: "En Splunk Web, ve a Settings > Data inputs > HTTP Event Collector. Activa el token global y crea un nuevo token para Thorondor. Asigna el indice de destino."
-                },
-                {
-                    title: "Crear source types",
-                    badge: "Paso 2",
-                    copy: "Al crear el token, en la seccion Input Settings define los source types permitidos: thorondor:snapshot, thorondor:events y thorondor:logs. Activa JSON auto-extraction (KV_MODE = json)."
-                },
-                {
-                    title: "Copiar el token",
-                    badge: "Paso 3",
-                    copy: "Una vez creado el token HEC, copialo en el campo Token HEC de la pestana de configuracion. El token tiene el formato xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx."
-                },
-                {
-                    title: "Verificar la ingesta",
-                    badge: "Paso 4",
-                    copy: "Tras enviar el primer batch de datos, verifica en Splunk con: index=thorondor | head 5. Si no aparecen resultados, comprueba que el indice existe y que el token tiene permisos de escritura sobre el."
-                }
-            ];
         }
     },
 
@@ -907,6 +830,14 @@ export default {
         async pushAllToHec() {
             this.pushRunning = true;
             for (const agent of this.dashboardCards) {
+                await this.pushAgentToHec(agent.id);
+            }
+            this.pushRunning = false;
+        },
+
+        async pushSelectedToHec() {
+            this.pushRunning = true;
+            for (const agent of this.agentsToIngest) {
                 await this.pushAgentToHec(agent.id);
             }
             this.pushRunning = false;
@@ -1094,4 +1025,66 @@ export default {
 .mt-4 { margin-top: 1.5rem; }
 .mb-3 { margin-bottom: 1rem; }
 .mb-4 { margin-bottom: 1.5rem; }
+
+.statusbar-config-link {
+    margin-left: auto;
+    font-size: 0.82rem;
+    color: #7db8ff;
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.15s ease;
+}
+
+.statusbar-config-link:hover {
+    color: #b3d4ff;
+    text-decoration: underline;
+}
+
+.inline-link {
+    color: #7db8ff;
+    text-decoration: underline;
+}
+
+.os-toggle-group {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin-top: 0.75rem;
+}
+
+.os-toggle-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.45rem 1rem;
+    border-radius: 8px;
+    border: 1px solid rgba(94, 156, 255, 0.22);
+    background: linear-gradient(180deg, rgba(13, 24, 43, 0.9), rgba(9, 16, 29, 0.95));
+    color: rgba(200, 220, 250, 0.72);
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: border-color 0.18s ease, background 0.18s ease, color 0.18s ease;
+}
+
+.os-toggle-btn:hover {
+    border-color: rgba(125, 190, 255, 0.45);
+    color: #e8f3ff;
+}
+
+.os-toggle-btn.active {
+    border-color: rgba(94, 170, 255, 0.6);
+    background: linear-gradient(180deg, rgba(22, 42, 76, 0.95), rgba(14, 28, 54, 0.98));
+    color: #c9e3ff;
+    box-shadow: 0 0 12px rgba(80, 150, 255, 0.14);
+}
+
+.agent-selector-section {
+    padding-bottom: 0.5rem;
+}
+
+.form-status-hint {
+    font-size: 0.82rem;
+    color: rgba(160, 190, 220, 0.6);
+}
 </style>

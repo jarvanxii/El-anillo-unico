@@ -30,6 +30,11 @@ export const thorondorHeaderItems = [
     routeName: "thorondor-splunk",
   },
   {
+    id: "splunk_config",
+    name: "Configuracion Splunk",
+    routeName: "thorondor-splunk-config",
+  },
+  {
     id: "monitorization_rules",
     name: "Reglas monitorizacion",
     routeName: "thorondor-monitorization-rules",

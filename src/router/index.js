@@ -18,6 +18,7 @@ import ThorondorDetalleHostsView from "../views/VueloThorondor/Thorondor-Detalle
 import ThorondorReglasMonitorizacionView from "../views/VueloThorondor/Thorondor-ReglasMonitorizacionView.vue";
 import ThorondorAgentesView from "../views/VueloThorondor/Thorondor-AgentesView.vue";
 import ThorondorSplunkView from "../views/VueloThorondor/Thorondor-SplunkView.vue";
+import ThorondorConfiguracionSplunkView from "../views/VueloThorondor/Thorondor-ConfiguracionSplunkView.vue";
 
 // BASTÓN SARUMAN
 import BastonSarumanView from "../views/BastonSaruman/BastonSarumanView.vue";
@@ -140,6 +141,12 @@ const routes = [
     path: "/el-vuelo-de-thorondor/splunk",
     name: "thorondor-splunk",
     component: ThorondorSplunkView,
+    meta: { showThorondorHeader: true },
+  },
+  {
+    path: "/el-vuelo-de-thorondor/configuracion-splunk",
+    name: "thorondor-splunk-config",
+    component: ThorondorConfiguracionSplunkView,
     meta: { showThorondorHeader: true },
   },
 

@@ -358,6 +358,7 @@
     gap: 12px;
     padding: 16px;
     height: 100%;
+    align-content: start;
 }
 
 .stack-panel {

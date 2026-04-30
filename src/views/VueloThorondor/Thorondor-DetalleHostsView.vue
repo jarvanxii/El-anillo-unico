@@ -500,7 +500,7 @@ export default {
 
         formattedFilteredLogs() {
             if (!this.filteredLogs.length) return "Sin logs para el filtro actual.";
-            return this.filteredLogs.map((entry) => `[${entry.timestamp}] [${entry.level}] [${entry.source}] ${entry.message}`).join("\n");
+            return this.filteredLogs.slice().reverse().map((entry) => `[${entry.timestamp}] [${entry.level}] [${entry.source}] ${entry.message}`).join("\n");
         }
     },
 

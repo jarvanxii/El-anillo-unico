@@ -5,7 +5,7 @@
         </section>
         <main class="content container">
             <section class="section-box">
-                <h2>Loren Ipsum</h2>
+                <h2>Loren Ipsum1</h2>
                 <p>
                     Loren ipsun dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore
                     et dolore magna aliqua.

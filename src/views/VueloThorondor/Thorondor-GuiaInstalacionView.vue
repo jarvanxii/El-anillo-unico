@@ -3,17 +3,19 @@
         <section class="section-box intro-box">
             <div class="section-topline">
                 <div class="module-header">
-                    <span class="section-kicker">Guia practica</span>
+                    <span class="section-kicker">Despliegue tecnico</span>
                     <h1 class="section-name">Guia de instalacion</h1>
                     <p class="section-copy">
-                        Esta vista esta pensada para seguirla mientras preparas el host Linux. Todo esta ordenado por
-                        secuencia real de uso: descubrir datos, preparar la maquina, instalar dependencias, lanzar el
-                        agente, validar respuestas y dejarlo en systemd.
+                        El agente Thorondor es un servidor HTTP ligero escrito en Python que expone dos endpoints
+                        (<code>/health</code>, <code>/telemetry</code>) sobre la IP privada del host.
+                        El frontend consulta esos endpoints por polling desde el navegador y persiste la telemetria
+                        localmente en IndexedDB. No hay backend intermedio ni canal de red inverso:
+                        la unica conectividad necesaria es visibilidad TCP desde el cliente al host en el puerto configurado.
                     </p>
                 </div>
                 <div class="phase-badge-block">
-                    <span class="phase-badge">Install</span>
-                    <small>Recorrido completo para usuarios no expertos.</small>
+                    <span class="phase-badge">Deploy</span>
+                    <small>Python 3.8+ &middot; systemd &middot; LAN reachability</small>
                 </div>
             </div>
 
@@ -28,16 +30,17 @@
         <section class="section-box">
             <div class="section-topline">
                 <div class="module-header">
-                    <span class="section-kicker">Secuencia recomendada</span>
-                    <h2 class="module-title">Orden sugerido de principio a fin</h2>
+                    <span class="section-kicker">Secuencia de despliegue</span>
+                    <h2 class="module-title">Fases del proceso</h2>
                     <p class="module-copy">
-                        Si sigues este orden, evitas la mayoria de bloqueos tipicos: no saber que IP usar, no tener
-                        permisos de lectura, o intentar systemd antes de comprobar que el agente funciona en manual.
+                        Genera los artefactos antes de tocar el host. El generador produce un agente parametrizado
+                        con la configuracion exacta del destino: nombre de servicio, puerto, usuario, distro y modulos activos.
+                        Seguir el orden evita tener que editar el .py a mano despues.
                     </p>
                 </div>
                 <div class="phase-badge-block">
                     <span class="phase-badge">Checklist</span>
-                    <small>Pasos enlazados con el flujo real de despliegue.</small>
+                    <small>Genera primero, despliega despues.</small>
                 </div>
             </div>
 
@@ -80,11 +83,11 @@
                             <p>{{ command.purpose }}</p>
                         </div>
                         <div class="meta-line">
-                            <label>Cuando usarlo</label>
+                            <label>Notas</label>
                             <p>{{ command.when }}</p>
                         </div>
                         <div class="meta-line">
-                            <label>Resultado esperado</label>
+                            <label>Salida esperada</label>
                             <p>{{ command.expected }}</p>
                         </div>
                     </div>
@@ -96,23 +99,39 @@
             <div class="section-topline">
                 <div class="module-header">
                     <span class="section-kicker">Verificacion final</span>
-                    <h2 class="module-title">Comprobaciones rapidas antes de pasar al dashboard</h2>
+                    <h2 class="module-title">Comprobaciones antes de registrar el agente en el dashboard</h2>
                     <p class="module-copy">
-                        Si estas comprobaciones salen bien, el navegador ya deberia poder consultar el host y guardar
-                        telemetria en IndexedDB sin pasos adicionales.
+                        Valida salud del proceso, estructura del payload de telemetria, estabilidad del servicio systemd
+                        y conectividad de red. Cualquier fallo aqui tiene diagnostico especifico antes de abrir Thorondor.
                     </p>
                 </div>
                 <div class="phase-badge-block">
                     <span class="phase-badge">Validate</span>
-                    <small>Estado del servicio, puerto y endpoints.</small>
+                    <small>Proceso, payload, systemd y red.</small>
                 </div>
             </div>
 
-            <div class="guide-grid">
-                <div class="guide-card" v-for="check in validationChecks" :key="check.label">
-                    <label>{{ check.label }}</label>
-                    <span>{{ check.copy }}</span>
-                </div>
+            <div class="card-grid validation-grid">
+                <article class="tool-card command-card validation-card" v-for="check in validationChecks" :key="check.title">
+                    <div class="card-head">
+                        <h5>{{ check.title }}</h5>
+                        <span class="mini-badge">{{ check.badge }}</span>
+                    </div>
+                    <p class="section-copy mb-0">{{ check.copy }}</p>
+                    <div class="output-box">
+                        <pre class="result-pre">{{ check.command }}</pre>
+                    </div>
+                    <div class="command-meta">
+                        <div class="meta-line">
+                            <label>Que confirma</label>
+                            <p>{{ check.confirms }}</p>
+                        </div>
+                        <div class="meta-line">
+                            <label>Salida esperada</label>
+                            <p>{{ check.expected }}</p>
+                        </div>
+                    </div>
+                </article>
             </div>
         </section>
     </ThorondorPageShell>
@@ -132,20 +151,20 @@ export default {
         installationHighlights() {
             return [
                 {
-                    label: "Todo en orden real",
-                    copy: "La guia sigue la secuencia natural de una instalacion: descubrir, preparar, instalar, validar y automatizar."
-                },
-                {
-                    label: "Con explicacion",
-                    copy: "Cada comando indica para que sirve, cuando ejecutarlo y que deberias esperar como resultado."
+                    label: "Arquitectura HTTP pull",
+                    copy: "El agente es stateless: no mantiene sesion ni abre conexiones salientes. El frontend realiza polling HTTP contra /health y /telemetry a intervalos configurables. El agente no conoce al cliente."
                 },
                 {
                     label: "Sin backend intermedio",
-                    copy: "El objetivo final es que el navegador llegue por HTTP al host Linux a traves de su IP privada y puerto."
+                    copy: "No hay relay, broker ni servidor central. La unica superficie de red expuesta es el socket TCP del agente en la LAN. El navegador debe tener visibilidad directa al host en el puerto configurado."
                 },
                 {
-                    label: "Orientada a principiantes",
-                    copy: "Si no recuerdas de donde sacar la IP, la distro o el kernel, aqui tienes el comando exacto para cada dato."
+                    label: "Cuenta de servicio sin privilegios",
+                    copy: "El agente se ejecuta con un usuario sin shell interactivo. El acceso a logs de autenticacion y al journal se gestiona via membresía en los grupos adm y systemd-journal, no con escalada de privilegios en tiempo de ejecucion."
+                },
+                {
+                    label: "Persistencia local en IndexedDB",
+                    copy: "Snapshots, logs, eventos de seguridad y alertas se persisten en IndexedDB del navegador con retención configurable. El agente no escribe nada en disco salvo el fichero de baseline para integridad de archivos."
                 }
             ];
         },
@@ -153,34 +172,34 @@ export default {
         installSteps() {
             return [
                 {
-                    title: "1. Descubrir informacion del host",
-                    badge: "Inventario",
-                    copy: "Recoge distro, version, hostname, IP privada, kernel y usuarios conectados antes de tocar nada en la instalacion."
+                    title: "1. Generar los artefactos",
+                    badge: "Generator",
+                    copy: "Antes de tocar el host, usa el generador para producir el agente .py parametrizado, la unidad systemd y el script de instalacion. El generador embebe en el codigo la configuracion de puerto, usuario, distro, modulos activos y rutas de log personalizadas."
                 },
                 {
-                    title: "2. Generar los archivos desde la web",
-                    badge: "Generador",
-                    copy: "Usa la vista de generador para obtener el agente Python, la unidad systemd y el script de apoyo con la configuracion del host."
+                    title: "2. Fingerprint del host destino",
+                    badge: "Discover",
+                    copy: "Recoge la IP de egreso efectiva (no todas las interfaces son validas), la distro exacta, el usuario con el que vas a desplegar y su pertenencia a grupos. Esto determina que bloque de dependencias instalar y si hay que ajustar ACLs antes de arrancar el agente."
                 },
                 {
-                    title: "3. Preparar carpeta y usuario",
-                    badge: "Base",
-                    copy: "Crea una ruta estable de trabajo y ajusta permisos para que el agente pueda ejecutarse y mantener su baseline."
+                    title: "3. Cuenta, directorio y ACLs",
+                    badge: "Staging",
+                    copy: "Crea una cuenta de servicio sin login interactivo. Asigna el directorio /opt/thorondor-agent a ese usuario. Agrega la cuenta a los grupos adm (auth.log) y systemd-journal (journalctl). Los cambios de grupo requieren reiniciar la sesion o el servicio para aplicar."
                 },
                 {
-                    title: "4. Instalar dependencias",
-                    badge: "Python",
-                    copy: "Asegura Python 3, pip, psutil y las herramientas complementarias que dan contexto a metricas, sensores y logs."
+                    title: "4. Dependencias Python",
+                    badge: "Runtime",
+                    copy: "El agente unicamente requiere Python 3.8+ y psutil. lm-sensors es opcional: aporta lecturas de temperatura en hardware fisico. Instala solo lo necesario para el host concreto; no instales dependencias que el agente no use."
                 },
                 {
-                    title: "5. Validar a mano",
-                    badge: "Manual",
-                    copy: "Primero comprueba que el script responde en manual. Solo despues de eso compensa integrarlo en systemd."
+                    title: "5. Smoke test en foreground",
+                    badge: "Verify",
+                    copy: "Arranca el agente manualmente como el usuario de servicio antes de registrarlo en systemd. Verifica /health y /telemetry con curl desde localhost y desde la maquina cliente. Si el payload de /telemetry tiene estructura coherente, el agente esta listo para produccion."
                 },
                 {
-                    title: "6. Automatizar y revisar",
-                    badge: "systemd",
-                    copy: "Deja el servicio habilitado al arranque y confirma health, telemetry, puerto y logs del sistema."
+                    title: "6. Unidad systemd y firewall",
+                    badge: "Production",
+                    copy: "Instala la unidad generada en /etc/systemd/system/, recarga el daemon y habilita el servicio con enable --now. Verifica NRestarts=0 y ExecMainStatus=0 antes de registrar el agente en el dashboard. Si hay firewall activo, abre solo el puerto del agente para la subred de origen."
                 }
             ];
         },
@@ -188,239 +207,158 @@ export default {
         commandSections() {
             return [
                 {
-                    kicker: "Paso 1",
-                    title: "Descubrir los datos que te pedira el formulario",
-                    copy: "Estos comandos te ayudan a completar correctamente la pantalla de generador sin tener que adivinar nada.",
+                    kicker: "Fase 1",
+                    title: "Fingerprint del host",
+                    copy: "Obtener la informacion necesaria para completar el generador y tomar decisiones de despliegue: IP de egreso efectiva, distribucion, usuario activo y pertenencia a grupos relevantes.",
                     badge: "Discover",
-                    note: "Hostname, distro, kernel, IP y usuarios.",
+                    note: "Ejecutar en el host destino antes de generar.",
                     commands: [
                         {
-                            title: "Ver la distribucion y version",
-                            badge: "SO",
-                            command: "cat /etc/os-release",
-                            purpose: "Muestra el nombre de la distribucion, su identificador y la version aproximada.",
-                            when: "Usalo antes de rellenar el campo de distribucion y version del sistema.",
-                            expected: "Deberias ver lineas como NAME, VERSION y ID con valores tipo Ubuntu 22.04 o Rocky Linux 9."
-                        },
-                        {
-                            title: "Identidad extendida del host",
-                            badge: "Host",
+                            title: "Identidad del sistema",
+                            badge: "OS",
                             command: "hostnamectl",
-                            purpose: "Resume hostname, kernel, arquitectura y sistema base en una sola salida.",
-                            when: "Muy util cuando quieres validar nombre del host, kernel y arquitectura sin lanzar varios comandos separados.",
-                            expected: "Una ficha textual con el nombre del equipo, sistema operativo, kernel y arquitectura."
+                            purpose: "Devuelve hostname estatico, sistema operativo, kernel y arquitectura en una unica salida estructurada.",
+                            when: "Fuente canonica para el nombre del host y la version de distro que solicita el generador. Mas fiable que combinar /etc/os-release + uname individualmente.",
+                            expected: "Bloque con Static hostname, Operating System, Kernel y Architecture. Usa el valor de Operating System para elegir la distro en el generador."
                         },
                         {
-                            title: "Nombre corto del host",
-                            badge: "Host",
-                            command: "hostname",
-                            purpose: "Devuelve solo el nombre corto del sistema.",
-                            when: "Ideal para decidir el identificador visible del host dentro de Thorondor.",
-                            expected: "Una sola linea con el hostname actual."
+                            title: "IP de egreso efectiva",
+                            badge: "Network",
+                            command: "ip route get 1.1.1.1",
+                            purpose: "Fuerza al kernel a resolver que interfaz y que IP source usaria para alcanzar Internet. Identifica la IP real de la interfaz de LAN en hosts con multiples interfaces.",
+                            when: "Usar esta IP como receiverUrl en el generador, no la salida de hostname -I que puede listar varias interfaces incluyendo loopback, docker bridges o VPN.",
+                            expected: "Linea con 'dev <iface> src <IP>'. El valor de src es la IP que debe configurarse en el agente."
                         },
                         {
-                            title: "IP privada rapida",
-                            badge: "IP",
-                            command: "hostname -I",
-                            purpose: "Lista las direcciones IP locales que tiene asignadas el host.",
-                            when: "Usalo para saber que IP privada debe consultar el navegador.",
-                            expected: "Una o varias IPs privadas como 192.168.x.x o 10.x.x.x."
+                            title: "Usuario efectivo y grupos",
+                            badge: "ACL",
+                            command: "id",
+                            purpose: "Muestra UID, GID y todos los grupos suplementarios del usuario activo.",
+                            when: "Determina si ya hay membresia en adm y systemd-journal o si hay que ejecutar usermod antes del despliegue. Los grupos aplican en la siguiente sesion o reinicio del servicio.",
+                            expected: "Linea con uid, gid y groups. Busca adm y systemd-journal en la lista de grupos; si no aparecen, son necesarios los usermod del siguiente paso."
                         },
                         {
-                            title: "Detalle de red",
-                            badge: "Red",
-                            command: "ip addr show",
-                            purpose: "Muestra interfaces, estados e IPs de forma mas completa que hostname -I.",
-                            when: "Usalo cuando el host tiene varias interfaces y necesitas identificar cual esta en la red correcta.",
-                            expected: "La lista de interfaces con su direccion IPv4 y estado."
-                        },
-                        {
-                            title: "Kernel y arquitectura",
-                            badge: "Kernel",
-                            command: "uname -r\nuname -m",
-                            purpose: "Separa version del kernel y arquitectura del procesador.",
-                            when: "Util cuando quieras anotar ambos valores por separado o revisar compatibilidad del host.",
-                            expected: "Por ejemplo 6.8.x para el kernel y x86_64 o aarch64 para la arquitectura."
-                        },
-                        {
-                            title: "Usuarios conectados ahora mismo",
-                            badge: "Usuarios",
-                            command: "who\nw",
-                            purpose: "Permite comprobar quienes estan conectados y que estan ejecutando en este momento.",
-                            when: "Sirve como referencia inicial y tambien para entender despues la informacion que devolvera el agente.",
-                            expected: "Una lista de sesiones y, con w, mas detalle sobre actividad y tiempos."
+                            title: "Sincronizacion de tiempo",
+                            badge: "NTP",
+                            command: "timedatectl show --no-pager",
+                            purpose: "Verifica zona horaria configurada y si NTP esta sincronizado. Los timestamps del agente son ISO 8601 en UTC; un reloj desviado distorsiona la correlacion de eventos en el dashboard.",
+                            when: "Critico si el host lleva mucho tiempo sin sincronizar o si la zona no coincide con la del cliente. Un desfase de mas de unos segundos afecta a alertas y timelines.",
+                            expected: "NTPSynchronized=yes y Timezone coherente con el entorno. Si aparece NTPSynchronized=no, revisar el servicio de sincronizacion antes de continuar."
                         }
                     ]
                 },
                 {
-                    kicker: "Paso 2",
-                    title: "Preparar carpeta, permisos y grupos de lectura",
-                    copy: "Una ruta ordenada y permisos correctos evitan muchos problemas cuando el agente intenta leer logs o mantener su baseline.",
-                    badge: "Prepare",
-                    note: "Ruta estable y acceso a logs.",
+                    kicker: "Fase 2",
+                    title: "Cuenta de servicio, directorio y ACLs",
+                    copy: "Principio de minimo privilegio: cuenta sin shell interactivo, directorio propiedad del servicio, acceso a logs via grupos del sistema. El agente no necesita en ningun momento ejecutarse como root.",
+                    badge: "Staging",
+                    note: "Ajustar <USUARIO> al nombre elegido en el generador.",
                     commands: [
                         {
-                            title: "Crear carpeta de trabajo",
-                            badge: "Ruta",
-                            command: "sudo mkdir -p /opt/thorondor-agent",
-                            purpose: "Crea la ruta donde guardaras el agente, la baseline de integridad y ficheros auxiliares.",
-                            when: "Hazlo justo despues de generar los archivos y antes de copiarlos al host.",
-                            expected: "La carpeta queda creada aunque no existiera antes."
+                            title: "Crear cuenta de servicio sin shell",
+                            badge: "useradd",
+                            command: "sudo useradd --system --create-home --shell /usr/sbin/nologin <USUARIO>",
+                            purpose: "Crea una cuenta de sistema sin login interactivo. --system asigna UID en el rango de sistema (<1000). --create-home es necesario si el agente necesita un directorio HOME para archivos temporales de Python.",
+                            when: "Saltar si se reutiliza un usuario existente. Verificar con 'id <USUARIO>' antes de ejecutar para evitar conflictos de UID.",
+                            expected: "El usuario queda creado sin password valido y con /usr/sbin/nologin como shell. Verificar con: getent passwd <USUARIO>."
                         },
                         {
-                            title: "Dar propiedad al usuario actual",
-                            badge: "Permisos",
-                            command: "sudo chown -R $USER:$USER /opt/thorondor-agent",
-                            purpose: "Asigna el control de esa carpeta al usuario con el que estas trabajando.",
-                            when: "Usalo si vas a copiar alli el .py, el .service y el resto del material generado.",
-                            expected: "Podras escribir dentro de la carpeta sin seguir usando sudo para cada fichero."
+                            title: "Directorio de trabajo y propietario",
+                            badge: "Filesystem",
+                            command: "sudo mkdir -p /opt/thorondor-agent\nsudo chown -R <USUARIO>:<USUARIO> /opt/thorondor-agent",
+                            purpose: "Crea el directorio de instalacion y transfiere la propiedad al usuario de servicio. El agente escribe ahi el fichero de baseline de integridad de archivos.",
+                            when: "Ejecutar antes de copiar los artefactos generados. Si el directorio ya existe con otro propietario, verificar si hay conflicto con otro servicio.",
+                            expected: "'ls -ld /opt/thorondor-agent' debe mostrar al usuario de servicio como propietario con permisos 755 o mas restrictivos."
                         },
                         {
-                            title: "Entrar en la carpeta",
-                            badge: "Shell",
-                            command: "cd /opt/thorondor-agent",
-                            purpose: "Te situa en la ruta donde se ejecutara y mantendra el agente.",
-                            when: "Ejecutalo antes de copiar ficheros o lanzar pruebas manuales.",
-                            expected: "Tu shell cambia al directorio de trabajo del agente."
+                            title: "Acceso a logs del sistema",
+                            badge: "Groups",
+                            command: "sudo usermod -aG adm,systemd-journal <USUARIO>",
+                            purpose: "Otorga acceso de lectura a auth.log (grupo adm en Debian/Ubuntu) y al journal del sistema (grupo systemd-journal). En RHEL/Rocky el grupo equivalente a adm es wheel o adm segun la configuracion.",
+                            when: "Necesario si el agente tiene habilitados los modulos securityLogs o applicationLogs. Los grupos no aplican hasta reiniciar la sesion del usuario o el servicio systemd.",
+                            expected: "'id <USUARIO>' debe listar adm y systemd-journal. Si el servicio ya estaba corriendo, reiniciarlo con systemctl restart para que el proceso herede los grupos nuevos."
                         },
                         {
-                            title: "Permitir lectura de auth.log y secure",
-                            badge: "Logs",
-                            command: "sudo usermod -aG adm <USUARIO>",
-                            purpose: "Anade el usuario del servicio al grupo que suele tener acceso a logs administrativos en Debian, Ubuntu y derivadas.",
-                            when: "Usalo si el agente necesita leer auth.log u otros logs restringidos.",
-                            expected: "El usuario queda agregado al grupo adm; normalmente tendras que cerrar sesion o reiniciar el servicio para que aplique."
-                        },
-                        {
-                            title: "Permitir lectura de journalctl",
-                            badge: "Journal",
-                            command: "sudo usermod -aG systemd-journal <USUARIO>",
-                            purpose: "Da acceso al journal del sistema sin convertir al usuario en root.",
-                            when: "Recomendado si quieres que el agente consulte journalctl y eventos del sistema con mas contexto.",
-                            expected: "El usuario queda asociado al grupo systemd-journal."
+                            title: "Desplegar los artefactos generados",
+                            badge: "Deploy",
+                            command: "sudo cp <AGENTE>.py <AGENTE>.service /opt/thorondor-agent/\nsudo chmod 750 /opt/thorondor-agent/<AGENTE>.py",
+                            purpose: "Copia el agente Python y la unidad systemd al directorio de trabajo. chmod 750 limita la ejecucion al propietario y al grupo, evitando que otros usuarios del sistema lean el codigo del agente.",
+                            when: "Verificar que los ficheros son los generados para este host especifico: revisar SYSTEM_NAME, LISTEN_PORT y LISTEN_HOST en las primeras lineas del .py antes de copiar.",
+                            expected: "Los ficheros quedan en /opt/thorondor-agent/ con el usuario de servicio como propietario. Confirmar con: ls -la /opt/thorondor-agent/."
                         }
                     ]
                 },
                 {
-                    kicker: "Paso 3",
-                    title: "Instalar Python, pip y dependencias por distribucion",
-                    copy: "El agente necesita Python 3 y psutil como base. lm-sensors mejora la visibilidad cuando la temperatura esta disponible en el sistema.",
-                    badge: "Deps",
-                    note: "Elige solo el bloque que corresponda a tu distro.",
+                    kicker: "Fase 3",
+                    title: "Dependencias Python por distribucion",
+                    copy: "El agente solo requiere Python 3.8+ y psutil. Instalar en el entorno del sistema (no en virtualenv) para que la unidad systemd use el interprete del sistema directamente. lm-sensors es opcional: solo aporta datos si el hardware expone sensores accesibles.",
+                    badge: "Runtime",
+                    note: "Instalar solo el bloque correspondiente a la distro del host.",
                     commands: [
                         {
-                            title: "Ubuntu, Debian o Kali",
+                            title: "Ubuntu, Debian, Kali",
                             badge: "apt",
-                            command: "sudo apt update\nsudo apt install -y python3 python3-pip python3-venv lm-sensors\npython3 -m pip install --upgrade pip\npython3 -m pip install psutil",
-                            purpose: "Actualiza indices, instala Python y pip, y anade psutil para que el agente pueda recopilar metricas del sistema.",
-                            when: "Usa este bloque si el host es Ubuntu, Debian o Kali.",
-                            expected: "Python 3 y pip quedan disponibles; psutil se instala sin errores."
+                            command: "sudo apt update && sudo apt install -y python3 python3-pip lm-sensors\npip3 install --break-system-packages psutil",
+                            purpose: "Instala el runtime y psutil en sistemas basados en Debian. '--break-system-packages' es necesario en Debian 12+ y Ubuntu 23.10+ donde pip esta restringido por PEP 668.",
+                            when: "En entornos donde pip rechaza la instalacion sin ese flag, alternativa valida: 'sudo apt install python3-psutil' instala psutil desde los repositorios del sistema.",
+                            expected: "'python3 -c \"import psutil; print(psutil.__version__)\"' debe devolver la version instalada sin ImportError."
                         },
                         {
-                            title: "CentOS, RHEL o Rocky",
+                            title: "CentOS, RHEL, Rocky Linux",
                             badge: "dnf",
-                            command: "sudo dnf install -y python3 python3-pip lm_sensors\npython3 -m pip install --upgrade pip\npython3 -m pip install psutil",
-                            purpose: "Instala la pila base equivalente en distribuciones de la familia RHEL.",
-                            when: "Usa este bloque si trabajas con CentOS Stream, Rocky o RHEL compatibles.",
-                            expected: "Los paquetes del sistema se instalan y psutil queda listo para usarse."
+                            command: "sudo dnf install -y python3 python3-pip lm_sensors\npip3 install psutil",
+                            purpose: "Instala dependencias en la familia RHEL. lm_sensors usa guion bajo como nombre de paquete en dnf.",
+                            when: "En RHEL 8/9 con suscripcion activa, python3-psutil puede estar disponible directamente en los repos. Verificar con: dnf list python3-psutil.",
+                            expected: "python3 disponible como /usr/bin/python3. psutil importable sin errores."
                         },
                         {
                             title: "Arch Linux",
                             badge: "pacman",
-                            command: "sudo pacman -Sy --noconfirm python python-pip lm_sensors\npython3 -m pip install --upgrade pip\npython3 -m pip install psutil",
-                            purpose: "Instala Python, pip y soporte de sensores en Arch.",
-                            when: "Usa este bloque si tu host pertenece a la familia Arch.",
-                            expected: "Dispondras de Python y pip, y psutil se instalara sobre ese runtime."
+                            command: "sudo pacman -Sy --noconfirm python python-pip lm_sensors python-psutil",
+                            purpose: "En Arch, python-psutil esta en los repositorios oficiales. Instalar desde pacman en lugar de pip evita conflictos con el sistema de paquetes.",
+                            when: "Si se usa pip en Arch sin virtualenv, puede aparecer el error 'externally-managed-environment'. Usar el paquete del sistema es la opcion correcta aqui.",
+                            expected: "python3 --version >= 3.8 y python3 -c 'import psutil' sin errores."
                         }
                     ]
                 },
                 {
-                    kicker: "Paso 4",
-                    title: "Lanzar el agente manualmente antes de automatizar",
-                    copy: "Esta es la prueba mas importante. Si aqui no responde, todavia no merece la pena pasar a systemd.",
-                    badge: "Run",
-                    note: "Primero manual, despues servicio.",
+                    kicker: "Fase 4",
+                    title: "Smoke test en foreground y despliegue en systemd",
+                    copy: "Arranca el agente como usuario de servicio antes de registrarlo en systemd. Si el proceso no levanta limpio en foreground (stderr visible), no hay nada que ganar pasando a systemd. Una vez validado el payload, instala la unidad y verifica la estabilidad del servicio.",
+                    badge: "Production",
+                    note: "Manual primero. systemd solo cuando el smoke test pasa.",
                     commands: [
                         {
-                            title: "Ejecutar el agente a mano",
-                            badge: "Manual",
-                            command: "python3 thorondor-agent.py",
-                            purpose: "Levanta el servicio HTTP del agente en primer plano para que puedas ver errores directamente en la consola.",
-                            when: "Hazlo justo despues de copiar el fichero .py al host y antes de crear la unidad systemd.",
-                            expected: "La consola deberia indicar que el agente arranca y queda escuchando en el puerto configurado."
+                            title: "Arranque en foreground como usuario de servicio",
+                            badge: "Foreground",
+                            command: "sudo -u <USUARIO> python3 /opt/thorondor-agent/<AGENTE>.py",
+                            purpose: "Ejecuta el agente con la identidad exacta con la que lo hara systemd. El stderr queda visible en el terminal. Permite detectar ImportError, PermissionError en lectura de logs o conflictos de puerto antes de obscurecer el output en el journal.",
+                            when: "Ejecutar en un terminal separado mientras se hacen los curl de validacion desde otro. Interrumpir con Ctrl+C una vez validado.",
+                            expected: "Linea de arranque indicando host, puerto y nombre del sistema. Sin tracebacks. El proceso debe permanecer en foreground sin reiniciarse."
                         },
                         {
-                            title: "Comprobar el estado basico del agente",
-                            badge: "Health",
-                            command: "curl http://127.0.0.1:<PUERTO>/health",
-                            purpose: "Consulta el endpoint minimo del agente para validar que el puerto responde y el servicio esta vivo.",
-                            when: "Usalo con el agente arrancado manualmente o ya como servicio.",
-                            expected: "Un JSON con estado ok, heartbeat y puerto."
+                            title: "Validar endpoints desde localhost y desde LAN",
+                            badge: "curl",
+                            command: "curl -s http://127.0.0.1:<PUERTO>/health | python3 -m json.tool\ncurl -s http://<IP_PRIVADA>:<PUERTO>/telemetry | python3 -m json.tool | head -60",
+                            purpose: "Verifica que el agente responde en local y que la IP privada es alcanzable desde la red. El payload de /telemetry debe contener los bloques system, metrics, security y logs con datos reales.",
+                            when: "Si /health responde en local pero no via IP privada: revisar firewall y que LISTEN_HOST en el .py sea '0.0.0.0' y no '127.0.0.1'. Si /telemetry devuelve campos vacios, revisar permisos de lectura de logs.",
+                            expected: "/health: JSON con status ok y heartbeat. /telemetry: JSON con system.hostname, metrics.cpuTotal, security.events y logs.*Tail con contenido."
                         },
                         {
-                            title: "Comprobar la telemetria completa",
-                            badge: "Telemetry",
-                            command: "curl http://127.0.0.1:<PUERTO>/telemetry",
-                            purpose: "Valida que el agente puede devolver informacion de sistema, metricas, seguridad y logs en un mismo payload.",
-                            when: "Hazlo despues del health check para confirmar que no solo responde, sino que tambien recopila datos utiles.",
-                            expected: "Un JSON amplio con bloques como system, metrics, security y logs."
+                            title: "Instalar unidad systemd y verificar estabilidad",
+                            badge: "systemd",
+                            command: "sudo cp /opt/thorondor-agent/<AGENTE>.service /etc/systemd/system/\nsudo systemctl daemon-reload\nsudo systemctl enable --now <AGENTE>.service\nsudo systemctl show <AGENTE>.service -p ActiveState,NRestarts,ExecMainStatus --value",
+                            purpose: "Instala la unidad, recarga el daemon, habilita el servicio en arranque y lo inicia inmediatamente. El ultimo comando verifica estado activo, contador de reinicios y codigo de salida del proceso principal sin parsear la salida verbosa de systemctl status.",
+                            when: "NRestarts > 0 inmediatamente despues de enable --now indica que el proceso esta fallando y entrando en el loop de restart. Diagnosticar con: journalctl -u <AGENTE>.service -n 30 --no-pager.",
+                            expected: "ActiveState=active, NRestarts=0, ExecMainStatus=0. Si NRestarts sube, el proceso esta crasheando: ver el journal para el traceback."
                         },
                         {
-                            title: "Ver si el puerto esta escuchando",
-                            badge: "Puerto",
-                            command: "ss -tulpn | grep <PUERTO>",
-                            purpose: "Muestra si hay un proceso escuchando en el puerto configurado para Thorondor.",
-                            when: "Muy util si curl falla y quieres distinguir entre un problema de servicio o de ruta/firewall.",
-                            expected: "Una linea donde aparece el puerto y el proceso Python asociado."
-                        }
-                    ]
-                },
-                {
-                    kicker: "Paso 5",
-                    title: "Automatizar el arranque con systemd",
-                    copy: "Una vez verificado en manual, ya compensa dejar el agente como servicio persistente para que arranque con el sistema.",
-                    badge: "Systemd",
-                    note: "Servicio estable al encender el equipo.",
-                    commands: [
-                        {
-                            title: "Copiar la unidad al sistema",
-                            badge: "Unit",
-                            command: "sudo cp thorondor-agent.service /etc/systemd/system/thorondor-agent.service",
-                            purpose: "Coloca la unidad systemd generada en la ruta desde la que systemd carga servicios personalizados.",
-                            when: "Hazlo cuando el fichero .service ya este revisado y el .py haya funcionado correctamente en manual.",
-                            expected: "La unidad queda disponible para ser recargada y habilitada."
-                        },
-                        {
-                            title: "Recargar la configuracion de systemd",
-                            badge: "Reload",
-                            command: "sudo systemctl daemon-reload",
-                            purpose: "Obliga a systemd a releer las unidades nuevas o modificadas.",
-                            when: "Siempre despues de copiar o editar un fichero .service.",
-                            expected: "El comando termina sin errores y systemd ya reconoce la nueva unidad."
-                        },
-                        {
-                            title: "Habilitar e iniciar el servicio",
-                            badge: "Enable",
-                            command: "sudo systemctl enable --now thorondor-agent.service",
-                            purpose: "Lo deja arrancado ahora mismo y tambien preparado para iniciarse automaticamente al encender el host.",
-                            when: "Usalo cuando ya no quieras depender de ejecutar python3 a mano.",
-                            expected: "El servicio queda en active y enabled."
-                        },
-                        {
-                            title: "Revisar el estado del servicio",
-                            badge: "Status",
-                            command: "sudo systemctl status thorondor-agent.service",
-                            purpose: "Muestra si el servicio esta activo, si entra en reinicio o si se ha caido por un error de configuracion.",
-                            when: "Ejecutalo siempre despues de enable --now y cada vez que hagas cambios importantes.",
-                            expected: "Una salida con estado active (running) y sin bucles de reinicio."
-                        },
-                        {
-                            title: "Consultar logs del servicio",
-                            badge: "Journal",
-                            command: "journalctl -u thorondor-agent.service -n 50 --no-pager",
-                            purpose: "Lee las ultimas lineas de log asociadas al servicio para diagnosticar fallos de arranque o de permisos.",
-                            when: "Especialmente util si systemctl status muestra fallos o si la telemetria no responde como esperas.",
-                            expected: "Las ultimas trazas del servicio, incluyendo errores Python o mensajes de arranque."
+                            title: "Abrir puerto en firewall local",
+                            badge: "Firewall",
+                            command: "# UFW (Debian/Ubuntu)\nsudo ufw allow from <SUBRED>/24 to any port <PUERTO> proto tcp\n\n# firewalld (RHEL/Rocky)\nsudo firewall-cmd --permanent --add-rich-rule='rule family=ipv4 source address=<SUBRED>/24 port port=<PUERTO> protocol=tcp accept'\nsudo firewall-cmd --reload",
+                            purpose: "Restringe el acceso al puerto del agente a la subred de origen en lugar de abrirlo a cualquier IP. Reduce superficie de ataque si el host es accesible desde mas de una red.",
+                            when: "Si no hay firewall activo (verificar con: sudo ufw status o sudo firewall-cmd --state), omitir este paso. Ejecutar solo el bloque correspondiente al firewall del host.",
+                            expected: "curl desde la maquina cliente responde sin timeout. curl desde fuera de la subred autorizada debe quedar bloqueado."
                         }
                     ]
                 }
@@ -430,20 +368,44 @@ export default {
         validationChecks() {
             return [
                 {
-                    label: "Health accesible",
-                    copy: "El endpoint /health debe responder desde el propio host y, si la red lo permite, tambien desde el equipo donde abres la web."
+                    title: "Proceso activo y socket en escucha",
+                    badge: "Process",
+                    copy: "Confirma que el proceso Python tiene el socket TCP abierto en el puerto configurado. Si el health falla y esto tampoco muestra el proceso, el agente no ha arrancado correctamente.",
+                    command: "ss -tulpn | grep <PUERTO>",
+                    confirms: "Binding activo del socket en 0.0.0.0:<PUERTO> y PID del proceso Python asociado.",
+                    expected: "Linea con LISTEN, 0.0.0.0:<PUERTO> y el PID del interprete Python. Si aparece 127.0.0.1:<PUERTO> en lugar de 0.0.0.0, LISTEN_HOST en el .py esta mal configurado y el agente no sera alcanzable desde la red."
                 },
                 {
-                    label: "Telemetry estructurada",
-                    copy: "El endpoint /telemetry debe devolver JSON con bloques utiles, no solo una respuesta vacia o parcial."
+                    title: "Health desde localhost",
+                    badge: "Local",
+                    copy: "Validacion minima del proceso: si este curl falla, el agente no esta levantado o hay un conflicto de puerto. No implica nada sobre conectividad de red.",
+                    command: "curl -s http://127.0.0.1:<PUERTO>/health",
+                    confirms: "El proceso esta levantado, el servidor HTTP responde y el endpoint /health devuelve JSON valido.",
+                    expected: "JSON con 'status': 'ok', 'heartbeat' con timestamp reciente y 'port' con el valor configurado. Si devuelve Connection refused, el proceso no esta corriendo o usa otro puerto."
                 },
                 {
-                    label: "Servicio estable",
-                    copy: "systemctl status no debe mostrar reinicios continuos ni errores de permisos al leer logs o lanzar psutil."
+                    title: "Alcanzabilidad real desde la maquina cliente",
+                    badge: "LAN",
+                    copy: "Prueba de conectividad extremo a extremo desde el equipo que abre Thorondor. Valida IP privada, ruta de red y que el firewall local del host no bloquea el puerto.",
+                    command: "curl -v --connect-timeout 5 http://<IP_PRIVADA>:<PUERTO>/health",
+                    confirms: "La IP privada configurada en el agente es alcanzable desde el cliente y el firewall local no filtra el puerto.",
+                    expected: "La conexion TCP se establece (TCP_NODELAY, Connected) y llega el JSON de /health. Si hay timeout en el connect, el problema es de ruta o firewall, no del agente. Si hay Connection refused, el puerto no esta en escucha en esa IP."
                 },
                 {
-                    label: "Puerto visible",
-                    copy: "Si el navegador no alcanza el host pero localmente todo funciona, revisa firewall local o segmentacion de red."
+                    title: "Estructura del payload de telemetria",
+                    badge: "Payload",
+                    copy: "El dashboard espera un payload estructurado con bloques especificos. Un payload incompleto genera graficos vacios, alertas sin datos o errores silenciosos en el store.",
+                    command: "curl -s http://127.0.0.1:<PUERTO>/telemetry | python3 -m json.tool | grep -E '\"(system|metrics|security|logs|heartbeat)\"'",
+                    confirms: "Presencia de los bloques raiz que consume el frontend: system, metrics, security, logs y heartbeat.",
+                    expected: "Las cinco claves aparecen en la salida. Si falta alguna, revisar que el modulo correspondiente esta habilitado en la configuracion del agente y que el usuario de servicio tiene los permisos necesarios para leer las fuentes de datos."
+                },
+                {
+                    title: "Estabilidad del servicio systemd",
+                    badge: "systemd",
+                    copy: "NRestarts > 0 poco despues del arranque es siempre indicativo de un fallo que systemd esta enmascarando con el loop de restart. Diagnosticar antes de registrar el agente en el dashboard.",
+                    command: "systemctl show <AGENTE>.service -p ActiveState,NRestarts,ExecMainStatus --value\njournalctl -u <AGENTE>.service -n 20 --no-pager",
+                    confirms: "Estado activo, ausencia de reinicios y codigo de salida 0 del proceso principal.",
+                    expected: "ActiveState=active, NRestarts=0, ExecMainStatus=0. Cualquier otra combinacion requiere revisar el journal. Los errores mas frecuentes son: ImportError de psutil, PermissionError en /var/log/, o OSError: Address already in use si hay otra instancia corriendo."
                 }
             ];
         }
@@ -468,6 +430,14 @@ export default {
     gap: 0.8rem;
 }
 
+.validation-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.validation-card {
+    gap: 1rem;
+}
+
 .meta-line {
     display: grid;
     gap: 0.3rem;
@@ -483,5 +453,11 @@ export default {
 .meta-line p {
     margin: 0;
     color: rgba(232, 240, 252, 0.9);
+}
+
+@media (max-width: 1199px) {
+    .validation-grid {
+        grid-template-columns: 1fr;
+    }
 }
 </style>

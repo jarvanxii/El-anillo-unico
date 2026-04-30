@@ -7,6 +7,11 @@ export const THORONDOR_SECURITY_LIMIT = 500;
 export const THORONDOR_LOG_LIMIT = 800;
 export const THORONDOR_CONNECTION_LIMIT = 120;
 
+export const THORONDOR_IDB_SNAPSHOT_LIMIT = 500;
+export const THORONDOR_IDB_LOG_LIMIT = 2000;
+export const THORONDOR_IDB_EVENT_LIMIT = 1000;
+export const THORONDOR_SWEEP_INTERVAL_MS = 3_600_000;
+
 export const THORONDOR_MODULE_KEYS = [
   { key: "systemMetrics", label: "Metricas de sistema" },
   { key: "securityLogs", label: "Logs de seguridad" },
@@ -31,6 +36,8 @@ export const THORONDOR_LOG_SOURCES = [
   { value: "auth", label: "auth.log / secure" },
   { value: "custom", label: "Personalizados" }
 ];
+
+export const THORONDOR_DEFAULT_ADDITIONAL_LOG_PATHS = "/var/log/nginx/access.log\n/var/log/nginx/error.log";
 
 export const THORONDOR_ALERT_TYPES = {
   cpu: "CPU sostenida alta",
@@ -142,26 +149,16 @@ export function buildDefaultThorondorRuleSet() {
   ];
 }
 
-export function buildThorondorAgentDraft(currentUrl = "") {
-  let receiver = currentUrl;
-
-  try {
-    if (typeof window !== "undefined" && !receiver) {
-      receiver = window.location.origin;
-    }
-  } catch (error) {
-    receiver = currentUrl;
-  }
-
+export function buildThorondorAgentDraft() {
   return {
-    displayName: "PC UBUNTU DE PACO",
-    systemName: "servidor-web-01",
-    distro: "Ubuntu/Debian",
-    osVersion: "22.04 LTS",
-    receiverUrl: receiver,
-    port: 8765,
+    displayName: "",
+    systemName: "",
+    distro: "",
+    osVersion: "",
+    receiverUrl: "",
+    port: "",
     intervalSeconds: 30,
-    additionalLogPaths: "/var/log/nginx/access.log\n/var/log/nginx/error.log",
+    additionalLogPaths: THORONDOR_DEFAULT_ADDITIONAL_LOG_PATHS,
     modules: {
       systemMetrics: true,
       securityLogs: true,
@@ -171,9 +168,23 @@ export function buildThorondorAgentDraft(currentUrl = "") {
       applicationLogs: true
     },
     generateSystemd: true,
-    hostIp: "192.168.1.50",
-    installUser: "thorondor",
-    serviceName: "thorondor-agent",
+    hostIp: "",
+    installUser: "",
+    serviceName: "",
     notes: ""
   };
+}
+
+export function isLegacyThorondorAgentDraft(draft) {
+  if (!draft || typeof draft !== "object") return false;
+
+  return draft.displayName === "PC UBUNTU DE PACO"
+    && draft.systemName === "servidor-web-01"
+    && draft.distro === "Ubuntu/Debian"
+    && draft.osVersion === "22.04 LTS"
+    && String(draft.hostIp || "") === "192.168.1.50"
+    && String(draft.installUser || "") === "thorondor"
+    && String(draft.serviceName || "") === "thorondor-agent"
+    && Number(draft.intervalSeconds) === 30
+    && String(draft.additionalLogPaths || "") === THORONDOR_DEFAULT_ADDITIONAL_LOG_PATHS;
 }

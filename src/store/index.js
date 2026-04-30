@@ -2,14 +2,19 @@ import { createStore } from 'vuex'
 import {
   THORONDOR_CONNECTION_LIMIT,
   THORONDOR_HISTORY_LIMIT,
+  THORONDOR_IDB_EVENT_LIMIT,
+  THORONDOR_IDB_LOG_LIMIT,
+  THORONDOR_IDB_SNAPSHOT_LIMIT,
   THORONDOR_LOG_LIMIT,
   THORONDOR_RETENTION_DAYS,
   THORONDOR_SECURITY_LIMIT,
+  THORONDOR_SWEEP_INTERVAL_MS,
   buildThorondorAgentDraft,
   buildDefaultThorondorRuleSet
 } from '@/features/vueloThorondor/data/thorondorDefaults'
 import {
   STORE_NAMES,
+  deleteByIndex,
   deleteOne,
   loadThorondorPersistence,
   openThorondorDb,
@@ -524,7 +529,14 @@ export default createStore({
 
     async removeThorondorAgent({ commit }, agentId) {
       commit('removeThorondorAgent', agentId)
-      await deleteOne(STORE_NAMES.agents, agentId)
+      await Promise.all([
+        deleteOne(STORE_NAMES.agents, agentId),
+        deleteByIndex(STORE_NAMES.snapshots, 'agentId', agentId),
+        deleteByIndex(STORE_NAMES.logs, 'agentId', agentId),
+        deleteByIndex(STORE_NAMES.events, 'agentId', agentId),
+        deleteByIndex(STORE_NAMES.history, 'agentId', agentId),
+        deleteByIndex(STORE_NAMES.alerts, 'agentId', agentId)
+      ])
     },
 
     async saveThorondorGeneratorDraft({ commit }, draft) {
@@ -629,8 +641,18 @@ export default createStore({
     },
 
     async sweepThorondorData({ state, commit }) {
+      const lastSweep = state.thorondor.lastSweepAt ? new Date(state.thorondor.lastSweepAt).getTime() : 0
+      if (Date.now() - lastSweep < THORONDOR_SWEEP_INTERVAL_MS) return
+
       const cutoff = new Date(Date.now() - (state.thorondor.retentionDays * 86400000)).toISOString()
-      await sweepThorondorPersistence(cutoff)
+      const agentIds = state.thorondor.agents.map((a) => a.id)
+
+      await sweepThorondorPersistence(cutoff, agentIds, {
+        snapshots: THORONDOR_IDB_SNAPSHOT_LIMIT,
+        logs: THORONDOR_IDB_LOG_LIMIT,
+        events: THORONDOR_IDB_EVENT_LIMIT
+      })
+
       const sweepTime = new Date().toISOString()
       await setMeta('lastSweepAt', sweepTime)
       commit('setThorondorLastSweepAt', sweepTime)

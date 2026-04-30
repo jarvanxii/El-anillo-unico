@@ -59,7 +59,7 @@ export const THORONDOR_ALERT_TYPES = {
   cpu: "CPU sostenida alta",
   ram: "RAM alta",
   disk: "Disco alto",
-  failedLogins: "Exceso de logins fallidos",
+  failedLogins: "Exceso de logs de autenticacion fallidos",
   unknownLoginIp: "Login exitoso desde IP desconocida",
   criticalFileChange: "Cambio en archivo critico",
   heartbeat: "Agente sin heartbeat",

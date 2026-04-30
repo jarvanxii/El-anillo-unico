@@ -52,9 +52,12 @@
                     <div class="card-head">
                         <div>
                             <h5>{{ card.displayName }}</h5>
-                            <small class="muted-copy">{{ card.systemName }} · {{ card.distro }}</small>
+                            <small class="muted-copy">{{ card.systemName }} · {{ card.targetOs === 'windows' ? card.osVersion || 'Windows' : card.distro }}</small>
                         </div>
-                        <span class="state-chip" :class="statusClass(card.status.color)">{{ card.status.label }}</span>
+                        <div class="card-head-right">
+                            <span class="os-badge" :class="card.targetOs === 'windows' ? 'os-badge--win' : 'os-badge--linux'">{{ card.targetOs === 'windows' ? '🪟 Win' : '🐧 Linux' }}</span>
+                            <span class="state-chip" :class="statusClass(card.status.color)">{{ card.status.label }}</span>
+                        </div>
                     </div>
 
                     <div class="mini-grid">
@@ -274,4 +277,35 @@ export default {
 
 <style scoped>
 @import "@/features/vueloThorondor/styles/thorondor-theme.css";
+
+.card-head-right {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    flex-shrink: 0;
+}
+
+.os-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.2rem;
+    padding: 0.18rem 0.55rem;
+    border-radius: 5px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+}
+
+.os-badge--linux {
+    background: rgba(74, 222, 128, 0.12);
+    border: 1px solid rgba(74, 222, 128, 0.3);
+    color: #86efac;
+}
+
+.os-badge--win {
+    background: rgba(96, 165, 250, 0.12);
+    border: 1px solid rgba(96, 165, 250, 0.3);
+    color: #93c5fd;
+}
 </style>

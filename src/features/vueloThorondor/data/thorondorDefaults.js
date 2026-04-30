@@ -29,6 +29,15 @@ export const THORONDOR_DISTRO_OPTIONS = [
   "Otra"
 ];
 
+export const THORONDOR_WINDOWS_VERSION_OPTIONS = [
+  "Windows 11",
+  "Windows 10",
+  "Windows Server 2025",
+  "Windows Server 2022",
+  "Windows Server 2019",
+  "Windows Server 2016"
+];
+
 export const THORONDOR_LOG_SOURCES = [
   { value: "all", label: "Todas" },
   { value: "syslog", label: "syslog" },
@@ -151,6 +160,7 @@ export function buildDefaultThorondorRuleSet() {
 
 export function buildThorondorAgentDraft() {
   return {
+    targetOs: "linux",
     displayName: "",
     systemName: "",
     distro: "",

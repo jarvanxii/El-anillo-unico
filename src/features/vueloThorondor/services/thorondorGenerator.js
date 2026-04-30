@@ -19,13 +19,15 @@ export function buildThorondorAgentFiles(draft) {
     logPaths
   };
 
+  const isWindows = config.targetOs === "windows";
+
   return {
     agentFileName: "thorondor-agent.py",
-    serviceFileName: "thorondor-agent.service",
-    installFileName: "install-thorondor-agent.sh",
+    serviceFileName: isWindows ? null : "thorondor-agent.service",
+    installFileName: isWindows ? "install-thorondor-agent.ps1" : "install-thorondor-agent.sh",
     python: buildThorondorPythonAgent(config),
-    systemd: buildThorondorSystemdUnit(config),
-    installScript: buildThorondorInstallScript(config),
+    systemd: isWindows ? null : buildThorondorSystemdUnit(config),
+    installScript: isWindows ? buildThorondorWindowsInstallScript(config) : buildThorondorInstallScript(config),
     instructions: buildThorondorInstallInstructions(config)
   };
 }
@@ -65,6 +67,7 @@ LISTEN_HOST = "0.0.0.0"
 LISTEN_PORT = ${Number(config.port) || 8765}
 POLL_INTERVAL_SECONDS = ${Number(config.intervalSeconds) || 30}
 INSTALL_USER = ${JSON.stringify(config.installUser || "thorondor")}
+IS_WINDOWS = platform.system() == "Windows"
 MODULES = {
     "systemMetrics": ${serializeBoolean(moduleFlags.systemMetrics)},
     "securityLogs": ${serializeBoolean(moduleFlags.securityLogs)},
@@ -74,7 +77,14 @@ MODULES = {
     "applicationLogs": ${serializeBoolean(moduleFlags.applicationLogs)},
 }
 ADDITIONAL_LOG_PATHS = ${pythonList(config.logPaths)}
-CRITICAL_FILES = ["/etc/passwd", "/etc/shadow", "/etc/sudoers"]
+CRITICAL_FILES = (
+    [
+        os.path.join(os.environ.get("SystemRoot", "C:\\\\Windows"), "System32", "drivers", "etc", "hosts"),
+        os.path.join(os.environ.get("SystemRoot", "C:\\\\Windows"), "System32", "drivers", "etc", "services"),
+    ]
+    if IS_WINDOWS
+    else ["/etc/passwd", "/etc/shadow", "/etc/sudoers"]
+)
 BASELINE_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".thorondor-baseline.json")
 MAX_LOG_LINES = 60
 HEADERS = {
@@ -125,6 +135,8 @@ def read_tail(path, lines=MAX_LOG_LINES):
 
 
 def get_auth_log_path():
+    if IS_WINDOWS:
+        return "Windows Security Event Log"
     candidates = ["/var/log/auth.log", "/var/log/secure"]
     for candidate in candidates:
         if os.path.exists(candidate):
@@ -133,11 +145,65 @@ def get_auth_log_path():
 
 
 def detect_syslog_path():
+    if IS_WINDOWS:
+        return ""
     candidates = ["/var/log/syslog", "/var/log/messages"]
     for candidate in candidates:
         if os.path.exists(candidate):
             return candidate
     return ""
+
+
+def collect_windows_security_events():
+    events = []
+    try:
+        ps_script = (
+            "Get-WinEvent -LogName Security -MaxEvents 100 "
+            "-FilterXPath '*[System[EventID=4624 or EventID=4625 or EventID=4648]]' "
+            "2>$null | Select-Object @{N='id';E={$_.Id}},@{N='ts';E={$_.TimeCreated.ToString('o')}},@{N='msg';E={$_.Message}} "
+            "| ConvertTo-Json -Depth 2 -Compress"
+        )
+        result = subprocess.run(
+            ["powershell", "-NoProfile", "-NonInteractive", "-Command", ps_script],
+            capture_output=True, text=True, timeout=15
+        )
+        if result.returncode == 0 and result.stdout.strip():
+            raw = json.loads(result.stdout)
+            if isinstance(raw, dict):
+                raw = [raw]
+            for evt in raw:
+                eid = evt.get("id")
+                ts = evt.get("ts", now_iso())
+                msg = str(evt.get("msg", ""))[:300]
+                if eid == 4625:
+                    events.append({"kind": "failed_login", "user": "unknown", "sourceIp": "win", "message": msg, "timestamp": ts})
+                elif eid in (4624, 4648):
+                    events.append({"kind": "successful_login", "user": "unknown", "sourceIp": "win", "message": msg, "timestamp": ts})
+    except Exception as exc:
+        events.append({"kind": "error", "message": str(exc), "timestamp": now_iso()})
+    return events[-80:]
+
+
+def collect_windows_logs():
+    try:
+        ps_script = (
+            "Get-WinEvent -LogName System -MaxEvents 60 2>$null "
+            "| Select-Object @{N='ts';E={$_.TimeCreated.ToString('o')}},@{N='lvl';E={$_.LevelDisplayName}},@{N='msg';E={$_.Message}} "
+            "| ConvertTo-Json -Depth 2 -Compress"
+        )
+        result = subprocess.run(
+            ["powershell", "-NoProfile", "-NonInteractive", "-Command", ps_script],
+            capture_output=True, text=True, timeout=15
+        )
+        lines = []
+        if result.returncode == 0 and result.stdout.strip():
+            raw = json.loads(result.stdout)
+            if isinstance(raw, dict):
+                raw = [raw]
+            lines = [f"[{e.get('ts','')}] [{e.get('lvl','')}] {str(e.get('msg',''))[:200]}" for e in raw]
+        return lines
+    except Exception:
+        return []
 
 
 def file_hash(path):
@@ -321,31 +387,37 @@ def parse_auth_events(lines):
 
 def collect_security():
     auth_log = get_auth_log_path()
+    if IS_WINDOWS:
+        events = collect_windows_security_events()
+        if MODULES["fileIntegrity"]:
+            events.extend(collect_integrity_events())
+        return {"authLogPath": auth_log, "events": events, "authTail": []}
+
     auth_lines = read_tail(auth_log, MAX_LOG_LINES)
     events = parse_auth_events(auth_lines)
-
     if MODULES["fileIntegrity"]:
         events.extend(collect_integrity_events())
-
-    return {
-        "authLogPath": auth_log,
-        "events": events,
-        "authTail": auth_lines
-    }
+    return {"authLogPath": auth_log, "events": events, "authTail": auth_lines}
 
 
 def collect_logs():
-    syslog_path = detect_syslog_path()
-    journal_output = run_command(["journalctl", "-n", str(MAX_LOG_LINES), "--no-pager"])
     custom_logs = []
     for path in ADDITIONAL_LOG_PATHS:
-        custom_logs.append({
-            "path": path,
-            "lines": read_tail(path, MAX_LOG_LINES)
-        })
+        custom_logs.append({"path": path, "lines": read_tail(path, MAX_LOG_LINES)})
 
+    if IS_WINDOWS:
+        win_lines = collect_windows_logs()
+        return {
+            "syslogPath": "",
+            "syslogTail": [],
+            "journalTail": win_lines,
+            "kernelErrors": [],
+            "customLogs": custom_logs
+        }
+
+    syslog_path = detect_syslog_path()
+    journal_output = run_command(["journalctl", "-n", str(MAX_LOG_LINES), "--no-pager"])
     kernel_errors = run_command(["sh", "-c", "dmesg | grep -i error | tail -n 25"])
-
     return {
         "syslogPath": syslog_path,
         "syslogTail": read_tail(syslog_path, MAX_LOG_LINES),
@@ -397,6 +469,7 @@ def collect_payload():
             "systemName": SYSTEM_NAME,
             "distro": DISTRO,
             "osVersion": OS_VERSION,
+            "targetOs": "windows" if IS_WINDOWS else "linux",
             "installUser": INSTALL_USER,
             "listenPort": LISTEN_PORT,
             "modules": MODULES,
@@ -430,12 +503,21 @@ def collect_payload():
         },
         "security": security,
         "logs": logs,
-        "commands": {
-            "who": run_command(["who"]),
-            "w": run_command(["w"]),
-            "systemctl": run_command(["systemctl", "--type=service", "--state=running", "--no-pager", "--no-legend"]),
-            "cron": run_command(["sh", "-c", "crontab -l 2>/dev/null || true"])
-        }
+        "commands": (
+            {
+                "who": run_command(["powershell", "-NoProfile", "-NonInteractive", "-Command", "query user 2>$null"]),
+                "w": run_command(["powershell", "-NoProfile", "-NonInteractive", "-Command", "Get-Process | Sort-Object CPU -Descending | Select-Object -First 15 | ConvertTo-Json -Depth 1 -Compress"]),
+                "systemctl": run_command(["powershell", "-NoProfile", "-NonInteractive", "-Command", "Get-Service | Where-Object {$_.Status -eq 'Running'} | Select-Object Name,DisplayName | ConvertTo-Json -Compress"]),
+                "cron": run_command(["powershell", "-NoProfile", "-NonInteractive", "-Command", "Get-ScheduledTask | Where-Object {$_.State -eq 'Ready' -or $_.State -eq 'Running'} | Select-Object TaskName,State | ConvertTo-Json -Compress"])
+            }
+            if IS_WINDOWS
+            else {
+                "who": run_command(["who"]),
+                "w": run_command(["w"]),
+                "systemctl": run_command(["systemctl", "--type=service", "--state=running", "--no-pager", "--no-legend"]),
+                "cron": run_command(["sh", "-c", "crontab -l 2>/dev/null || true"])
+            }
+        )
     }
     return payload
 
@@ -482,7 +564,8 @@ class ThorondorHandler(BaseHTTPRequestHandler):
 
 class ThorondorHTTPServer(ThreadingHTTPServer):
     allow_reuse_address = True
-    allow_reuse_port = True
+    if hasattr(socket, "SO_REUSEPORT"):
+        allow_reuse_port = True
 
 
 def main():
@@ -614,6 +697,92 @@ curl http://${config.hostIp || "127.0.0.1"}:${Number(config.port) || 8765}/telem
 \`\`\`
 
 7. Registrar este host en el dashboard y comprobar que aparece con heartbeat.
+`;
+}
+
+export function buildThorondorWindowsInstallScript(config) {
+  const port = Number(config.port) || 8765;
+  const installDir = "C:\\ProgramData\\Thorondor-Agent";
+
+  return `#Requires -RunAsAdministrator
+<#
+.SYNOPSIS
+    Instala el agente Thorondor en Windows como tarea programada.
+.DESCRIPTION
+    Crea el directorio de instalacion, instala dependencias Python
+    y registra el agente como tarea programada de inicio de sistema.
+    Requiere PowerShell 5.1+ y permisos de Administrador.
+#>
+
+Set-StrictMode -Version Latest
+$ErrorActionPreference = "Stop"
+
+$INSTALL_DIR  = "${installDir}"
+$AGENT_FILE   = "thorondor-agent.py"
+$TASK_NAME    = "ThorondorAgent"
+$PORT         = ${port}
+
+Write-Host "=== Thorondor Agent Installer ===" -ForegroundColor Cyan
+
+# 1. Crear directorio de instalacion
+Write-Host "[1/6] Creando directorio $INSTALL_DIR..." -ForegroundColor Yellow
+New-Item -ItemType Directory -Force -Path $INSTALL_DIR | Out-Null
+Copy-Item -Path ".\\$AGENT_FILE" -Destination "$INSTALL_DIR\\$AGENT_FILE" -Force
+
+# 2. Verificar Python
+Write-Host "[2/6] Verificando Python..." -ForegroundColor Yellow
+$python = $null
+foreach ($cmd in @("python", "python3", "py")) {
+    try {
+        $ver = & $cmd --version 2>&1
+        if ($ver -match "Python 3\\.(\\d+)") {
+            $python = $cmd
+            Write-Host "    Python encontrado: $ver" -ForegroundColor Green
+            break
+        }
+    } catch { }
+}
+if (-not $python) {
+    Write-Host "    Python no encontrado. Instalando via winget..." -ForegroundColor Yellow
+    winget install --id Python.Python.3.11 --silent --accept-source-agreements --accept-package-agreements
+    $python = "python"
+}
+
+# 3. Instalar psutil
+Write-Host "[3/6] Instalando dependencias Python..." -ForegroundColor Yellow
+& $python -m pip install --upgrade pip --quiet
+& $python -m pip install psutil --quiet
+Write-Host "    psutil instalado correctamente." -ForegroundColor Green
+
+# 4. Regla de firewall
+Write-Host "[4/6] Abriendo puerto $PORT en Windows Firewall..." -ForegroundColor Yellow
+New-NetFirewallRule -DisplayName "Thorondor Agent HTTP" -Direction Inbound -Protocol TCP -LocalPort $PORT -Action Allow -Profile Any -ErrorAction SilentlyContinue | Out-Null
+Write-Host "    Regla de firewall creada." -ForegroundColor Green
+
+# 5. Crear tarea programada
+Write-Host "[5/6] Registrando tarea programada '$TASK_NAME'..." -ForegroundColor Yellow
+$action   = New-ScheduledTaskAction -Execute $python -Argument "$INSTALL_DIR\\$AGENT_FILE"
+$trigger  = New-ScheduledTaskTrigger -AtStartup
+$settings = New-ScheduledTaskSettingsSet -StartWhenAvailable -RunOnlyIfNetworkAvailable -ExecutionTimeLimit (New-TimeSpan -Seconds 0)
+$principal = New-ScheduledTaskPrincipal -UserId "SYSTEM" -LogonType ServiceAccount -RunLevel Highest
+Unregister-ScheduledTask -TaskName $TASK_NAME -Confirm:$false -ErrorAction SilentlyContinue
+Register-ScheduledTask -TaskName $TASK_NAME -Action $action -Trigger $trigger -Settings $settings -Principal $principal -Force | Out-Null
+Write-Host "    Tarea registrada correctamente." -ForegroundColor Green
+
+# 6. Iniciar el agente inmediatamente
+Write-Host "[6/6] Iniciando el agente..." -ForegroundColor Yellow
+Start-ScheduledTask -TaskName $TASK_NAME
+Start-Sleep -Seconds 3
+$state = (Get-ScheduledTask -TaskName $TASK_NAME).State
+Write-Host "    Estado de la tarea: $state" -ForegroundColor $(if ($state -eq "Running") { "Green" } else { "Yellow" })
+
+Write-Host ""
+Write-Host "=== Instalacion completada ===" -ForegroundColor Green
+Write-Host "Verifica el agente con:"
+Write-Host "  Invoke-RestMethod http://127.0.0.1:$PORT/health | ConvertTo-Json -Depth 3"
+Write-Host ""
+Write-Host "Logs del proceso:"
+Write-Host "  Get-EventLog -LogName Application -Source 'ThorondorAgent' -Newest 20"
 `;
 }
 

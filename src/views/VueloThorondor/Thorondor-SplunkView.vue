@@ -49,10 +49,8 @@
                     <h2 class="module-title">Configuracion de Splunk</h2>
                     <p class="module-copy">
                         Introduce los endpoints de tu instancia Splunk. La API REST (puerto 8089) se usa para
-                        ejecutar busquedas SPL. El HEC (puerto 8088) recibe los eventos de telemetria. Ambos
-                        requieren que Splunk permita peticiones CORS desde este origen — configura
-                        <code>allowSslCompression = false</code> y el header <code>crossOriginSharingPolicy</code>
-                        en <code>web.conf</code> si recibes errores de CORS.
+                        ejecutar busquedas SPL. El HEC (puerto 8088) recibe los eventos de telemetria.
+                        Consulta la guia de instalacion para la configuracion completa del HEC y CORS en Splunk.
                     </p>
                 </div>
                 <div class="phase-badge-block">

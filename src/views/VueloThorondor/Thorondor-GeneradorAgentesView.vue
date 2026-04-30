@@ -26,6 +26,19 @@
         </section>
 
         <section class="section-box">
+            <div class="os-selector-row">
+                <label class="field-label mb-2">Sistema operativo objetivo</label>
+                <div class="os-toggle-group">
+                    <button type="button" class="os-toggle-btn" :class="{ active: !isWindows }" @click="agentDraft.targetOs = 'linux'">
+                        <span class="os-icon">🐧</span> Linux
+                    </button>
+                    <button type="button" class="os-toggle-btn" :class="{ active: isWindows }" @click="agentDraft.targetOs = 'windows'">
+                        <span class="os-icon">🪟</span> Windows
+                    </button>
+                </div>
+                <p class="os-hint">{{ isWindows ? 'Genera thorondor-agent.py + install-thorondor-agent.ps1 para Windows. Usa Task Scheduler como gestor de arranque.' : 'Genera thorondor-agent.py + thorondor-agent.service + install-thorondor-agent.sh para Linux. Usa systemd como gestor de arranque.' }}</p>
+            </div>
+
             <div class="control-grid">
                 <div class="control-field">
                     <div class="field-heading">
@@ -57,7 +70,7 @@
                     </div>
                     <input id="system-name" v-model="agentDraft.systemName" :placeholder="fieldGuides.systemName.placeholder" class="form-control input-dark" />
                 </div>
-                <div class="control-field">
+                <div v-if="!isWindows" class="control-field">
                     <div class="field-heading">
                         <label class="field-label" for="distro">Familia Linux</label>
                         <div class="context-help">
@@ -77,7 +90,7 @@
                 </div>
                 <div class="control-field">
                     <div class="field-heading">
-                        <label class="field-label" for="os-version">Version aproximada</label>
+                        <label class="field-label" for="os-version">{{ isWindows ? 'Version de Windows' : 'Version aproximada' }}</label>
                         <div class="context-help">
                             <button type="button" class="help-trigger" :class="{ 'is-pinned': pinnedHelpKey === 'osVersion' }" aria-label="Ayuda sobre la version del sistema" @click.stop="togglePinnedHelp('osVersion')">
                                 ?
@@ -88,7 +101,11 @@
                             </button>
                         </div>
                     </div>
-                    <input id="os-version" v-model="agentDraft.osVersion" :placeholder="fieldGuides.osVersion.placeholder" class="form-control input-dark" />
+                    <select v-if="isWindows" id="os-version" v-model="agentDraft.osVersion" class="form-select input-dark">
+                        <option value="" disabled>Selecciona version de Windows</option>
+                        <option v-for="item in windowsVersionOptions" :key="item" :value="item">{{ item }}</option>
+                    </select>
+                    <input v-else id="os-version" v-model="agentDraft.osVersion" :placeholder="fieldGuides.osVersion.placeholder" class="form-control input-dark" />
                 </div>
                 <div class="control-field">
                     <div class="field-heading">
@@ -107,7 +124,7 @@
                 </div>
                 <div class="control-field">
                     <div class="field-heading">
-                        <label class="field-label" for="host-ip">IP privada del host Linux</label>
+                        <label class="field-label" for="host-ip">{{ isWindows ? 'IP privada del host Windows' : 'IP privada del host Linux' }}</label>
                         <div class="context-help">
                             <button type="button" class="help-trigger" :class="{ 'is-pinned': pinnedHelpKey === 'hostIp' }" aria-label="Ayuda sobre la IP privada del host" @click.stop="togglePinnedHelp('hostIp')">
                                 ?
@@ -150,7 +167,7 @@
                     </div>
                     <input id="poll-interval" v-model.number="agentDraft.intervalSeconds" type="number" min="10" class="form-control input-dark" />
                 </div>
-                <div class="control-field">
+                <div v-if="!isWindows" class="control-field">
                     <div class="field-heading">
                         <label class="field-label" for="install-user">Usuario del servicio en Linux</label>
                         <div class="context-help">
@@ -165,7 +182,7 @@
                     </div>
                     <input id="install-user" v-model="agentDraft.installUser" :placeholder="fieldGuides.installUser.placeholder" class="form-control input-dark" />
                 </div>
-                <div class="control-field">
+                <div v-if="!isWindows" class="control-field">
                     <div class="field-heading">
                         <label class="field-label" for="service-name">Nombre tecnico del servicio</label>
                         <div class="context-help">
@@ -215,7 +232,7 @@
                         </label>
                     </div>
                 </div>
-                <div class="control-field full-span">
+                <div v-if="!isWindows" class="control-field full-span">
                     <div class="field-heading">
                         <label class="field-label mb-0">Despliegue con systemd</label>
                         <div class="context-help">
@@ -337,7 +354,7 @@
             </div>
 
             <div class="row g-3 mt-1">
-                <div :class="generatedSnapshot?.generateSystemd ? 'col-xl-4' : 'col-xl-6'">
+                <div :class="(generatedSnapshot?.generateSystemd && !generatedSnapshot?.targetOs?.includes('win')) ? 'col-xl-4' : 'col-xl-6'">
                     <div class="tool-card">
                         <div class="card-head">
                             <h5>Agente Python</h5>
@@ -352,7 +369,7 @@
                         </div>
                     </div>
                 </div>
-                <div v-if="generatedSnapshot?.generateSystemd" class="col-xl-4">
+                <div v-if="generatedBundle.systemd" class="col-xl-4">
                     <div class="tool-card">
                         <div class="card-head">
                             <h5>Unidad systemd</h5>
@@ -367,12 +384,12 @@
                         </div>
                     </div>
                 </div>
-                <div :class="generatedSnapshot?.generateSystemd ? 'col-xl-4' : 'col-xl-6'">
+                <div :class="(generatedBundle.systemd) ? 'col-xl-4' : 'col-xl-6'">
                     <div class="tool-card">
                         <div class="card-head">
-                            <h5>Script de instalacion</h5>
+                            <h5>{{ generatedSnapshot?.targetOs === 'windows' ? 'Instalador PowerShell' : 'Script de instalacion' }}</h5>
                             <div class="card-actions">
-                                <span class="mini-badge">.sh</span>
+                                <span class="mini-badge">{{ generatedSnapshot?.targetOs === 'windows' ? '.ps1' : '.sh' }}</span>
                                 <button class="btn btn-quiet" @click="downloadTextFile(generatedBundle.installFileName, generatedBundle.installScript)">Descargar</button>
                                 <button class="btn btn-quiet" @click="copyText(generatedBundle.installScript)">Copiar</button>
                             </div>
@@ -393,11 +410,12 @@ import ThorondorPageShell from "@/features/vueloThorondor/components/ThorondorPa
 import thorondorBaseMixin from "@/features/vueloThorondor/mixins/thorondorBaseMixin";
 import {
     THORONDOR_DISTRO_OPTIONS,
+    THORONDOR_WINDOWS_VERSION_OPTIONS,
     THORONDOR_MODULE_KEYS,
     buildThorondorAgentDraft,
     isLegacyThorondorAgentDraft
 } from "@/features/vueloThorondor/data/thorondorDefaults";
-import { buildThorondorAgentFiles } from "@/features/vueloThorondor/services/thorondorGenerator";
+import { buildThorondorAgentFiles, buildThorondorWindowsInstallScript } from "@/features/vueloThorondor/services/thorondorGenerator";
 import { buildThorondorRequestRules } from "@/features/vueloThorondor/services/thorondorApi";
 
 function cloneDraft(value) {
@@ -478,16 +496,25 @@ const ACTION_HELP_CARDS = [
     }
 ];
 
-const REQUIRED_GENERATION_FIELDS = [
+const REQUIRED_GENERATION_FIELDS_LINUX = [
     { key: "displayName", label: "Nombre visible del host", id: "host-display-name" },
     { key: "systemName", label: "Identificador tecnico del sistema", id: "system-name" },
     { key: "distro", label: "Familia Linux", id: "distro" },
     { key: "osVersion", label: "Version aproximada", id: "os-version" },
     { key: "receiverUrl", label: "URL accesible del agente", id: "receiver-url" },
-    { key: "hostIp", label: "IP privada del host Linux", id: "host-ip" },
+    { key: "hostIp", label: "IP privada del host", id: "host-ip" },
     { key: "port", label: "Puerto HTTP del agente", id: "receiver-port" },
-    { key: "installUser", label: "Usuario del servicio en Linux", id: "install-user" },
+    { key: "installUser", label: "Usuario del servicio", id: "install-user" },
     { key: "serviceName", label: "Nombre tecnico del servicio", id: "service-name" }
+];
+
+const REQUIRED_GENERATION_FIELDS_WINDOWS = [
+    { key: "displayName", label: "Nombre visible del host", id: "host-display-name" },
+    { key: "systemName", label: "Identificador tecnico del sistema", id: "system-name" },
+    { key: "osVersion", label: "Version de Windows", id: "os-version" },
+    { key: "receiverUrl", label: "URL accesible del agente", id: "receiver-url" },
+    { key: "hostIp", label: "IP del host Windows", id: "host-ip" },
+    { key: "port", label: "Puerto HTTP del agente", id: "receiver-port" }
 ];
 
 function hasTrimmedText(value) {
@@ -530,8 +557,16 @@ export default {
     },
 
     computed: {
+        isWindows() {
+            return this.agentDraft.targetOs === "windows";
+        },
+
         distroOptions() {
             return THORONDOR_DISTRO_OPTIONS;
+        },
+
+        windowsVersionOptions() {
+            return THORONDOR_WINDOWS_VERSION_OPTIONS;
         },
 
         moduleOptions() {
@@ -544,6 +579,10 @@ export default {
 
         actionHelpCards() {
             return ACTION_HELP_CARDS;
+        },
+
+        requiredFields() {
+            return this.isWindows ? REQUIRED_GENERATION_FIELDS_WINDOWS : REQUIRED_GENERATION_FIELDS_LINUX;
         },
 
         missingRequiredFieldLabels() {
@@ -652,8 +691,9 @@ export default {
 
         getMissingRequiredFields(source = this.agentDraft) {
             const draft = this.normalizeDraftShape(source);
+            const fields = this.isWindows ? REQUIRED_GENERATION_FIELDS_WINDOWS : REQUIRED_GENERATION_FIELDS_LINUX;
 
-            return REQUIRED_GENERATION_FIELDS.filter(({ key }) => {
+            return fields.filter(({ key }) => {
                 if (key === "receiverUrl") return !hasValidHttpUrl(draft.receiverUrl);
                 if (key === "port") return !hasValidPort(draft.port);
                 if (key === "distro") return !hasTrimmedText(draft.distro);
@@ -1042,5 +1082,56 @@ export default {
     .action-guide-grid {
         grid-template-columns: 1fr;
     }
+}
+
+.os-selector-row {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-top: 1rem;
+}
+
+.os-toggle-group {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.os-toggle-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.5rem 1.2rem;
+    border-radius: 8px;
+    border: 1px solid rgba(94, 156, 255, 0.22);
+    background: linear-gradient(180deg, rgba(13, 24, 43, 0.9), rgba(9, 16, 29, 0.95));
+    color: rgba(200, 220, 250, 0.72);
+    font-size: 0.88rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: border-color 0.18s ease, background 0.18s ease, color 0.18s ease;
+}
+
+.os-toggle-btn:hover {
+    border-color: rgba(125, 190, 255, 0.45);
+    color: #e8f3ff;
+}
+
+.os-toggle-btn.active {
+    border-color: rgba(94, 170, 255, 0.6);
+    background: linear-gradient(180deg, rgba(22, 42, 76, 0.95), rgba(14, 28, 54, 0.98));
+    color: #c9e3ff;
+    box-shadow: 0 0 12px rgba(80, 150, 255, 0.14);
+}
+
+.os-icon {
+    font-size: 1rem;
+}
+
+.os-hint {
+    margin: 0;
+    font-size: 0.81rem;
+    color: rgba(193, 213, 247, 0.7);
+    line-height: 1.55;
 }
 </style>

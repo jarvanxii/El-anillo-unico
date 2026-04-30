@@ -55,6 +55,33 @@
             </div>
         </section>
 
+        <section class="section-box">
+            <div class="section-topline">
+                <div class="module-header">
+                    <span class="section-kicker">Plataforma objetivo</span>
+                    <h2 class="module-title">Sistema operativo del host</h2>
+                    <p class="module-copy">
+                        Selecciona el sistema operativo del host donde se va a instalar el agente.
+                        Los comandos, rutas y el gestor de servicios varian entre Linux y Windows.
+                    </p>
+                </div>
+                <div class="phase-badge-block">
+                    <span class="phase-badge">Platform</span>
+                    <small>Linux (systemd) &middot; Windows (Task Scheduler)</small>
+                </div>
+            </div>
+            <div class="os-selector-row">
+                <div class="os-toggle-group">
+                    <button type="button" class="os-toggle-btn" :class="{ active: guideOs === 'linux' }" @click="guideOs = 'linux'">
+                        <span class="os-icon">🐧</span> Linux
+                    </button>
+                    <button type="button" class="os-toggle-btn" :class="{ active: guideOs === 'windows' }" @click="guideOs = 'windows'">
+                        <span class="os-icon">🪟</span> Windows
+                    </button>
+                </div>
+            </div>
+        </section>
+
         <section v-for="section in commandSections" :key="section.title" class="section-box">
             <div class="section-topline">
                 <div class="module-header">
@@ -96,46 +123,6 @@
             </div>
         </section>
 
-        <section class="section-box">
-            <div class="section-topline">
-                <div class="module-header">
-                    <span class="section-kicker">Verificacion final</span>
-                    <h2 class="module-title">Comprobaciones antes de registrar el agente en el dashboard</h2>
-                    <p class="module-copy">
-                        Valida salud del proceso, estructura del payload de telemetria, estabilidad del servicio systemd
-                        y conectividad de red. Cualquier fallo aqui tiene diagnostico especifico antes de abrir Thorondor.
-                    </p>
-                </div>
-                <div class="phase-badge-block">
-                    <span class="phase-badge">Validate</span>
-                    <small>Proceso, payload, systemd y red.</small>
-                </div>
-            </div>
-
-            <div class="card-grid validation-grid">
-                <article class="tool-card command-card validation-card" v-for="check in validationChecks" :key="check.title">
-                    <div class="card-head">
-                        <h5>{{ check.title }}</h5>
-                        <span class="mini-badge">{{ check.badge }}</span>
-                    </div>
-                    <p class="section-copy mb-0">{{ check.copy }}</p>
-                    <div class="output-box copy-box">
-                        <button class="copy-btn" :class="{ copied: copiedKey === check.title }" @click="copyCmd(check.command, check.title)">{{ copiedKey === check.title ? '✓ Copiado' : 'Copiar' }}</button>
-                        <pre class="result-pre">{{ check.command }}</pre>
-                    </div>
-                    <div class="command-meta">
-                        <div class="meta-line">
-                            <label>Que confirma</label>
-                            <p>{{ check.confirms }}</p>
-                        </div>
-                        <div class="meta-line">
-                            <label>Salida esperada</label>
-                            <p>{{ check.expected }}</p>
-                        </div>
-                    </div>
-                </article>
-            </div>
-        </section>
         <section class="section-box">
             <div class="section-topline">
                 <div class="module-header">
@@ -290,6 +277,47 @@
         <section class="section-box">
             <div class="section-topline">
                 <div class="module-header">
+                    <span class="section-kicker">Verificacion final</span>
+                    <h2 class="module-title">Comprobaciones antes de registrar el agente en el dashboard</h2>
+                    <p class="module-copy">
+                        Valida salud del proceso, estructura del payload de telemetria, estabilidad del servicio
+                        y conectividad de red. Cualquier fallo aqui tiene diagnostico especifico antes de abrir Thorondor.
+                    </p>
+                </div>
+                <div class="phase-badge-block">
+                    <span class="phase-badge">Validate</span>
+                    <small>Proceso, payload, servicio y red.</small>
+                </div>
+            </div>
+
+            <div class="card-grid validation-grid">
+                <article class="tool-card command-card validation-card" v-for="check in validationChecks" :key="check.title">
+                    <div class="card-head">
+                        <h5>{{ check.title }}</h5>
+                        <span class="mini-badge">{{ check.badge }}</span>
+                    </div>
+                    <p class="section-copy mb-0">{{ check.copy }}</p>
+                    <div class="output-box copy-box">
+                        <button class="copy-btn" :class="{ copied: copiedKey === check.title }" @click="copyCmd(check.command, check.title)">{{ copiedKey === check.title ? '✓ Copiado' : 'Copiar' }}</button>
+                        <pre class="result-pre">{{ check.command }}</pre>
+                    </div>
+                    <div class="command-meta">
+                        <div class="meta-line">
+                            <label>Que confirma</label>
+                            <p>{{ check.confirms }}</p>
+                        </div>
+                        <div class="meta-line">
+                            <label>Salida esperada</label>
+                            <p>{{ check.expected }}</p>
+                        </div>
+                    </div>
+                </article>
+            </div>
+        </section>
+
+        <section class="section-box">
+            <div class="section-topline">
+                <div class="module-header">
                     <span class="section-kicker">Limpieza</span>
                     <h2 class="module-title">Desinstalacion y borrado del agente</h2>
                     <p class="module-copy">
@@ -342,6 +370,23 @@ export default {
 
     components: {
         ThorondorPageShell
+    },
+
+    data() {
+        return {
+            copiedKey: null,
+            guideOs: "linux"
+        };
+    },
+
+    methods: {
+        copyCmd(text, key) {
+            if (!navigator.clipboard) return;
+            navigator.clipboard.writeText(text).then(() => {
+                this.copiedKey = key;
+                setTimeout(() => { this.copiedKey = null; }, 2000);
+            });
+        }
     },
 
     computed: {
@@ -402,6 +447,130 @@ export default {
         },
 
         commandSections() {
+            return this.guideOs === "windows" ? this.windowsCommandSections : this.linuxCommandSections;
+        },
+
+        windowsCommandSections() {
+            return [
+                {
+                    kicker: "Fase 1",
+                    title: "Verificacion del entorno Windows",
+                    copy: "Comprueba la version de PowerShell, Python y la conectividad de red. El agente requiere Python 3.8+ y psutil. PowerShell 5.1+ es necesario para el script de instalacion automatizado.",
+                    badge: "Discover",
+                    note: "Ejecutar en PowerShell como Administrador en el host destino.",
+                    commands: [
+                        {
+                            title: "Version de PowerShell y politica de ejecucion",
+                            badge: "PS",
+                            command: "$PSVersionTable.PSVersion\nGet-ExecutionPolicy -List",
+                            purpose: "Verifica la version de PowerShell instalada y la politica de ejecucion de scripts. Se necesita al menos PS 5.1. Si RemoteSigned o Unrestricted no esta configurada, el script PS1 no podra ejecutarse.",
+                            when: "Si la politica es Restricted, ejecutar Set-ExecutionPolicy -Scope CurrentUser RemoteSigned antes de lanzar el instalador.",
+                            expected: "Major >= 5, Minor >= 1. Al menos un scope con RemoteSigned o Unrestricted."
+                        },
+                        {
+                            title: "Python disponible en PATH",
+                            badge: "Python",
+                            command: "python --version\npython -c \"import sys; print(sys.executable)\"",
+                            purpose: "Verifica que Python esta en el PATH del sistema y es accesible sin ruta absoluta. El agente se lanza via python en la tarea programada.",
+                            when: "Si python no se encuentra pero python3 si, verificar que el instalador de Python ha anadido el ejecutable a PATH. Reinstalar Python con la opcion 'Add Python to PATH' activada.",
+                            expected: "Python 3.x.x y la ruta al interprete sin error. Si devuelve Python 2.x, instalar Python 3 desde python.org o via winget."
+                        },
+                        {
+                            title: "IP privada del adaptador de LAN",
+                            badge: "Network",
+                            command: "Get-NetIPAddress -AddressFamily IPv4 | Where-Object { $_.IPAddress -notlike '127.*' -and $_.IPAddress -notlike '169.*' } | Select-Object InterfaceAlias, IPAddress",
+                            purpose: "Lista todas las IPs IPv4 privadas excluyendo loopback y APIPA. Identifica la IP correcta para el campo receiverUrl del agente.",
+                            when: "Usar la IP de la interfaz Ethernet o Wi-Fi de la red LAN. Evitar las interfaces de Hyper-V, VPN o Docker si existen.",
+                            expected: "Una o mas filas con InterfaceAlias y la IP privada de la LAN. Seleccionar la IP de la interfaz principal."
+                        },
+                        {
+                            title: "Sincronizacion de tiempo",
+                            badge: "NTP",
+                            command: "w32tm /query /status",
+                            purpose: "Verifica el estado del cliente NTP de Windows. Los timestamps del agente son ISO 8601 en UTC; un reloj desviado afecta a la correlacion de eventos en el dashboard.",
+                            when: "Si Last Successful Sync Time es muy antigua o el servicio no esta corriendo, ejecutar: w32tm /resync /force.",
+                            expected: "Source con el servidor NTP, Last Successful Sync Time reciente y Stratum <= 4."
+                        }
+                    ]
+                },
+                {
+                    kicker: "Fase 2",
+                    title: "Instalacion de Python y dependencias",
+                    copy: "El agente solo requiere Python 3.8+ y psutil. En Windows, Python puede instalarse via winget o desde python.org. psutil se instala via pip. No se requieren dependencias adicionales para monitorizar temperatura (wmi esta disponible via psutil en Windows).",
+                    badge: "Runtime",
+                    note: "Ejecutar en PowerShell como Administrador.",
+                    commands: [
+                        {
+                            title: "Instalar Python via winget",
+                            badge: "winget",
+                            command: "winget install -e --id Python.Python.3.12 --source winget",
+                            purpose: "Instala Python 3.12 desde el repositorio oficial de Microsoft via winget. Alternativa reproducible y auditada respecto al instalador .exe.",
+                            when: "Si winget no esta disponible (Windows < 10 1809), descargar el instalador desde python.org y activar la opcion 'Add Python to PATH' durante la instalacion.",
+                            expected: "Python instalado y accesible en PATH. Verificar con: python --version."
+                        },
+                        {
+                            title: "Instalar psutil",
+                            badge: "pip",
+                            command: "pip install psutil",
+                            purpose: "Instala psutil en el entorno Python del sistema. psutil en Windows expone CPU, RAM, disco, red, procesos y temperatura via WMI.",
+                            when: "Si pip devuelve error de permisos, ejecutar PowerShell como Administrador o usar: pip install --user psutil (implica que la tarea programada debe usar el mismo usuario).",
+                            expected: "psutil instalado. Verificar: python -c \"import psutil; print(psutil.__version__)\""
+                        },
+                        {
+                            title: "Desplegar el agente generado",
+                            badge: "Deploy",
+                            command: "New-Item -ItemType Directory -Force -Path 'C:\\ProgramData\\Thorondor-Agent'\nCopy-Item -Path '.\\thorondor-agent.py' -Destination 'C:\\ProgramData\\Thorondor-Agent\\thorondor-agent.py'",
+                            purpose: "Crea el directorio de instalacion en ProgramData (visible para el sistema, no dependiente del perfil de usuario) y copia el agente generado.",
+                            when: "Verificar que el .py copiado es el generado para este host: abrir con notepad y confirmar SYSTEM_NAME, LISTEN_PORT y LISTEN_HOST al inicio del fichero.",
+                            expected: "El directorio C:\\ProgramData\\Thorondor-Agent existe y contiene thorondor-agent.py. Confirmar con: Get-ChildItem 'C:\\ProgramData\\Thorondor-Agent'"
+                        }
+                    ]
+                },
+                {
+                    kicker: "Fase 3",
+                    title: "Smoke test y registro como tarea programada",
+                    copy: "Arranca el agente manualmente antes de registrarlo. Si el proceso levanta limpio y /health responde, procede a crear la tarea en Task Scheduler. La tarea configurada con 'Run whether user is logged on or not' garantiza ejecucion persistente sin sesion activa.",
+                    badge: "Production",
+                    note: "Validar en foreground antes de registrar en Task Scheduler.",
+                    commands: [
+                        {
+                            title: "Smoke test en foreground",
+                            badge: "Foreground",
+                            command: "python 'C:\\ProgramData\\Thorondor-Agent\\thorondor-agent.py'",
+                            purpose: "Ejecuta el agente con salida de consola visible. Permite detectar ImportError de psutil, conflictos de puerto o errores de configuracion antes de registrarlo como servicio silencioso.",
+                            when: "Ejecutar en una PowerShell separada. Probar /health y /telemetry con Invoke-RestMethod desde otra PowerShell. Interrumpir con Ctrl+C una vez validado.",
+                            expected: "Linea de arranque con host, puerto y nombre del sistema. Sin tracebacks. Ctrl+C termina limpiamente."
+                        },
+                        {
+                            title: "Validar endpoints desde localhost",
+                            badge: "curl",
+                            command: "Invoke-RestMethod -Uri 'http://127.0.0.1:<PUERTO>/health'\nInvoke-RestMethod -Uri 'http://127.0.0.1:<PUERTO>/telemetry' | ConvertTo-Json -Depth 5 | Select-Object -First 60",
+                            purpose: "Verifica que el agente responde en local y que el payload de /telemetry contiene los bloques esperados: system, metrics, security y logs.",
+                            when: "Si /health responde pero /telemetry devuelve campos vacios, revisar que los modulos estan habilitados en el .py y que Python tiene acceso a los contadores WMI.",
+                            expected: "JSON con status ok en /health. JSON con system.hostname, metrics.cpuTotal y bloques de seguridad y logs en /telemetry."
+                        },
+                        {
+                            title: "Registrar tarea programada (Task Scheduler)",
+                            badge: "Task",
+                            command: "$action = New-ScheduledTaskAction -Execute 'python' -Argument 'C:\\ProgramData\\Thorondor-Agent\\thorondor-agent.py'\n$trigger = New-ScheduledTaskTrigger -AtStartup\n$settings = New-ScheduledTaskSettingsSet -RestartCount 3 -RestartInterval (New-TimeSpan -Minutes 1)\nRegister-ScheduledTask -TaskName 'ThorondorAgent' -Action $action -Trigger $trigger -Settings $settings -RunLevel Highest -Force",
+                            purpose: "Registra el agente como tarea programada de inicio del sistema. RunLevel Highest garantiza permisos para leer contadores de sistema. RestartCount 3 proporciona resiliencia ante fallos transitorios.",
+                            when: "Si se prefiere correr bajo un usuario especifico en lugar de SYSTEM, anadir -User y -Password al Register-ScheduledTask. SYSTEM tiene acceso completo a WMI y contadores de rendimiento.",
+                            expected: "La tarea ThorondorAgent aparece en Get-ScheduledTask | Where-Object TaskName -eq ThorondorAgent con State Ready."
+                        },
+                        {
+                            title: "Regla de firewall para el puerto del agente",
+                            badge: "Firewall",
+                            command: "New-NetFirewallRule -DisplayName 'Thorondor Agent' -Direction Inbound -Protocol TCP -LocalPort <PUERTO> -Action Allow -Profile Domain,Private",
+                            purpose: "Permite conexiones TCP entrantes al puerto del agente desde redes de dominio y privadas. Profile Domain,Private excluye redes publicas automaticamente.",
+                            when: "Si el Firewall de Windows esta desactivado (Get-NetFirewallProfile | Select Name,Enabled), este paso puede omitirse. Verificar con: Test-NetConnection -ComputerName <IP> -Port <PUERTO> desde la maquina cliente.",
+                            expected: "La regla aparece en Get-NetFirewallRule -DisplayName 'Thorondor Agent'. Invoke-RestMethod desde la maquina cliente responde sin timeout."
+                        }
+                    ]
+                }
+            ];
+        },
+
+        linuxCommandSections() {
             return [
                 {
                     kicker: "Fase 1",
@@ -600,9 +769,239 @@ export default {
                     title: "Estabilidad del servicio systemd",
                     badge: "systemd",
                     copy: "NRestarts > 0 poco despues del arranque es siempre indicativo de un fallo que systemd esta enmascarando con el loop de restart. Diagnosticar antes de registrar el agente en el dashboard.",
-                    command: "systemctl show <AGENTE>.service -p ActiveState,NRestarts,ExecMainStatus --value\njournalctl -u <AGENTE>.service -n 20 --no-pager",
+                    command: "systemctl show thorondor-agent.service -p ActiveState,NRestarts,ExecMainStatus --value\njournalctl -u thorondor-agent.service -n 20 --no-pager",
                     confirms: "Estado activo, ausencia de reinicios y codigo de salida 0 del proceso principal.",
                     expected: "ActiveState=active, NRestarts=0, ExecMainStatus=0. Cualquier otra combinacion requiere revisar el journal. Los errores mas frecuentes son: ImportError de psutil, PermissionError en /var/log/, o OSError: Address already in use si hay otra instancia corriendo."
+                }
+            ];
+        },
+
+        splunkHighlights() {
+            return [
+                {
+                    label: "HTTP Event Collector (HEC)",
+                    badge: "Ingesta",
+                    copy: "Canal de ingesta de alta eficiencia: acepta eventos JSON via HTTP/S autenticados por token. Sin autenticacion basica, sin overhead de sesion. Thorondor envia tres source types: thorondor:telemetry, thorondor:security y thorondor:logs."
+                },
+                {
+                    label: "REST API (puerto 8089)",
+                    badge: "Query",
+                    copy: "Interfaz de gestion y busqueda de Splunk. Permite ejecutar busquedas SPL programaticamente, consultar jobs, obtener resultados en JSON y gestionar la instancia. La vista Splunk de Thorondor la utiliza para lanzar queries desde el navegador."
+                },
+                {
+                    label: "Licencia Developer gratuita",
+                    badge: "500 MB/dia",
+                    copy: "La licencia Developer de Splunk Enterprise es gratuita, sin limite temporal y con un cupo de 500 MB de ingesta diaria. Suficiente para monitorizar varios hosts con intervalos de 30 segundos durante 24h sin aproximarse al limite."
+                },
+                {
+                    label: "SPL — Search Processing Language",
+                    badge: "Analisis",
+                    copy: "Lenguaje de consulta propio de Splunk con capacidades de correlacion temporal, estadisticas, deteccion de anomalias y visualizacion. Las queries de referencia incluidas cubren los patrones de uso mas criticos para los datos de Thorondor."
+                }
+            ];
+        },
+
+        splunkInstallCommands() {
+            return [
+                {
+                    title: "Descargar Splunk Enterprise (Linux x86_64)",
+                    badge: "wget",
+                    command: "wget -O splunk-latest-linux-x86_64.tgz 'https://download.splunk.com/products/splunk/releases/9.2.0/linux/splunk-9.2.0-d8ae995bf219-Linux-x86_64.tgz'",
+                    purpose: "Descarga el paquete de Splunk Enterprise. Sustituir la URL por la version mas reciente disponible en splunk.com/download. La cuenta Splunk gratuita es necesaria para obtener el enlace de descarga.",
+                    when: "En entornos sin acceso directo a Internet, descargar en la maquina cliente y transferir via scp. En RHEL/Rocky existe el paquete .rpm que se instala con dnf.",
+                    expected: "Fichero .tgz de aproximadamente 250 MB. Verificar integridad con el MD5/SHA256 publicado en la pagina de descarga."
+                },
+                {
+                    title: "Extraer e instalar",
+                    badge: "Install",
+                    command: "sudo tar -xzf splunk-latest-linux-x86_64.tgz -C /opt\nsudo /opt/splunk/bin/splunk start --accept-license --answer-yes --no-prompt --seed-passwd Admin1234!",
+                    purpose: "Extrae Splunk en /opt/splunk y lo arranca por primera vez estableciendo la contrasena del usuario admin. El flag --seed-passwd evita el asistente interactivo.",
+                    when: "Cambiar Admin1234! por una contrasena segura. En produccion, gestionar la contrasena via /opt/splunk/etc/passwd o mediante LDAP.",
+                    expected: "Splunk arranca y queda accesible en http://localhost:8000 (UI web) y https://localhost:8089 (REST API)."
+                },
+                {
+                    title: "Habilitar arranque automatico con systemd",
+                    badge: "systemd",
+                    command: "sudo /opt/splunk/bin/splunk enable boot-start -systemd-managed 1 -user splunk --accept-license\nsudo systemctl start Splunkd",
+                    purpose: "Registra Splunk como unidad systemd para que arranque automaticamente. El flag -systemd-managed 1 genera la unidad gestionada por systemd en lugar del init script legacy.",
+                    when: "Requiere crear previamente el usuario splunk si se usa -user splunk. Alternativa: omitir -user para que corra como root (no recomendado en produccion).",
+                    expected: "systemctl status Splunkd muestra active (running). La UI web es accesible en el puerto 8000."
+                },
+                {
+                    title: "Activar licencia Developer",
+                    badge: "License",
+                    command: "curl -k -u admin:Admin1234! -X POST https://localhost:8089/services/licenser/licenses -d 'payload=<licensekey>' -d 'output_mode=json'",
+                    purpose: "Aplica la licencia Developer descargada desde my.splunk.com. Sin licencia activa, Splunk funciona en modo Trial (60 dias) con todas las funcionalidades.",
+                    when: "La licencia Developer se obtiene gratuitamente registrando una cuenta en dev.splunk.com. Es un fichero .xml o una clave que se aplica via API o desde Settings > Licensing en la UI.",
+                    expected: "Splunk confirma la aplicacion de la licencia y desaparece el banner de Trial. El cupo queda establecido en 500 MB/dia."
+                }
+            ];
+        },
+
+        splunkHecCommands() {
+            return [
+                {
+                    title: "Habilitar HEC en inputs.conf",
+                    badge: "Config",
+                    command: "sudo tee /opt/splunk/etc/system/local/inputs.conf > /dev/null <<'EOF'\n[http]\ndisabled = false\nport = 8088\nenableSSL = 0\n\n[http://thorondor]\ndisabled = false\ntoken = <TU_TOKEN_HEC>\nindex = thorondor\nsourcetype = thorondor:telemetry\nEOF\nsudo systemctl restart Splunkd",
+                    purpose: "Habilita el HEC en el puerto 8088 sin SSL (para LAN interna) y define el endpoint 'thorondor' con token preconfigurado. enableSSL=0 simplifica la configuracion en redes internas; en produccion usar SSL.",
+                    when: "El token HEC se genera desde Settings > Data Inputs > HTTP Event Collector en la UI de Splunk, o via API. Sustituir <TU_TOKEN_HEC> por el UUID generado.",
+                    expected: "curl -H 'Authorization: Splunk <TOKEN>' http://localhost:8088/services/collector/health devuelve JSON con 'code': 17 (HEC activo)."
+                },
+                {
+                    title: "Crear el indice thorondor",
+                    badge: "Index",
+                    command: "curl -k -u admin:Admin1234! -X POST https://localhost:8089/services/data/indexes -d 'name=thorondor' -d 'output_mode=json'",
+                    purpose: "Crea el indice dedicado para los datos de Thorondor. Separar los datos en un indice propio facilita la retencion diferenciada, el control de acceso y las busquedas SPL.",
+                    when: "Si se prefiere usar el indice main, cambiar el valor de index en inputs.conf. El indice main tiene politica de retencion distinta a la de indices personalizados.",
+                    expected: "La respuesta JSON confirma la creacion del indice. Verificar con: curl -k -u admin:Admin1234! 'https://localhost:8089/services/data/indexes/thorondor?output_mode=json'"
+                },
+                {
+                    title: "Configurar CORS para acceso desde el navegador",
+                    badge: "CORS",
+                    command: "sudo tee /opt/splunk/etc/system/local/web.conf > /dev/null <<'EOF'\n[settings]\nenableSplunkWebSSL = false\ncrossOriginSharingPolicy = *\ncrossOriginSharingHeaders = Authorization, Content-Type, X-Splunk-Form-Key\nEOF\nsudo systemctl restart Splunkd",
+                    purpose: "Permite que el navegador realice peticiones directas a la REST API y al HEC de Splunk. Necesario porque la vista Splunk de Thorondor llama a los endpoints directamente desde el frontend sin relay de backend.",
+                    when: "En produccion, sustituir el wildcard '*' en crossOriginSharingPolicy por el origen exacto del frontend (ej: http://192.168.1.10:8080). El wildcard solo es adecuado para entornos de laboratorio.",
+                    expected: "Las peticiones desde el navegador a https://localhost:8089 o http://localhost:8088 no producen errores CORS. La vista de Splunk en Thorondor puede conectar y ejecutar queries."
+                },
+                {
+                    title: "Verificar ingesta con evento de prueba",
+                    badge: "Test",
+                    command: "curl -s -H 'Authorization: Splunk <TOKEN>' -H 'Content-Type: application/json' http://localhost:8088/services/collector/event -d '{\"event\": {\"test\": \"thorondor-probe\", \"ts\": \"'$(date -u +%Y-%m-%dT%H:%M:%SZ)'\"}, \"sourcetype\": \"thorondor:telemetry\", \"index\": \"thorondor\"}'",
+                    purpose: "Envia un evento de prueba al HEC para verificar que el token, el indice y el sourcetype estan correctamente configurados antes de conectar Thorondor.",
+                    when: "Ejecutar antes de conectar la vista Splunk del frontend. Si devuelve codigo 5 (No data), el indice no existe. Codigo 7 (Token disabled) indica que el token esta desactivado en la UI.",
+                    expected: "JSON con 'text': 'Success', 'code': 0. El evento debe aparecer en Splunk con: index=thorondor sourcetype=thorondor:telemetry | head 1."
+                }
+            ];
+        },
+
+        splunkSplQueries() {
+            return [
+                {
+                    title: "Evolucion de CPU y RAM por host",
+                    badge: "Timechart",
+                    description: "Serie temporal de CPU y RAM para todos los hosts monitorizados. Permite identificar picos de carga, patrones diurnos y correlacion entre sistemas.",
+                    spl: "index=thorondor sourcetype=\"thorondor:telemetry\"\n| timechart span=5m avg(metrics.cpuTotal) as CPU avg(metrics.memoryPercent) as RAM by system.hostname"
+                },
+                {
+                    title: "Eventos de seguridad por tipo y host",
+                    badge: "Stats",
+                    description: "Agregacion de eventos de seguridad clasificados por tipo y sistema. Util para detectar patrones de autenticacion fallida o actividad de sudo fuera de horario.",
+                    spl: "index=thorondor sourcetype=\"thorondor:security\"\n| stats count by system.hostname, event.type, event.user\n| sort -count"
+                },
+                {
+                    title: "Top IPs con intentos de autenticacion fallida",
+                    badge: "Threat",
+                    description: "Identifica las IPs origen de mayor actividad de autenticacion fallida. Un mismo origen con multiples intentos en ventana corta indica brute-force o credential stuffing.",
+                    spl: "index=thorondor sourcetype=\"thorondor:security\" event.type=authentication_failed\n| timechart span=10m count by event.sourceIp\n| where count > 5"
+                },
+                {
+                    title: "Uso de disco por particion y host",
+                    badge: "Capacity",
+                    description: "Monitoriza el porcentaje de uso de cada particion en todos los hosts. Permite detectar particiones proximas al limite antes de que impacten en el servicio.",
+                    spl: "index=thorondor sourcetype=\"thorondor:telemetry\"\n| timechart span=1h max(metrics.diskPartitions{}.percent) as MaxDisk by system.hostname"
+                },
+                {
+                    title: "Cambios en ficheros criticos",
+                    badge: "Integrity",
+                    description: "Detecta modificaciones en los ficheros del baseline de integridad. Cualquier cambio en /etc/passwd, /etc/shadow o /etc/sudoers debe ser investigado inmediatamente.",
+                    spl: "index=thorondor sourcetype=\"thorondor:security\" event.type=file_integrity_change\n| table _time, system.hostname, event.file, event.previousHash, event.currentHash\n| sort -_time"
+                },
+                {
+                    title: "Procesos con mayor consumo de CPU",
+                    badge: "Processes",
+                    description: "Top procesos por consumo de CPU en los ultimos 30 minutos. Permite identificar procesos inesperados, mineros o runaway processes antes de que saturen el host.",
+                    spl: "index=thorondor sourcetype=\"thorondor:telemetry\"\n| mvexpand metrics.topProcesses\n| stats avg(metrics.topProcesses.cpuPercent) as AvgCPU by system.hostname, metrics.topProcesses.name\n| sort -AvgCPU | head 20"
+                }
+            ];
+        },
+
+        uninstallCommands() {
+            if (this.guideOs === "windows") {
+                return [
+                    {
+                        title: "Detener y eliminar la tarea programada",
+                        badge: "Task",
+                        command: "Unregister-ScheduledTask -TaskName 'ThorondorAgent' -Confirm:$false",
+                        purpose: "Elimina la tarea programada de Task Scheduler. Si la tarea esta corriendo en el momento de la ejecucion, Windows la detiene antes de eliminarla.",
+                        when: "Verificar que la tarea esta eliminada con: Get-ScheduledTask | Where-Object TaskName -eq ThorondorAgent. No debe devolver resultados.",
+                        expected: "Sin output ni error. La tarea desaparece del Programador de tareas."
+                    },
+                    {
+                        title: "Eliminar los ficheros del agente",
+                        badge: "Filesystem",
+                        command: "Remove-Item -Recurse -Force 'C:\\ProgramData\\Thorondor-Agent'",
+                        purpose: "Elimina el directorio de instalacion y todos sus contenidos, incluyendo el agente .py y el fichero de baseline de integridad.",
+                        when: "Ejecutar como Administrador. Si algun fichero esta bloqueado por un proceso, detener primero la tarea con el paso anterior.",
+                        expected: "El directorio C:\\ProgramData\\Thorondor-Agent no existe. Verificar con: Test-Path 'C:\\ProgramData\\Thorondor-Agent' (debe devolver False)."
+                    },
+                    {
+                        title: "Eliminar la regla de firewall",
+                        badge: "Firewall",
+                        command: "Remove-NetFirewallRule -DisplayName 'Thorondor Agent'",
+                        purpose: "Elimina la regla de firewall creada durante la instalacion. Sin este paso, el puerto permanece abierto aunque el agente ya no este corriendo.",
+                        when: "Si la regla no existe, el comando devuelve un error no critico. Verificar con: Get-NetFirewallRule -DisplayName 'Thorondor Agent'.",
+                        expected: "Sin output. La regla desaparece de Get-NetFirewallRule."
+                    },
+                    {
+                        title: "Eliminar datos del navegador",
+                        badge: "IndexedDB",
+                        command: "// Desde la vista del dashboard de Thorondor:\n// Settings > Borrar todos los datos del agente\n// O directamente en DevTools > Application > IndexedDB > thorondor-db > Delete database",
+                        purpose: "Elimina todos los snapshots, logs, eventos de seguridad y alertas persistidos en IndexedDB del navegador para este host.",
+                        when: "Este paso es opcional si el agente se va a reinstalar con el mismo nombre. Si se elimina definitivamente, borrar la base de datos evita que el dashboard muestre datos obsoletos.",
+                        expected: "El agente desaparece del dashboard en el siguiente ciclo de polling o tras borrar manualmente la entrada de IndexedDB."
+                    }
+                ];
+            }
+
+            return [
+                {
+                    title: "Parar y deshabilitar el servicio systemd",
+                    badge: "systemd",
+                    command: "sudo systemctl stop thorondor-agent.service\nsudo systemctl disable thorondor-agent.service",
+                    purpose: "Detiene el proceso del agente y elimina el enlace de arranque automatico. El fichero de unidad permanece en disco hasta el siguiente paso.",
+                    when: "Verificar que el proceso ha terminado con: pgrep -f thorondor-agent. No debe devolver ningun PID.",
+                    expected: "systemctl is-active thorondor-agent.service devuelve inactive. Sin proceso Python corriendo."
+                },
+                {
+                    title: "Eliminar la unidad systemd",
+                    badge: "Cleanup",
+                    command: "sudo rm /etc/systemd/system/thorondor-agent.service\nsudo systemctl daemon-reload",
+                    purpose: "Elimina el fichero de unidad del directorio de systemd y recarga el daemon para que el servicio desaparezca de la lista de unidades conocidas.",
+                    when: "Ejecutar despues de stop y disable. Si no se ejecuta daemon-reload, systemd sigue mostrando la unidad en estado 'not-found'.",
+                    expected: "systemctl list-units --all | grep thorondor no devuelve resultados."
+                },
+                {
+                    title: "Eliminar los ficheros del agente",
+                    badge: "Filesystem",
+                    command: "sudo rm -rf /opt/thorondor-agent",
+                    purpose: "Elimina el directorio de instalacion y todos sus contenidos: agente .py, fichero de baseline y cualquier log o fichero temporal generado por el agente.",
+                    when: "Verificar que el servicio esta detenido antes de ejecutar. Si hay un baseline de integridad que se quiere conservar para auditoria, copiarlo antes.",
+                    expected: "ls /opt/thorondor-agent devuelve 'No such file or directory'."
+                },
+                {
+                    title: "Eliminar la cuenta de servicio",
+                    badge: "User",
+                    command: "sudo userdel -r <USUARIO>",
+                    purpose: "Elimina la cuenta de servicio y su directorio HOME si fue creado con --create-home. El flag -r evita que queden directorios huerfanos en /home.",
+                    when: "Omitir si la cuenta fue reutilizada (no creada exclusivamente para el agente). Verificar primero con: id <USUARIO> que la cuenta existe.",
+                    expected: "id <USUARIO> devuelve 'no such user'. El directorio /home/<USUARIO> no existe."
+                },
+                {
+                    title: "Cerrar el puerto en el firewall",
+                    badge: "Firewall",
+                    command: "# UFW (Debian/Ubuntu)\nsudo ufw delete allow <PUERTO>/tcp\n\n# firewalld (RHEL/Rocky)\nsudo firewall-cmd --permanent --remove-port=<PUERTO>/tcp\nsudo firewall-cmd --reload",
+                    purpose: "Revierte la regla de firewall abierta durante la instalacion. Sin este paso el puerto permanece accesible aunque el agente ya no este corriendo.",
+                    when: "Ejecutar solo el bloque correspondiente al firewall activo en el host. Si no habia firewall activo durante la instalacion, omitir.",
+                    expected: "Conexion al puerto desde la maquina cliente queda bloqueada (timeout). sudo ufw status o firewall-cmd --list-ports no muestra el puerto del agente."
+                },
+                {
+                    title: "Eliminar datos del navegador",
+                    badge: "IndexedDB",
+                    command: "// Desde la vista del dashboard de Thorondor:\n// Settings > Borrar todos los datos del agente\n// O directamente en DevTools > Application > IndexedDB > thorondor-db > Delete database",
+                    purpose: "Elimina todos los snapshots, logs, eventos de seguridad y alertas persistidos en IndexedDB del navegador para este host.",
+                    when: "Este paso es opcional si el agente se va a reinstalar con el mismo nombre. Si se elimina definitivamente, borrar la base de datos evita que el dashboard muestre datos obsoletos.",
+                    expected: "El agente desaparece del dashboard en el siguiente ciclo de polling o tras borrar manualmente la entrada de IndexedDB."
                 }
             ];
         }
@@ -656,5 +1055,81 @@ export default {
     .validation-grid {
         grid-template-columns: 1fr;
     }
+}
+
+.copy-btn {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.28rem 0.75rem;
+    border-radius: 6px;
+    border: 1px solid rgba(94, 156, 255, 0.24);
+    background: rgba(13, 24, 43, 0.8);
+    color: rgba(190, 215, 250, 0.82);
+    font-size: 0.76rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: border-color 0.15s ease, color 0.15s ease;
+    white-space: nowrap;
+    align-self: flex-start;
+}
+
+.copy-btn:hover {
+    border-color: rgba(125, 190, 255, 0.48);
+    color: #d6eaff;
+}
+
+.copy-btn.copied {
+    border-color: rgba(74, 222, 128, 0.5);
+    color: #86efac;
+}
+
+.copy-box {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.os-selector-row {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-top: 1rem;
+}
+
+.os-toggle-group {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.os-toggle-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.5rem 1.2rem;
+    border-radius: 8px;
+    border: 1px solid rgba(94, 156, 255, 0.22);
+    background: linear-gradient(180deg, rgba(13, 24, 43, 0.9), rgba(9, 16, 29, 0.95));
+    color: rgba(200, 220, 250, 0.72);
+    font-size: 0.88rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: border-color 0.18s ease, background 0.18s ease, color 0.18s ease;
+}
+
+.os-toggle-btn:hover {
+    border-color: rgba(125, 190, 255, 0.45);
+    color: #e8f3ff;
+}
+
+.os-toggle-btn.active {
+    border-color: rgba(94, 170, 255, 0.6);
+    background: linear-gradient(180deg, rgba(22, 42, 76, 0.95), rgba(14, 28, 54, 0.98));
+    color: #c9e3ff;
+    box-shadow: 0 0 12px rgba(80, 150, 255, 0.14);
+}
+
+.os-icon {
+    font-size: 1rem;
 }
 </style>

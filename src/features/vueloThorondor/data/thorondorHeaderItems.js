@@ -33,5 +33,10 @@ export const thorondorHeaderItems = [
     id: "agents",
     name: "Agentes",
     routeName: "thorondor-agents"
+  },
+  {
+    id: "splunk",
+    name: "Splunk",
+    routeName: "thorondor-splunk"
   }
 ];

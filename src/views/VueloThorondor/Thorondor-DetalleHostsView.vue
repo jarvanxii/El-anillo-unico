@@ -93,6 +93,27 @@
                 </div>
             </div>
 
+            <div class="tool-card mb-4" v-if="selectedLatestSnapshot?.temperatures?.length">
+                <div class="card-head">
+                    <h5>Sensores de temperatura</h5>
+                    <span class="mini-badge">{{ selectedLatestSnapshot.temperatures.length }} sensor{{ selectedLatestSnapshot.temperatures.length !== 1 ? 'es' : '' }}</span>
+                </div>
+                <div class="temp-grid">
+                    <div v-for="sensor in selectedLatestSnapshot.temperatures" :key="`${sensor.source}-${sensor.label}`" class="temp-card">
+                        <div class="temp-card-source">
+                            <code class="small-code">{{ sensor.source }}</code>
+                            <span v-if="sensor.label && sensor.label !== sensor.source" class="mini-badge temp-label-badge">{{ sensor.label }}</span>
+                        </div>
+                        <div class="temp-reading" :class="tempColorClass(sensor.current)">
+                            {{ sensor.current != null ? sensor.current.toFixed(1) + '\u00b0C' : 'N/D' }}
+                        </div>
+                        <div class="disk-bar-track">
+                            <div class="disk-bar-fill" :style="{ width: Math.min(Math.max(sensor.current || 0, 0), 120) / 120 * 100 + '%', background: tempBarColor(sensor.current) }"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <div class="tool-card mb-4">
                 <div class="card-head">
                     <h5>Evolucion temporal del sistema seleccionado</h5>
@@ -571,6 +592,19 @@ export default {
             if (percent >= 90) return "rgba(239, 68, 68, 0.85)";
             if (percent >= 75) return "rgba(251, 191, 36, 0.85)";
             return "rgba(74, 222, 128, 0.85)";
+        },
+
+        tempColorClass(celsius) {
+            if (celsius == null) return "tone-neutral";
+            if (celsius >= 90) return "tone-danger";
+            if (celsius >= 75) return "tone-warning";
+            return "tone-success";
+        },
+
+        tempBarColor(celsius) {
+            if (celsius >= 90) return "rgba(239, 68, 68, 0.85)";
+            if (celsius >= 75) return "rgba(251, 191, 36, 0.85)";
+            return "rgba(74, 222, 128, 0.85)";
         }
     }
 };
@@ -654,5 +688,41 @@ export default {
 .disk-toggle-btn:hover {
     border-color: rgba(255, 255, 255, 0.22);
     color: #94a3b8;
+}
+
+.temp-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(155px, 1fr));
+    gap: 0.7rem;
+}
+
+.temp-card {
+    background: rgba(2, 6, 23, 0.55);
+    border: 1px solid rgba(51, 65, 85, 0.45);
+    border-radius: 8px;
+    padding: 0.7rem 0.85rem;
+    display: grid;
+    gap: 0.45rem;
+    align-content: start;
+}
+
+.temp-card-source {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.3rem;
+    flex-wrap: wrap;
+}
+
+.temp-label-badge {
+    font-size: 0.68rem;
+    padding: 2px 7px;
+}
+
+.temp-reading {
+    font-size: 1.42rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1;
 }
 </style>

@@ -436,25 +436,7 @@
         </section>
 
         <section v-else-if="selectedAgent && detailTab === 'security'" class="section-box">
-            <div class="tool-card mb-4">
-                <div class="card-head">
-                    <h5>Timeline de eventos de seguridad</h5>
-                    <span class="mini-badge">Timeline</span>
-                </div>
-                <div class="timeline-list scrollable-wrap">
-                    <article v-for="event in selectedSecurityEvents" :key="event.id" class="timeline-entry">
-                        <div class="timeline-dot"></div>
-                        <div class="timeline-body">
-                            <strong>{{ humanizeEventKind(event.kind) }}</strong>
-                            <p>{{ event.message || event.file || event.subject || "Evento detectado" }}</p>
-                            <small>{{ formatDateTime(event.timestamp) }} · {{ event.user || event.sourceIp || "sin origen" }}</small>
-                        </div>
-                    </article>
-                    <div v-if="!selectedSecurityEvents.length" class="empty-box compact-empty">Sin eventos de seguridad para este sistema.</div>
-                </div>
-            </div>
-
-            <div class="row g-3">
+            <div class="row g-3 mb-4">
                 <div class="col-xl-6">
                     <div class="tool-card">
                         <div class="card-head">
@@ -476,6 +458,9 @@
                                         <td>{{ event.sourceIp }}</td>
                                         <td>{{ formatDateTime(event.timestamp) }}</td>
                                     </tr>
+                                    <tr v-if="!failedLoginsForSelected.length">
+                                        <td colspan="3" class="text-muted text-center">Sin intentos de autenticacion fallidos registrados.</td>
+                                    </tr>
                                 </tbody>
                             </table>
                         </div>
@@ -484,20 +469,79 @@
                 <div class="col-xl-6">
                     <div class="tool-card">
                         <div class="card-head">
-                            <h5>Sudo y cambios criticos</h5>
-                            <span class="mini-badge">Privileged</span>
+                            <h5>Accesos exitosos</h5>
+                            <span class="mini-badge">Successful login</span>
                         </div>
-                        <div class="timeline-list compact-timeline">
-                            <article v-for="event in selectedPrivilegedEvents" :key="event.id" class="timeline-entry">
-                                <div class="timeline-dot warning-dot"></div>
-                                <div class="timeline-body">
-                                    <strong>{{ humanizeEventKind(event.kind) }}</strong>
-                                    <p>{{ event.message || event.file || event.subject }}</p>
-                                    <small>{{ formatDateTime(event.timestamp) }}</small>
-                                </div>
-                            </article>
+                        <div class="table-wrap scrollable-wrap">
+                            <table class="table table-dark table-sm align-middle mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>Usuario</th>
+                                        <th>IP origen</th>
+                                        <th>Fecha</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr v-for="event in successfulLoginsForSelected" :key="event.id">
+                                        <td>{{ event.user }}</td>
+                                        <td>{{ event.sourceIp }}</td>
+                                        <td>{{ formatDateTime(event.timestamp) }}</td>
+                                    </tr>
+                                    <tr v-if="!successfulLoginsForSelected.length">
+                                        <td colspan="3" class="text-muted text-center">Sin accesos exitosos registrados.</td>
+                                    </tr>
+                                </tbody>
+                            </table>
                         </div>
                     </div>
+                </div>
+            </div>
+
+            <div class="tool-card mb-4">
+                <div class="card-head">
+                    <h5>Sudo y cambios criticos</h5>
+                    <span class="mini-badge">Privileged</span>
+                </div>
+                <div class="table-wrap scrollable-wrap">
+                    <table class="table table-dark table-sm align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th>Tipo</th>
+                                <th>Usuario</th>
+                                <th>Detalle</th>
+                                <th>Fecha</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="event in selectedPrivilegedEvents" :key="event.id">
+                                <td><span class="mini-badge" style="font-size:0.7rem">{{ humanizeEventKind(event.kind) }}</span></td>
+                                <td>{{ event.user || '—' }}</td>
+                                <td style="max-width:340px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" :title="event.message || event.file || event.subject">{{ event.message || event.file || event.subject }}</td>
+                                <td>{{ formatDateTime(event.timestamp) }}</td>
+                            </tr>
+                            <tr v-if="!selectedPrivilegedEvents.length">
+                                <td colspan="4" class="text-muted text-center">Sin eventos privilegiados registrados.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="tool-card">
+                <div class="card-head">
+                    <h5>Timeline de eventos de seguridad</h5>
+                    <span class="mini-badge">{{ timelineSecurityEvents.length }} eventos</span>
+                </div>
+                <div class="timeline-list scrollable-wrap">
+                    <article v-for="event in timelineSecurityEvents" :key="event.id" class="timeline-entry">
+                        <div class="timeline-dot" :class="timelineDotClass(event.kind)"></div>
+                        <div class="timeline-body">
+                            <strong>{{ humanizeEventKind(event.kind) }}</strong>
+                            <p>{{ event.message || event.file || event.subject || "Evento detectado" }}</p>
+                            <small>{{ formatDateTime(event.timestamp) }} · {{ event.user || event.sourceIp || "sin origen" }}</small>
+                        </div>
+                    </article>
+                    <div v-if="!timelineSecurityEvents.length" class="empty-box compact-empty">Sin eventos de seguridad para este sistema.</div>
                 </div>
             </div>
         </section>
@@ -667,8 +711,11 @@ export default {
         selectedOverviewCards() {
             if (!this.selectedAgent || !this.selectedLatestSnapshot) return [];
             const status = deriveThorondorAgentStatus(this.selectedAgent);
+            const failedSvcs = this.snapshotFailedServices.length;
+            const dnsOk = this.snapshotDns.length ? this.snapshotDns.every((d) => d.ok) : null;
+            const updateCount = this.snapshotPendingUpdates.count;
 
-            return [
+            const cards = [
                 { label: "Hostname", value: this.selectedLatestSnapshot.hostname, tone: "tone-neutral", note: this.selectedLatestSnapshot.localIp },
                 { label: "Estado", value: status.label, tone: status.color === "success" ? "tone-success" : (status.color === "warning" ? "tone-warning" : "tone-danger"), note: status.note },
                 { label: "Kernel", value: this.selectedLatestSnapshot.kernel, tone: "tone-blue", note: this.selectedAgent.distro },
@@ -678,6 +725,18 @@ export default {
                 { label: "Swap", value: this.formatPercent(this.selectedLatestSnapshot.swapPercent), tone: "tone-neutral", note: "Intercambio actual" },
                 { label: "Disco", value: this.formatPercent(this.selectedLatestSnapshot.diskPercent), tone: "tone-warning", note: `${this.selectedLatestSnapshot.disks?.length || 0} particiones` }
             ];
+
+            if (failedSvcs > 0) {
+                cards.push({ label: "Servicios FAILED", value: `${failedSvcs}`, tone: "tone-danger", note: this.snapshotFailedServices.slice(0, 2).map((s) => s.name).join(", ") });
+            }
+            if (dnsOk !== null) {
+                cards.push({ label: "Conectividad DNS", value: dnsOk ? "OK" : "FALLO", tone: dnsOk ? "tone-success" : "tone-danger", note: `${this.snapshotDns.filter((d) => d.ok).length}/${this.snapshotDns.length} objetivos resueltos` });
+            }
+            if (updateCount > 0) {
+                cards.push({ label: "Actualizaciones", value: `${updateCount}`, tone: updateCount > 20 ? "tone-danger" : "tone-warning", note: "Paquetes pendientes de aplicar" });
+            }
+
+            return cards;
         },
 
         historicalSnapshots() {
@@ -748,8 +807,25 @@ export default {
             return this.selectedSecurityEvents.filter((event) => event.kind === "failed_login");
         },
 
+        successfulLoginsForSelected() {
+            return this.selectedSecurityEvents.filter((event) => event.kind === "successful_login");
+        },
+
         selectedPrivilegedEvents() {
-            return this.selectedSecurityEvents.filter((event) => ["sudo_command", "critical_file_change", "new_user"].includes(event.kind));
+            const seen = new Set();
+            return this.selectedSecurityEvents
+                .filter((event) => ["sudo_command", "critical_file_change", "new_user"].includes(event.kind))
+                .filter((event) => {
+                    const key = `${event.kind}|${event.user}|${event.message || event.file || event.subject}`;
+                    if (seen.has(key)) return false;
+                    seen.add(key);
+                    return true;
+                });
+        },
+
+        timelineSecurityEvents() {
+            const excluded = new Set(["failed_login", "successful_login", "sudo_command", "critical_file_change", "new_user"]);
+            return this.selectedSecurityEvents.filter((event) => !excluded.has(event.kind));
         },
 
         filteredLogs() {
@@ -904,6 +980,11 @@ export default {
             if (celsius >= 90) return "rgba(239, 68, 68, 0.85)";
             if (celsius >= 75) return "rgba(251, 191, 36, 0.85)";
             return "rgba(74, 222, 128, 0.85)";
+        },
+
+        timelineDotClass(kind) {
+            if (kind === "error") return "danger-dot";
+            return "";
         }
     }
 };

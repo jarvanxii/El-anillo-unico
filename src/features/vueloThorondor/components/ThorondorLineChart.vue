@@ -37,25 +37,22 @@ export default {
         };
     },
 
+    computed: {
+        chartData() {
+            return { labels: this.labels, datasets: this.datasets };
+        }
+    },
+
     mounted() {
         this.renderChart();
     },
 
     beforeUnmount() {
-        if (this.chart) {
-            this.chart.destroy();
-            this.chart = null;
-        }
+        this.destroyChart();
     },
 
     watch: {
-        labels: {
-            deep: true,
-            handler() {
-                this.renderChart();
-            }
-        },
-        datasets: {
+        chartData: {
             deep: true,
             handler() {
                 this.renderChart();
@@ -64,6 +61,13 @@ export default {
     },
 
     methods: {
+        destroyChart() {
+            if (this.chart) {
+                try { this.chart.destroy(); } catch (_) {}
+                this.chart = null;
+            }
+        },
+
         renderChart() {
             const ChartLib = typeof window !== "undefined" ? window.Chart : null;
             if (!ChartLib || !this.$refs.canvas) {
@@ -72,57 +76,67 @@ export default {
             }
 
             this.showFallback = false;
+            const canvas = this.$refs.canvas;
 
-            if (this.chart) {
-                this.chart.destroy();
-                this.chart = null;
+            this.destroyChart();
+
+            if (typeof ChartLib.getChart === "function") {
+                const orphaned = ChartLib.getChart(canvas);
+                if (orphaned) {
+                    try { orphaned.destroy(); } catch (_) {}
+                }
             }
 
-            this.chart = new ChartLib(this.$refs.canvas, {
-                type: "line",
-                data: {
-                    labels: this.labels,
-                    datasets: this.datasets
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    interaction: {
-                        mode: "index",
-                        intersect: false
+            try {
+                this.chart = new ChartLib(canvas, {
+                    type: "line",
+                    data: {
+                        labels: this.labels,
+                        datasets: this.datasets
                     },
-                    plugins: {
-                        legend: {
-                            labels: {
-                                color: "#cbd5e1"
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        interaction: {
+                            mode: "index",
+                            intersect: false
+                        },
+                        plugins: {
+                            legend: {
+                                labels: {
+                                    color: "#cbd5e1"
+                                }
+                            },
+                            title: {
+                                display: !!this.title,
+                                text: this.title,
+                                color: "#f8fafc"
                             }
                         },
-                        title: {
-                            display: !!this.title,
-                            text: this.title,
-                            color: "#f8fafc"
-                        }
-                    },
-                    scales: {
-                        x: {
-                            ticks: {
-                                color: "#94a3b8"
+                        scales: {
+                            x: {
+                                ticks: {
+                                    color: "#94a3b8"
+                                },
+                                grid: {
+                                    color: "rgba(51, 65, 85, 0.35)"
+                                }
                             },
-                            grid: {
-                                color: "rgba(51, 65, 85, 0.35)"
-                            }
-                        },
-                        y: {
-                            ticks: {
-                                color: "#94a3b8"
-                            },
-                            grid: {
-                                color: "rgba(51, 65, 85, 0.35)"
+                            y: {
+                                ticks: {
+                                    color: "#94a3b8"
+                                },
+                                grid: {
+                                    color: "rgba(51, 65, 85, 0.35)"
+                                }
                             }
                         }
                     }
-                }
-            });
+                });
+            } catch (err) {
+                console.error("[ThorondorLineChart] Error al inicializar Chart.js:", err);
+                this.showFallback = true;
+            }
         }
     }
 };

@@ -315,7 +315,7 @@ export default {
 .hero-section {
     position: relative;
     text-align: center;
-    padding: 42px 20px 28px;
+    padding: 54px 20px 28px; /* 52px header + 2px gap */
     overflow: hidden;
     border-bottom: 1px solid rgba(212, 175, 55, .08);
 }

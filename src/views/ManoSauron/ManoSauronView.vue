@@ -30,7 +30,7 @@ export default {
 }
 
 .hero-banner {
-    margin-top: 111px;
+    margin-top: 54px; /* 52px header + 2px gap */
 }
 
 .hero-banner img {
@@ -46,7 +46,7 @@ export default {
 
 @media (max-width: 767px) {
     .hero-banner {
-        margin-top: 52px;
+        margin-top: 54px; /* 52px header + 2px gap */
     }
 
     .content {

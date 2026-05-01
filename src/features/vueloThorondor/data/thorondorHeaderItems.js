@@ -15,11 +15,6 @@ export const thorondorHeaderItems = [
     routeName: "thorondor-agent-generator",
   },
   {
-    id: "splunk_config",
-    name: "Configuracion Splunk",
-    routeName: "thorondor-splunk-config",
-  },
-  {
     id: "dashboard",
     name: "Dashboard general",
     routeName: "thorondor-dashboard",
@@ -28,11 +23,6 @@ export const thorondorHeaderItems = [
     id: "host_detail",
     name: "Detalle por host",
     routeName: "thorondor-host-detail",
-  },
-  {
-    id: "splunk",
-    name: "Splunk",
-    routeName: "thorondor-splunk",
   },
   {
     id: "monitorization_rules",

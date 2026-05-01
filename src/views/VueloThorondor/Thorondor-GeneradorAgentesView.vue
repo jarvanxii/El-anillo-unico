@@ -405,8 +405,8 @@
 </template>
 
 <script>
-import ThorondorMarkdownArticle from "@/features/vueloThorondor/components/ThorondorMarkdownArticle.vue";
-import ThorondorPageShell from "@/features/vueloThorondor/components/ThorondorPageShell.vue";
+import ThorondorMarkdownArticle from "@/components/VueloThorondor/ThorondorMarkdownArticle.vue";
+import ThorondorPageShell from "@/components/VueloThorondor/ThorondorPageShell.vue";
 import thorondorBaseMixin from "@/features/vueloThorondor/mixins/thorondorBaseMixin";
 import {
     THORONDOR_DISTRO_OPTIONS,
@@ -850,8 +850,6 @@ export default {
 </script>
 
 <style scoped>
-@import "@/features/vueloThorondor/styles/thorondor-theme.css";
-
 .deployment-summary {
     display: grid;
     gap: 0.85rem;
@@ -862,7 +860,7 @@ export default {
     justify-content: space-between;
     gap: 1rem;
     padding-bottom: 0.75rem;
-    border-bottom: 1px solid rgba(130, 170, 230, 0.16);
+    border-bottom: 1px solid rgba(148, 163, 184, 0.18);
 }
 
 .summary-line:last-child {
@@ -871,14 +869,14 @@ export default {
 }
 
 .summary-line label {
-    color: rgba(198, 216, 245, 0.7);
+    color: rgba(198, 210, 222, 0.72);
     font-size: 0.82rem;
     letter-spacing: 0.08em;
     text-transform: uppercase;
 }
 
 .summary-line span {
-    color: #f3f7fd;
+    color: #f4f8fb;
     text-align: right;
 }
 
@@ -926,10 +924,10 @@ export default {
     width: 1.28rem;
     height: 1.28rem;
     border-radius: 999px;
-    border: 1px solid rgba(125, 211, 252, 0.26);
-    background: linear-gradient(180deg, rgba(12, 22, 40, 0.96), rgba(8, 16, 30, 0.98));
+    border: 1px solid rgba(148, 163, 184, 0.32);
+    background: linear-gradient(180deg, rgba(28, 39, 53, 0.96), rgba(17, 27, 39, 0.98));
     box-shadow: 0 8px 18px rgba(2, 8, 23, 0.18);
-    color: #d7e7fc;
+    color: #dbe5ef;
     font-size: 0.64rem;
     font-weight: 700;
     cursor: pointer;
@@ -938,10 +936,10 @@ export default {
 
 .help-trigger:hover,
 .help-trigger.is-pinned {
-    border-color: rgba(140, 197, 255, 0.62);
-    background: linear-gradient(180deg, rgba(21, 43, 78, 0.98), rgba(10, 19, 35, 0.98));
+    border-color: rgba(203, 213, 225, 0.62);
+    background: linear-gradient(180deg, rgba(48, 63, 80, 0.98), rgba(24, 34, 47, 0.98));
     color: #ffffff;
-    box-shadow: 0 10px 22px rgba(24, 78, 160, 0.16);
+    box-shadow: 0 10px 22px rgba(15, 23, 42, 0.28);
 }
 
 .help-popover {
@@ -951,10 +949,10 @@ export default {
     width: min(320px, calc(100vw - 3rem));
     padding: 0.95rem 1rem;
     border-radius: 12px;
-    border: 1px solid rgba(111, 170, 255, 0.32);
-    background: linear-gradient(180deg, rgba(10, 19, 35, 0.99), rgba(17, 32, 58, 0.99));
+    border: 1px solid rgba(148, 163, 184, 0.36);
+    background: linear-gradient(180deg, rgba(17, 27, 39, 0.99), rgba(28, 39, 53, 0.99));
     box-shadow: 0 18px 38px rgba(2, 8, 23, 0.42);
-    color: rgba(231, 240, 255, 0.95);
+    color: rgba(225, 234, 244, 0.95);
     font-size: 0.84rem;
     line-height: 1.65;
     text-align: left;
@@ -972,9 +970,9 @@ export default {
     right: 14px;
     width: 14px;
     height: 14px;
-    border-top: 1px solid rgba(111, 170, 255, 0.32);
-    border-left: 1px solid rgba(111, 170, 255, 0.32);
-    background: rgba(13, 24, 43, 0.99);
+    border-top: 1px solid rgba(148, 163, 184, 0.36);
+    border-left: 1px solid rgba(148, 163, 184, 0.36);
+    background: rgba(22, 32, 44, 0.99);
     transform: rotate(45deg);
 }
 
@@ -1017,7 +1015,7 @@ export default {
 
 .form-status-hint {
     margin: 0.85rem 0 0;
-    color: rgba(209, 223, 246, 0.84);
+    color: rgba(209, 221, 233, 0.84);
     font-size: 0.83rem;
     line-height: 1.6;
 }
@@ -1028,8 +1026,8 @@ export default {
     align-items: flex-start;
     padding: 1rem;
     border-radius: 12px;
-    border: 1px solid rgba(94, 156, 255, 0.18);
-    background: linear-gradient(180deg, rgba(13, 24, 43, 0.96), rgba(9, 16, 29, 0.98));
+    border: 1px solid rgba(148, 163, 184, 0.24);
+    background: linear-gradient(180deg, rgba(24, 34, 47, 0.96), rgba(17, 27, 39, 0.98));
 }
 
 .action-guide-icon {
@@ -1040,9 +1038,9 @@ export default {
     justify-content: center;
     border-radius: 999px;
     flex-shrink: 0;
-    border: 1px solid rgba(125, 211, 252, 0.3);
-    background: rgba(14, 28, 51, 0.9);
-    color: #dff0ff;
+    border: 1px solid rgba(148, 163, 184, 0.36);
+    background: rgba(28, 39, 53, 0.9);
+    color: #dbe5ef;
     font-size: 0.88rem;
     font-weight: 700;
 }
@@ -1050,12 +1048,12 @@ export default {
 .action-guide-body strong {
     display: block;
     margin-bottom: 0.35rem;
-    color: #f3f7fd;
+    color: #f4f8fb;
 }
 
 .action-guide-body p {
     margin: 0;
-    color: rgba(221, 232, 249, 0.84);
+    color: rgba(218, 229, 240, 0.84);
     line-height: 1.65;
 }
 
@@ -1103,9 +1101,9 @@ export default {
     gap: 0.4rem;
     padding: 0.5rem 1.2rem;
     border-radius: 8px;
-    border: 1px solid rgba(94, 156, 255, 0.22);
-    background: linear-gradient(180deg, rgba(13, 24, 43, 0.9), rgba(9, 16, 29, 0.95));
-    color: rgba(200, 220, 250, 0.72);
+    border: 1px solid rgba(148, 163, 184, 0.28);
+    background: linear-gradient(180deg, rgba(28, 39, 53, 0.94), rgba(17, 27, 39, 0.96));
+    color: rgba(207, 219, 231, 0.76);
     font-size: 0.88rem;
     font-weight: 600;
     cursor: pointer;
@@ -1113,15 +1111,15 @@ export default {
 }
 
 .os-toggle-btn:hover {
-    border-color: rgba(125, 190, 255, 0.45);
-    color: #e8f3ff;
+    border-color: rgba(203, 213, 225, 0.48);
+    color: #e8eef5;
 }
 
 .os-toggle-btn.active {
-    border-color: rgba(94, 170, 255, 0.6);
-    background: linear-gradient(180deg, rgba(22, 42, 76, 0.95), rgba(14, 28, 54, 0.98));
-    color: #c9e3ff;
-    box-shadow: 0 0 12px rgba(80, 150, 255, 0.14);
+    border-color: rgba(203, 213, 225, 0.62);
+    background: linear-gradient(180deg, rgba(48, 63, 80, 0.96), rgba(31, 43, 58, 0.98));
+    color: #edf3f8;
+    box-shadow: 0 0 12px rgba(148, 163, 184, 0.16);
 }
 
 .os-icon {

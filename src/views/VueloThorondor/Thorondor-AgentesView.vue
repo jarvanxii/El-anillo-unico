@@ -92,7 +92,7 @@
 </template>
 
 <script>
-import ThorondorPageShell from "@/features/vueloThorondor/components/ThorondorPageShell.vue";
+import ThorondorPageShell from "@/components/VueloThorondor/ThorondorPageShell.vue";
 import thorondorBaseMixin from "@/features/vueloThorondor/mixins/thorondorBaseMixin";
 
 export default {
@@ -142,7 +142,3 @@ export default {
     }
 };
 </script>
-
-<style scoped>
-@import "@/features/vueloThorondor/styles/thorondor-theme.css";
-</style>

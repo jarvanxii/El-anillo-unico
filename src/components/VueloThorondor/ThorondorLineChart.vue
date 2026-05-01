@@ -151,8 +151,7 @@ export default {
                         }
                     }
                 });
-            } catch (err) {
-                console.error("[ThorondorLineChart] Error al inicializar Chart.js:", err);
+            } catch {
                 this.showFallback = true;
             }
         }

@@ -1,0 +1,692 @@
+.thorondor-page {
+    --thorondor-header-offset: calc(var(--main-header-height, 52px) + var(--secondary-header-height, 54px));
+    --thorondor-content-gap: 34px;
+    --thorondor-content-gap-mobile: 24px;
+    --thorondor-banner-gap: var(--header-banner-gap, 2px);
+    min-height: 100vh;
+    background:
+        radial-gradient(circle at top right, rgba(169, 186, 203, 0.14), transparent 30%),
+        linear-gradient(180deg, #131f2c 0%, #101a26 45%, #0b121b 100%);
+    font-family: 'Inter', sans-serif;
+}
+
+.thorondor-page .thorondor-content {
+    padding-top: calc(var(--thorondor-header-offset) + var(--thorondor-content-gap));
+    padding-bottom: 60px;
+}
+
+.thorondor-page .thorondor-content.with-banner {
+    padding-top: 45px;
+}
+
+.thorondor-page .hero-banner {
+    margin-top: calc(var(--thorondor-header-offset) + var(--thorondor-banner-gap));
+}
+
+.thorondor-page .hero-banner img {
+    width: 100%;
+    display: block;
+    object-fit: cover;
+}
+
+.thorondor-page .section-box {
+    background: rgba(20, 30, 42, 0.94);
+    border: 1px solid rgba(71, 85, 105, 0.58);
+    border-radius: 10px;
+    padding: 24px;
+    margin-bottom: 24px;
+    box-shadow: 0 18px 34px rgba(5, 11, 18, 0.34);
+}
+
+.thorondor-page .intro-box {
+    display: grid;
+    gap: 22px;
+}
+
+.thorondor-page .intro-layout,
+.thorondor-page .section-topline {
+    display: grid;
+    grid-template-columns: minmax(0, 1.45fr) minmax(220px, 320px);
+    gap: 24px;
+    align-items: start;
+}
+
+.thorondor-page .section-heading,
+.thorondor-page .module-header {
+    display: grid;
+    gap: 8px;
+}
+
+.thorondor-page .section-kicker {
+    color: #b6c4d2;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+.thorondor-page .section-name,
+.thorondor-page .module-title {
+    margin: 0;
+    color: #f8fafc;
+    font-size: clamp(1.5rem, 2.2vw, 2.1rem);
+    font-weight: 700;
+}
+
+.thorondor-page .section-copy,
+.thorondor-page .module-copy {
+    margin: 0;
+    color: #cbd5e1;
+    line-height: 1.75;
+    max-width: 90ch;
+}
+
+.thorondor-page .intro-emblem,
+.thorondor-page .phase-badge-block {
+    display: grid;
+    gap: 10px;
+}
+
+.thorondor-page .intro-emblem {
+    justify-items: center;
+    text-align: center;
+    padding: 20px;
+    border-radius: 10px;
+    background: linear-gradient(180deg, rgba(30, 41, 54, 0.98), rgba(18, 27, 39, 0.96));
+    border: 1px solid rgba(148, 163, 184, 0.28);
+}
+
+.thorondor-page .intro-emblem img {
+    width: 112px;
+    height: 112px;
+    object-fit: contain;
+}
+
+.thorondor-page .intro-emblem span {
+    color: #f8fafc;
+    font-size: 0.95rem;
+    font-weight: 700;
+}
+
+.thorondor-page .intro-emblem small,
+.thorondor-page .phase-badge-block small,
+.thorondor-page .muted-copy {
+    color: #94a3b8;
+    line-height: 1.65;
+}
+
+.thorondor-page .guide-grid,
+.thorondor-page .card-grid {
+    display: grid;
+    gap: 16px;
+}
+
+.thorondor-page .guide-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.thorondor-page .card-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.thorondor-page .guide-card,
+.thorondor-page .metric-card,
+.thorondor-page .signal-card,
+.thorondor-page .tool-card {
+    background: rgba(13, 20, 29, 0.82);
+    border: 1px solid rgba(51, 65, 85, 0.72);
+    border-radius: 8px;
+}
+
+.thorondor-page .guide-card,
+.thorondor-page .metric-card,
+.thorondor-page .signal-card {
+    display: grid;
+    gap: 8px;
+    padding: 16px;
+    height: 100%;
+}
+
+.thorondor-page .guide-card label,
+.thorondor-page .metric-card label,
+.thorondor-page .signal-card label,
+.thorondor-page .field-label {
+    color: #e2e8f0;
+    font-size: 0.81rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.thorondor-page .guide-card span,
+.thorondor-page .metric-card small,
+.thorondor-page .signal-card small,
+.thorondor-page .helper-copy {
+    color: #94a3b8;
+    line-height: 1.65;
+}
+
+.thorondor-page .metric-card span,
+.thorondor-page .signal-card span {
+    color: #f8fafc;
+    font-size: 1.02rem;
+    font-weight: 700;
+}
+
+.thorondor-page .phase-badge-block {
+    justify-items: end;
+    text-align: right;
+}
+
+.thorondor-page .phase-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px 12px;
+    border-radius: 999px;
+    background: rgba(24, 34, 47, 0.96);
+    border: 1px solid rgba(148, 163, 184, 0.38);
+    color: #dbe5ef;
+    font-size: 0.74rem;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.thorondor-page .verdict-card {
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+    border-radius: 10px;
+    border: 1px solid rgba(148, 163, 184, 0.2);
+    padding: 16px;
+}
+
+.thorondor-page .verdict-success {
+    background: rgba(22, 101, 52, 0.14);
+    border-color: rgba(34, 197, 94, 0.3);
+}
+
+.thorondor-page .verdict-neutral {
+    background: rgba(20, 30, 42, 0.78);
+}
+
+.thorondor-page .verdict-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 999px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    background: rgba(24, 34, 47, 0.92);
+    color: #e2e8f0;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+.thorondor-page .verdict-body strong {
+    display: block;
+    margin-bottom: 4px;
+    color: #f8fafc;
+}
+
+.thorondor-page .verdict-body p {
+    margin: 0;
+    color: #cbd5e1;
+    line-height: 1.7;
+}
+
+.thorondor-page .control-grid {
+    display: grid;
+    gap: 16px;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    margin-bottom: 16px;
+}
+
+.thorondor-page .compact-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.thorondor-page .control-field {
+    min-width: 0;
+}
+
+.thorondor-page .control-field.full-span {
+    grid-column: 1 / -1;
+}
+
+.thorondor-page .input-dark {
+    background: #182231;
+    border: 1px solid rgba(71, 85, 105, 0.9);
+    color: #f8fafc !important;
+    caret-color: #f8fafc;
+}
+
+.thorondor-page .input-dark::placeholder {
+    color: #94a3b8;
+}
+
+.thorondor-page .input-dark:focus {
+    background: #1c2837;
+    border-color: #94a3b8;
+    box-shadow: 0 0 0 0.2rem rgba(148, 163, 184, 0.18);
+}
+
+.thorondor-page .textarea-dark {
+    resize: vertical;
+    min-height: 128px;
+}
+
+.thorondor-page .inline-actions,
+.thorondor-page .table-actions,
+.thorondor-page .card-actions,
+.thorondor-page .checkbox-grid,
+.thorondor-page .detail-tabs,
+.thorondor-page .mini-grid {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.thorondor-page .inline-actions,
+.thorondor-page .table-actions,
+.thorondor-page .card-actions,
+.thorondor-page .checkbox-grid,
+.thorondor-page .detail-tabs {
+    gap: 10px;
+}
+
+.thorondor-page .inline-actions {
+    margin: 14px 0 8px;
+}
+
+.thorondor-page .toggle-line {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: #dbe7f3;
+    font-size: 0.92rem;
+}
+
+.thorondor-page .toggle-line input {
+    accent-color: #94a3b8;
+}
+
+.thorondor-page .btn-main,
+.thorondor-page .btn-subtle,
+.thorondor-page .btn-quiet {
+    border-radius: 6px;
+    font-weight: 600;
+    padding: 9px 14px;
+}
+
+.thorondor-page .btn-main {
+    background: #405061;
+    border: 1px solid #5b6b7c;
+    color: #f8fafc;
+}
+
+.thorondor-page .btn-main:hover,
+.thorondor-page .btn-main:focus {
+    background: #526274;
+    color: #f8fafc;
+}
+
+.thorondor-page .btn-subtle {
+    background: #111b27;
+    border: 1px solid #405061;
+    color: #cbd5e1;
+}
+
+.thorondor-page .btn-subtle:hover,
+.thorondor-page .btn-subtle:focus,
+.thorondor-page .btn-quiet:hover,
+.thorondor-page .btn-quiet:focus {
+    background: rgba(51, 65, 85, 0.4);
+    color: #f8fafc;
+}
+
+.thorondor-page .btn-quiet {
+    padding: 5px 10px;
+    background: transparent;
+    border: 1px solid #334155;
+    color: #cbd5e1;
+    font-size: 0.8rem;
+}
+
+.thorondor-page .tool-card {
+    display: grid;
+    gap: 12px;
+    padding: 16px;
+    height: 100%;
+    align-content: start;
+}
+
+.thorondor-page .stack-panel {
+    display: grid;
+    gap: 16px;
+}
+
+.thorondor-page .card-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+}
+
+.thorondor-page .card-head h5 {
+    margin: 0;
+    color: #f8fafc;
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.thorondor-page .mini-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 5px 10px;
+    border-radius: 999px;
+    border: 1px solid rgba(71, 85, 105, 0.9);
+    background: rgba(20, 30, 42, 0.78);
+    color: #cbd5e1;
+    font-size: 0.74rem;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.thorondor-page .output-box {
+    background: #07101a;
+    border: 1px solid rgba(51, 65, 85, 0.84);
+    border-radius: 8px;
+    padding: 14px;
+    overflow: auto;
+}
+
+.thorondor-page .fixed-output {
+    max-height: 420px;
+}
+
+.thorondor-page .tall-output {
+    max-height: 520px;
+}
+
+.thorondor-page .result-pre {
+    margin: 0;
+    white-space: pre-wrap;
+    word-break: break-word;
+    font-family: 'Courier New', monospace;
+    color: #cbd5e1;
+    font-size: 0.84rem;
+    line-height: 1.65;
+}
+
+.thorondor-page .inline-code {
+    background: rgba(20, 30, 42, 0.72);
+    border: 1px solid rgba(71, 85, 105, 0.88);
+    border-radius: 6px;
+    color: #e2e8f0;
+    padding: 2px 6px;
+}
+
+.thorondor-page .table-wrap {
+    overflow: auto;
+}
+
+.thorondor-page .table-dark {
+    --bs-table-bg: transparent;
+    --bs-table-border-color: rgba(51, 65, 85, 0.42);
+}
+
+.thorondor-page .state-chip {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 5px 10px;
+    border-radius: 999px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.thorondor-page .chip-success {
+    background: rgba(22, 101, 52, 0.2);
+    color: #86efac;
+}
+
+.thorondor-page .chip-warning {
+    background: rgba(146, 64, 14, 0.2);
+    color: #fcd34d;
+}
+
+.thorondor-page .chip-danger {
+    background: rgba(127, 29, 29, 0.2);
+    color: #fca5a5;
+}
+
+.thorondor-page .chip-muted {
+    background: rgba(51, 65, 85, 0.24);
+    color: #cbd5e1;
+}
+
+.thorondor-page .mini-grid {
+    gap: 12px;
+}
+
+.thorondor-page .mini-stat {
+    flex: 1 1 30%;
+    min-width: 140px;
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid rgba(51, 65, 85, 0.42);
+    background: rgba(15, 23, 42, 0.74);
+}
+
+.thorondor-page .mini-stat label {
+    display: block;
+    color: #94a3b8;
+    font-size: 0.76rem;
+    margin-bottom: 4px;
+    text-transform: uppercase;
+}
+
+.thorondor-page .mini-stat span {
+    color: #f8fafc;
+    font-weight: 600;
+}
+
+.thorondor-page .clickable-card {
+    cursor: pointer;
+}
+
+.thorondor-page .clickable-card:hover {
+    border-color: rgba(148, 163, 184, 0.42);
+}
+
+.thorondor-page .detail-tabs {
+    border-bottom: 1px solid rgba(51, 65, 85, 0.4);
+    padding-bottom: 12px;
+}
+
+.thorondor-page .detail-tab {
+    min-width: 150px;
+    text-align: left;
+    border-radius: 8px;
+    border: 1px solid #405061;
+    background: rgba(17, 27, 39, 0.92);
+    color: #dbe5ef;
+    padding: 14px 16px;
+}
+
+.thorondor-page .detail-tab.active {
+    border-color: rgba(148, 163, 184, 0.62);
+    background: linear-gradient(180deg, rgba(38, 50, 65, 0.98), rgba(24, 34, 47, 0.98));
+    color: #f8fafc;
+}
+
+.thorondor-page .timeline-list {
+    display: grid;
+    gap: 14px;
+}
+
+.thorondor-page .timeline-entry {
+    display: grid;
+    grid-template-columns: 16px minmax(0, 1fr);
+    gap: 12px;
+}
+
+.thorondor-page .timeline-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 999px;
+    background: #94a3b8;
+    margin-top: 7px;
+}
+
+.thorondor-page .warning-dot {
+    background: #f59e0b;
+}
+
+.thorondor-page .timeline-body strong {
+    color: #f8fafc;
+}
+
+.thorondor-page .timeline-body p,
+.thorondor-page .timeline-body small {
+    margin: 0;
+    color: #cbd5e1;
+}
+
+.thorondor-page .timeline-body small {
+    color: #94a3b8;
+}
+
+.thorondor-page .compact-timeline {
+    max-height: 360px;
+    overflow: auto;
+}
+
+.thorondor-page .scrollable-wrap {
+    max-height: 380px;
+    overflow-y: auto;
+}
+
+.thorondor-page .scrollable-wrap::-webkit-scrollbar,
+.thorondor-page .compact-timeline::-webkit-scrollbar,
+.thorondor-page .output-box::-webkit-scrollbar {
+    width: 6px;
+}
+
+.thorondor-page .scrollable-wrap::-webkit-scrollbar-track,
+.thorondor-page .compact-timeline::-webkit-scrollbar-track,
+.thorondor-page .output-box::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.thorondor-page .scrollable-wrap::-webkit-scrollbar-thumb,
+.thorondor-page .compact-timeline::-webkit-scrollbar-thumb,
+.thorondor-page .output-box::-webkit-scrollbar-thumb {
+    background: rgba(148, 163, 184, 0.34);
+    border-radius: 10px;
+}
+
+.thorondor-page .scrollable-wrap::-webkit-scrollbar-thumb:hover,
+.thorondor-page .compact-timeline::-webkit-scrollbar-thumb:hover,
+.thorondor-page .output-box::-webkit-scrollbar-thumb:hover {
+    background: rgba(203, 213, 225, 0.52);
+}
+
+.thorondor-page .empty-box {
+    border: 1px dashed rgba(71, 85, 105, 0.58);
+    border-radius: 8px;
+    padding: 18px;
+    color: #94a3b8;
+    text-align: center;
+    background: rgba(2, 6, 23, 0.42);
+}
+
+.thorondor-page .compact-empty {
+    padding: 10px;
+}
+
+.thorondor-page .danger-text {
+    color: #fca5a5;
+}
+
+.thorondor-page .tone-success {
+    color: #86efac !important;
+}
+
+.thorondor-page .tone-warning {
+    color: #fcd34d !important;
+}
+
+.thorondor-page .tone-danger {
+    color: #fca5a5 !important;
+}
+
+.thorondor-page .tone-blue {
+    color: #b6c4d2 !important;
+}
+
+.thorondor-page .tone-neutral {
+    color: #cbd5e1 !important;
+}
+
+@media (max-width: 1399px) {
+    .thorondor-page .card-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 1199px) {
+    .thorondor-page .intro-layout,
+.thorondor-page .section-topline,
+.thorondor-page .control-grid,
+.thorondor-page .compact-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .thorondor-page .guide-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .thorondor-page .phase-badge-block {
+        justify-items: start;
+        text-align: left;
+    }
+}
+
+@media (max-width: 767px) {
+    .thorondor-page .hero-banner {
+        margin-top: calc(var(--thorondor-header-offset) + var(--thorondor-banner-gap));
+    }
+
+    .thorondor-page .thorondor-content {
+        padding-top: calc(var(--thorondor-header-offset) + var(--thorondor-content-gap-mobile));
+    }
+
+    .thorondor-page .thorondor-content.with-banner {
+        padding-top: 30px;
+    }
+
+    .thorondor-page .section-box {
+        padding: 18px;
+    }
+
+    .thorondor-page .guide-grid,
+.thorondor-page .card-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .thorondor-page .card-head {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .thorondor-page .inline-actions .btn,
+.thorondor-page .detail-tab {
+        width: 100%;
+    }
+}

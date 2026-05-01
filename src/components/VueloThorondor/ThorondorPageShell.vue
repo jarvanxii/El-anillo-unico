@@ -22,7 +22,3 @@ export default {
     }
 };
 </script>
-
-<style scoped>
-@import "@/features/vueloThorondor/styles/thorondor-theme.css";
-</style>

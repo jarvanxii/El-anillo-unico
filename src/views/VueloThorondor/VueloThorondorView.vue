@@ -3,15 +3,13 @@
         <section class="section-box intro-box">
             <div class="intro-layout">
                 <div class="section-heading">
-                    <span class="section-kicker">SIEM personal — Linux · Windows · Splunk</span>
+                    <span class="section-kicker">SIEM personal — Linux · Windows · navegador</span>
                     <h1 class="section-name">El vuelo de Thorondor</h1>
                     <p class="section-copy">
                         Thorondor es un SIEM personal sin backend: un agente Python autocontenido expone dos endpoints
-                        HTTP (<code>/health</code>, <code>/telemetry</code>) sobre la IP privada del host. El frontend realiza
-                        polling HTTP directo desde el navegador, persiste la telemetria en IndexedDB y aplica reglas de
-                        correlacion en JavaScript puro. Compatible con Linux (systemd, Debian/Ubuntu/RHEL/Arch) y Windows
-                        (Task Scheduler). Integracion opcional con Splunk Enterprise Developer via HTTP Event Collector
-                        para correlacion SPL sobre todos los hosts monitorizados.
+                        HTTP (<code>/health</code>, <code>/telemetry</code>) sobre la IP privada del host. El frontend
+                        ejecuta polling HTTP directo, persiste la telemetria en IndexedDB y aplica reglas de correlacion
+                        en JavaScript. Compatible con Linux (systemd, Debian/Ubuntu/RHEL/Arch) y Windows (Task Scheduler).
                     </p>
                 </div>
 
@@ -69,8 +67,8 @@
                     <strong>Datos locales, correlacion local, sin dependencia de red externa</strong>
                     <p>
                         La telemetria de todos los hosts reside en IndexedDB del navegador. No existe canal de exfiltrado
-                        ni servidor central: cada agente es un endpoint HTTP independiente. La integracion con Splunk
-                        es opt-in y utiliza un canal HEC directo desde el navegador al servidor Splunk local.
+                        ni servidor central: cada agente es un endpoint HTTP independiente y cada alerta se calcula en el
+                        frontend sobre los datos que el navegador ya ha recogido.
                     </p>
                 </div>
             </div>
@@ -163,8 +161,8 @@
 </template>
 
 <script>
-import ThorondorMarkdownArticle from "@/features/vueloThorondor/components/ThorondorMarkdownArticle.vue";
-import ThorondorPageShell from "@/features/vueloThorondor/components/ThorondorPageShell.vue";
+import ThorondorMarkdownArticle from "@/components/VueloThorondor/ThorondorMarkdownArticle.vue";
+import ThorondorPageShell from "@/components/VueloThorondor/ThorondorPageShell.vue";
 import thorondorBaseMixin from "@/features/vueloThorondor/mixins/thorondorBaseMixin";
 import { thorondorDocumentation } from "@/features/vueloThorondor/data/thorondorDocumentation";
 
@@ -198,8 +196,8 @@ export default {
                     copy: "Snapshots, logs, eventos de seguridad, alertas y reglas se persisten en IndexedDB del navegador con cursor sweep automatico. Sin escrituras en servidor central ni telemetria a terceros."
                 },
                 {
-                    label: "Correlacion local + Splunk",
-                    copy: "Las reglas de correlacion se ejecutan en JavaScript puro en el navegador. Para correlacion avanzada multi-host, la integracion con Splunk Developer via HEC permite busquedas SPL sobre la telemetria completa."
+                    label: "Correlacion local",
+                    copy: "Las reglas se ejecutan en JavaScript sobre snapshots, eventos y logs ya persistidos. El motor evalua umbrales, heartbeat, fallos de autenticacion, uso de sudo y cambios en ficheros criticos."
                 }
             ];
         },
@@ -290,9 +288,9 @@ export default {
                     copy: "El motor de reglas JavaScript evalua thresholds de CPU, RAM, heartbeat, frecuencia de fallos de autenticacion, sudo fuera de whitelist y cambios en el baseline de integridad de archivos."
                 },
                 {
-                    label: "6. Correlacion avanzada con Splunk",
-                    badge: "SIEM+",
-                    copy: "Opcional: la ingesta via HEC envia snapshots, eventos de seguridad y logs a Splunk Developer (500 MB/dia gratuitos). Las busquedas SPL permiten correlacion temporal multi-host, deteccion de anomalias y series temporales."
+                    label: "6. Reglas y alertas",
+                    badge: "Rules",
+                    copy: "Las reglas locales correlacionan telemetria reciente por host: CPU, RAM, disco, heartbeat, fallos de autenticacion, sudo fuera de politica y cambios en baseline de integridad."
                 }
             ];
         },
@@ -313,14 +311,10 @@ export default {
                 },
                 {
                     label: "Paso 4 — Dashboard y alertas",
-                    copy: "El host aparece en el dashboard con heartbeat, CPU, RAM y disco. Ajusta las reglas de monitorizacion y, opcionalmente, configura la integracion con Splunk para correlacion SPL avanzada."
+                    copy: "El host aparece en el dashboard con heartbeat, CPU, RAM y disco. Ajusta las reglas de monitorizacion segun el rol del sistema y revisa las alertas desde la vista de reglas."
                 }
             ];
         }
     }
 };
 </script>
-
-<style scoped>
-@import "@/features/vueloThorondor/styles/thorondor-theme.css";
-</style>

@@ -29,8 +29,7 @@
     font-family: "Inter", sans-serif;
 }
 
-.app-view-content,
-.thorondor-content {
+.app-view-content {
     padding-top: 45px;
     padding-bottom: 60px;
 }
@@ -425,9 +424,7 @@
 }
 
 @media (max-width: 767px) {
-    .app-view-content,
-    .thorondor-content,
-    .thorondor-content.with-banner {
+    .app-view-content {
         padding-top: 30px;
         padding-bottom: 42px;
     }

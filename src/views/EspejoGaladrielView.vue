@@ -10,32 +10,24 @@
                     <span class="section-kicker">OSINT pasivo</span>
                     <h1 class="section-name">El Espejo de Galadriel</h1>
                     <p class="section-copy">
-                        Un panel de reconocimiento pasivo para revisar correo, contraseñas y dominio sin backend
-                        propio y sin API keys privadas. Todo lo que aparece aqui se obtiene desde fuentes publicas,
-                        consultas DNS, inteligencia abierta y calculos locales en el navegador.
+                        Comprueba correo y contraseñas desde el navegador. El correo se analiza con sintaxis, DNS,
+                        controles de autenticacion, RDAP y Gravatar. La contraseña se evalua con zxcvbn y HIBP mediante
+                        k-anonymity.
                     </p>
                 </div>
 
                 <div class="guide-grid">
                     <div class="guide-card">
-                        <label>Sin tokens</label>
-                        <span>Solo fuentes publicas o gratuitas: DNS over HTTPS, RDAP, HIBP Pwned Passwords, Gravatar,
-                            SecurityHeaders, crt.sh, URLHaus y Wayback.</span>
+                        <label>Correo</label>
+                        <span>Sintaxis, buzones de rol, proveedor temporal, MX, SPF, DMARC, BIMI, MTA-STS, RDAP y Gravatar.</span>
                     </div>
                     <div class="guide-card">
-                        <label>Sin backend</label>
-                        <span>Las consultas salen desde el navegador. Cuando un servicio no expone CORS de forma
-                            estable, se usan proxies GET publicos como fallback.</span>
+                        <label>Contrasena</label>
+                        <span>Fortaleza local con zxcvbn y consulta HIBP Pwned Passwords por prefijo SHA-1.</span>
                     </div>
                     <div class="guide-card">
-                        <label>Lectura explicada</label>
-                        <span>Cada modulo devuelve puntuacion, hallazgos, controles observables, fuentes consultadas y
-                            recomendaciones accionables.</span>
-                    </div>
-                    <div class="guide-card">
-                        <label>Privacidad local</label>
-                        <span>La contraseña nunca se envia completa: solo viaja el prefijo SHA-1 al rango de HIBP,
-                            siguiendo el modelo k-anonymity.</span>
+                        <label>Privacidad</label>
+                        <span>La contraseña completa no se envia: HIBP recibe solo los cinco primeros caracteres del hash SHA-1.</span>
                     </div>
                 </div>
             </section>
@@ -243,114 +235,13 @@
                 </template>
             </section>
 
-            <section class="section-box">
-                <div class="module-header">
-                    <span class="section-kicker">Modulo 03</span>
-                    <h2 class="module-title">Comprobación de dominio y URL</h2>
-                    <p class="module-copy">
-                        Analiza DNS, cabeceras publicas, superficie visible, certificados, reputacion en URLHaus,
-                        huella historica en Wayback y registro RDAP de un dominio o URL.
-                    </p>
-                </div>
-
-                <div class="control-row">
-                    <div class="control-field">
-                        <label class="field-label" for="target-input">Dominio o URL</label>
-                        <input
-                            id="target-input"
-                            v-model.trim="targetInput"
-                            class="form-control input-dark"
-                            placeholder="ejemplo.com o https://ejemplo.com/login"
-                            @keyup.enter="analyzeTarget"
-                        />
-                    </div>
-                    <button class="btn btn-main action-button" :disabled="targetLoading || !targetInput" @click="analyzeTarget">
-                        {{ targetLoading ? "Analizando..." : "Analizar dominio" }}
-                    </button>
-                </div>
-
-                <div v-if="targetLoading" class="loading-panel">
-                    <div class="loading-step" v-for="step in targetSteps" :key="step.name" :class="step.state">
-                        <div class="loading-step-icon">
-                            <span v-if="step.state === 'done'" class="bi bi-check-lg"></span>
-                            <span v-else-if="step.state === 'error'" class="bi bi-x-lg"></span>
-                            <span v-else-if="step.state === 'active'" class="spinner-border spinner-border-sm"></span>
-                            <span v-else class="bi bi-circle"></span>
-                        </div>
-                        <div class="loading-step-body">
-                            <strong>{{ step.name }}</strong>
-                            <span>{{ step.status }}</span>
-                        </div>
-                    </div>
-                </div>
-
-                <template v-if="targetResult && !targetLoading">
-                    <div class="row g-3 mb-4">
-                        <div class="col-6 col-lg-3" v-for="item in targetResult.summaryCards" :key="item.label">
-                            <div class="metric-card">
-                                <label>{{ item.label }}</label>
-                                <span :class="item.tone || scoreClass(item.numeric)">{{ item.value }}</span>
-                                <small v-if="item.note">{{ item.note }}</small>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="verdict-card" :class="targetResult.verdictTone">
-                        <div class="verdict-icon">
-                            <span>URL</span>
-                        </div>
-                        <div class="verdict-body">
-                            <strong>{{ targetResult.verdictTitle }}</strong>
-                            <p>{{ targetResult.verdictBody }}</p>
-                        </div>
-                    </div>
-
-                    <h5 class="subsection-title">Fuentes consultadas</h5>
-                    <div class="row g-3 mb-4">
-                        <div class="col-md-6 col-xl-4" v-for="item in targetResult.sourceCards" :key="item.name">
-                            <div class="source-card" :class="item.tone">
-                                <div class="source-head">
-                                    <span>{{ item.name }}</span>
-                                    <span class="mini-badge">{{ item.state }}</span>
-                                </div>
-                                <p>{{ item.description }}</p>
-                                <small>{{ item.note }}</small>
-                            </div>
-                        </div>
-                    </div>
-
-                    <h5 class="subsection-title">Senales observadas</h5>
-                    <div class="row g-3 mb-4">
-                        <div class="col-md-6 col-xl-4" v-for="item in targetResult.signalCards" :key="item.label">
-                            <div class="signal-card">
-                                <label>{{ item.label }}</label>
-                                <span :class="item.tone">{{ item.value }}</span>
-                                <small>{{ item.note }}</small>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="stack-panels">
-                        <div class="tool-card" v-for="panel in targetResult.rawPanels" :key="panel.title">
-                            <div class="card-head">
-                                <h5>{{ panel.title }}</h5>
-                                <span class="mini-badge">{{ panel.badge }}</span>
-                            </div>
-                            <div class="output-box">
-                                <pre class="result-pre">{{ panel.content }}</pre>
-                            </div>
-                        </div>
-                    </div>
-                </template>
-            </section>
-
             <section v-if="globalScore !== null" class="section-box">
                 <div class="module-header">
                     <span class="section-kicker">Resultado final</span>
                     <h2 class="module-title">Juicio del espejo</h2>
                     <p class="module-copy">
-                        La puntuacion final es el promedio de los modulos que ya tienen resultado. No mide bondad
-                        absoluta: resume exposicion, blindaje observable y calidad operativa en este analisis pasivo.
+                        Promedio de los modulos ejecutados. Resume exposicion del correo, controles del dominio de
+                        correo, presencia en filtraciones y fortaleza estimada de la contraseña.
                     </p>
                 </div>
 
@@ -415,13 +306,8 @@ const passwordResult = ref(null)
 const passwordSteps = ref([])
 const showPassword = ref(false)
 
-const targetInput = ref('')
-const targetLoading = ref(false)
-const targetResult = ref(null)
-const targetSteps = ref([])
-
 const moduleScores = computed(() =>
-    [emailResult.value?.score, passwordResult.value?.score, targetResult.value?.score]
+    [emailResult.value?.score, passwordResult.value?.score]
         .filter(score => typeof score === 'number')
 )
 
@@ -439,8 +325,7 @@ const gaugeOffset = computed(() => {
 const globalRecommendations = computed(() => {
     const recommendations = uniqueList([
         ...(emailResult.value?.recommendations || []),
-        ...(passwordResult.value?.recommendations || []),
-        ...(targetResult.value?.recommendations || [])
+        ...(passwordResult.value?.recommendations || [])
     ])
     return recommendations.length
         ? recommendations
@@ -542,22 +427,6 @@ function formatDateTime(value) {
 
 function hostFromEmail(email) {
     return String(email).split('@')[1]?.toLowerCase() || ''
-}
-
-function normalizeTargetInput(raw) {
-    const trimmed = String(raw || '').trim()
-    if (!trimmed) throw new Error('Introduce un dominio o URL valida.')
-
-    const candidate = /^[a-z]+:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`
-    const parsed = new URL(candidate)
-
-    return {
-        raw: trimmed,
-        url: parsed.toString(),
-        origin: parsed.origin,
-        host: parsed.hostname.toLowerCase(),
-        https: parsed.protocol === 'https:'
-    }
 }
 
 async function sha1Hex(value) {
@@ -803,117 +672,6 @@ async function queryPwnedPasswords(password) {
         prefix,
         hashSuffixMatched: Boolean(match)
     }
-}
-
-async function fetchSecurityHeadersReport(targetUrl) {
-    try {
-        const raw = await fetchJsonSmart(
-            `https://securityheaders.com/?q=${encodeURIComponent(targetUrl)}&followRedirects=on&format=json`
-        )
-        return { success: true, raw }
-    } catch (error) {
-        return { success: false, raw: null, error: error.message }
-    }
-}
-
-function extractSecurityHeadersGrade(report) {
-    if (!report?.raw) return ''
-    return report.raw.grade || report.raw.summary?.grade || report.raw.result?.grade || ''
-}
-
-async function fetchCertificateTransparency(domain) {
-    try {
-        const raw = await fetchJsonSmart(`https://crt.sh/?q=${encodeURIComponent(`%.${domain}`)}&output=json`)
-        const rows = Array.isArray(raw) ? raw : []
-        const names = uniqueList(rows.flatMap(row => String(row.name_value || '').split('\n')))
-        return {
-            success: true,
-            raw: rows,
-            uniqueNames: names,
-            latestEntry: rows[0]?.entry_timestamp || '',
-            sample: names.slice(0, 12)
-        }
-    } catch (error) {
-        return {
-            success: false,
-            raw: [],
-            uniqueNames: [],
-            latestEntry: '',
-            sample: [],
-            error: error.message
-        }
-    }
-}
-
-async function fetchWaybackSnapshots(host) {
-    try {
-        const raw = await fetchJsonSmart(
-            `https://web.archive.org/cdx/search/cdx?url=${encodeURIComponent(host)}&fl=timestamp,original,statuscode&filter=statuscode:200&limit=6&output=json`
-        )
-        const rows = Array.isArray(raw) ? raw.slice(1) : []
-        const latest = rows.length ? rows[rows.length - 1] : null
-        return {
-            success: true,
-            raw: rows,
-            count: rows.length,
-            latest: latest ? { timestamp: latest[0], original: latest[1], status: latest[2] } : null
-        }
-    } catch (error) {
-        return {
-            success: false,
-            raw: [],
-            count: 0,
-            latest: null,
-            error: error.message
-        }
-    }
-}
-
-async function fetchUrlhaus(url) {
-    try {
-        const response = await fetch('https://urlhaus-api.abuse.ch/v1/url/', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded'
-            },
-            body: `url=${encodeURIComponent(url)}`
-        })
-        if (!response.ok) throw new Error(`HTTP ${response.status}`)
-        const raw = await response.json()
-        return { success: true, raw }
-    } catch (error) {
-        return { success: false, raw: null, error: error.message }
-    }
-}
-
-async function fetchSurfaceFiles(origin) {
-    const [robots, sitemap, securityWellKnown, securityRoot] = await Promise.all([
-        fetchPublicText(`${origin}/robots.txt`),
-        fetchPublicText(`${origin}/sitemap.xml`),
-        fetchPublicText(`${origin}/.well-known/security.txt`),
-        fetchPublicText(`${origin}/security.txt`)
-    ])
-
-    const securityTxt = securityWellKnown.success
-        ? { ...securityWellKnown, path: '/.well-known/security.txt' }
-        : securityRoot.success
-            ? { ...securityRoot, path: '/security.txt' }
-            : { success: false, content: '', error: securityWellKnown.error || securityRoot.error || 'No disponible', path: '' }
-
-    return { robots, sitemap, securityTxt }
-}
-
-async function fetchTargetDnsBundle(host) {
-    const [a, aaaa, mx, ns, txt, caa] = await Promise.all([
-        fetchDnsRecords(host, 'A'),
-        fetchDnsRecords(host, 'AAAA'),
-        fetchDnsRecords(host, 'MX'),
-        fetchDnsRecords(host, 'NS'),
-        fetchDnsRecords(host, 'TXT'),
-        fetchDnsRecords(host, 'CAA')
-    ])
-
-    return { a, aaaa, mx, ns, txt, caa }
 }
 
 function shortList(records, max = 3) {
@@ -1352,303 +1110,6 @@ async function analyzePassword() {
     }
 }
 
-async function analyzeTarget() {
-    if (!targetInput.value) return
-
-    let normalized
-    try {
-        normalized = normalizeTargetInput(targetInput.value)
-    } catch (error) {
-        window.alert(error.message)
-        return
-    }
-
-    targetLoading.value = true
-    targetResult.value = null
-    targetSteps.value = buildSteps([
-        'DNS y registros base',
-        'Cabeceras publicas',
-        'Superficie visible',
-        'Certificados en crt.sh',
-        'RDAP del dominio',
-        'Wayback y URLHaus'
-    ])
-
-    try {
-        updateStep(targetSteps, 0, { state: 'active', status: 'Consultando A, AAAA, MX, NS, TXT y CAA...' })
-        const dns = await fetchTargetDnsBundle(normalized.host)
-        updateStep(targetSteps, 0, {
-            state: dns.a.success || dns.aaaa.success || dns.ns.success ? 'done' : 'error',
-            status: `A: ${dns.a.records.length} · AAAA: ${dns.aaaa.records.length} · NS: ${dns.ns.records.length}`
-        })
-
-        updateStep(targetSteps, 1, { state: 'active', status: 'Consultando SecurityHeaders...' })
-        const securityHeaders = await fetchSecurityHeadersReport(normalized.url)
-        const headerGrade = extractSecurityHeadersGrade(securityHeaders)
-        updateStep(targetSteps, 1, {
-            state: securityHeaders.success ? 'done' : 'error',
-            status: securityHeaders.success ? `Respuesta recibida${headerGrade ? ` · grado ${headerGrade}` : ''}` : `No disponible: ${securityHeaders.error}`
-        })
-
-        updateStep(targetSteps, 2, { state: 'active', status: 'Recuperando robots, sitemap y security.txt...' })
-        const surface = await fetchSurfaceFiles(normalized.origin)
-        updateStep(targetSteps, 2, {
-            state: surface.robots.success || surface.sitemap.success || surface.securityTxt.success ? 'done' : 'error',
-            status: `robots: ${surface.robots.success ? 'si' : 'no'} · sitemap: ${surface.sitemap.success ? 'si' : 'no'} · security.txt: ${surface.securityTxt.success ? 'si' : 'no'}`
-        })
-
-        updateStep(targetSteps, 3, { state: 'active', status: 'Consultando transparencia de certificados...' })
-        const ct = await fetchCertificateTransparency(normalized.host)
-        updateStep(targetSteps, 3, {
-            state: ct.success ? 'done' : 'error',
-            status: ct.success ? `${ct.uniqueNames.length} nombres unicos observados.` : `No disponible: ${ct.error}`
-        })
-
-        updateStep(targetSteps, 4, { state: 'active', status: 'Consultando RDAP...' })
-        const rdap = await fetchDomainRdap(normalized.host)
-        updateStep(targetSteps, 4, {
-            state: rdap.success ? 'done' : 'error',
-            status: rdap.success ? `Registrar: ${rdap.registrar}` : `No disponible: ${rdap.error}`
-        })
-
-        updateStep(targetSteps, 5, { state: 'active', status: 'Consultando Wayback y URLHaus...' })
-        const [wayback, urlhaus] = await Promise.all([
-            fetchWaybackSnapshots(normalized.host),
-            fetchUrlhaus(normalized.url)
-        ])
-        updateStep(targetSteps, 5, {
-            state: wayback.success || urlhaus.success ? 'done' : 'error',
-            status: `${wayback.count} snapshots · ${urlhaus.raw?.query_status || urlhaus.error || 'URLHaus sin datos'}`
-        })
-
-        let score = 100
-        const hasIp = dns.a.records.length > 0 || dns.aaaa.records.length > 0
-        const hasSecurityTxt = surface.securityTxt.success
-        const urlhausState = urlhaus.raw?.query_status || ''
-
-        if (!normalized.https) score -= 25
-        if (!hasIp) score -= 25
-        if (!dns.caa.records.length) score -= 5
-        if (!hasSecurityTxt) score -= 8
-        if (headerGrade.startsWith('F')) score -= 40
-        else if (headerGrade.startsWith('D')) score -= 28
-        else if (headerGrade.startsWith('C')) score -= 18
-        else if (headerGrade.startsWith('B')) score -= 8
-        if (urlhausState === 'ok') score = Math.min(score, 8)
-        score = Math.max(0, Math.min(100, Math.round(score)))
-
-        const recommendations = uniqueList([
-            !normalized.https ? 'Publica la URL primaria bajo HTTPS y evita entradas canonicas en HTTP.' : '',
-            !dns.caa.records.length ? 'Anade registros CAA para limitar autoridades certificadoras validas.' : '',
-            !hasSecurityTxt ? 'Publica security.txt para facilitar contacto responsable de hallazgos.' : '',
-            !surface.robots.success ? 'Si el sitio es publico, exponer robots.txt ayuda a documentar politicas de crawling.' : '',
-            !surface.sitemap.success ? 'Un sitemap visible mejora trazabilidad y descubrimiento legitimo.' : '',
-            !headerGrade ? 'La lectura de SecurityHeaders no devolvio grado; revisa cabeceras manualmente.' : '',
-            headerGrade.startsWith('C') || headerGrade.startsWith('D') || headerGrade.startsWith('F')
-                ? 'Endurece CSP, HSTS, Referrer-Policy, X-Frame-Options y Permissions-Policy.'
-                : '',
-            urlhausState === 'ok' ? 'URLHaus marca esta URL con senales maliciosas; verifica el recurso antes de interactuar.' : ''
-        ])
-
-        const verdictTitle = urlhausState === 'ok'
-            ? 'La reputacion publica merece atencion inmediata'
-            : score >= 80
-                ? 'Superficie bastante cuidada para un analisis pasivo'
-                : score >= 55
-                    ? 'Dominio razonable con huecos visibles'
-                    : 'Superficie expuesta con protecciones mejorables'
-
-        const verdictBody = hasSecurityTxt
-            ? 'El sitio expone al menos un canal visible para coordinacion de seguridad y varias senales operativas observables.'
-            : 'La lectura pasiva encuentra controles parciales, pero faltan algunas piezas que mejoran higiene y respuesta.'
-
-        targetResult.value = {
-            score,
-            verdictTone: verdictTone(score),
-            verdictTitle,
-            verdictBody,
-            summaryCards: [
-                {
-                    label: 'Puntuacion',
-                    value: `${score}/100`,
-                    numeric: score,
-                    note: normalized.host
-                },
-                {
-                    label: 'HTTPS',
-                    value: normalized.https ? 'Activo' : 'No',
-                    tone: normalized.https ? 'tone-success' : 'tone-danger',
-                    note: normalized.url
-                },
-                {
-                    label: 'SecurityHeaders',
-                    value: headerGrade || 'Sin grado',
-                    tone: headerGrade.startsWith('A') ? 'tone-success' : headerGrade ? 'tone-warning' : 'tone-neutral',
-                    note: securityHeaders.success ? 'Respuesta parseada' : (securityHeaders.error || 'No disponible')
-                },
-                {
-                    label: 'URLHaus',
-                    value: urlhausState || 'Sin datos',
-                    tone: urlhausState === 'ok' ? 'tone-danger' : 'tone-success',
-                    note: urlhausState === 'ok' ? 'Coincidencia encontrada' : 'Sin coincidencia publica'
-                }
-            ],
-            sourceCards: [
-                {
-                    name: 'DNS over HTTPS',
-                    state: hasIp ? 'Exitoso' : 'Parcial',
-                    tone: hasIp ? 'tone-success' : 'tone-warning',
-                    description: 'A, AAAA, MX, NS, TXT y CAA desde dns.google.',
-                    note: `A: ${dns.a.records.length} · AAAA: ${dns.aaaa.records.length} · NS: ${dns.ns.records.length}`
-                },
-                {
-                    name: 'SecurityHeaders',
-                    state: securityHeaders.success ? 'Exitoso' : 'No disponible',
-                    tone: securityHeaders.success ? 'tone-success' : 'tone-warning',
-                    description: 'Lectura de cabeceras visibles y calificacion sintetica.',
-                    note: headerGrade ? `Grado ${headerGrade}` : (securityHeaders.error || 'Sin grado visible')
-                },
-                {
-                    name: 'crt.sh',
-                    state: ct.success ? 'Exitoso' : 'No disponible',
-                    tone: ct.success ? 'tone-success' : 'tone-warning',
-                    description: 'Transparencia de certificados y nombres asociados al dominio.',
-                    note: ct.success ? `${ct.uniqueNames.length} nombres unicos` : (ct.error || 'Sin respuesta util')
-                },
-                {
-                    name: 'RDAP',
-                    state: rdap.success ? 'Exitoso' : 'No disponible',
-                    tone: rdap.success ? 'tone-success' : 'tone-warning',
-                    description: 'Registro del dominio, alta, expiracion, registrar y nameservers.',
-                    note: rdap.success ? `Alta ${formatDate(rdap.created)} · Expira ${formatDate(rdap.expires)}` : (rdap.error || 'Sin datos')
-                },
-                {
-                    name: 'Wayback Machine',
-                    state: wayback.success ? 'Exitoso' : 'No disponible',
-                    tone: wayback.success ? 'tone-success' : 'tone-warning',
-                    description: 'Huella historica publica de capturas archivadas.',
-                    note: wayback.success ? `${wayback.count} snapshots visibles` : (wayback.error || 'Sin datos')
-                },
-                {
-                    name: 'URLHaus',
-                    state: urlhaus.success ? 'Exitoso' : 'No disponible',
-                    tone: urlhausState === 'ok' ? 'tone-danger' : (urlhaus.success ? 'tone-success' : 'tone-warning'),
-                    description: 'Reputacion publica de URL maliciosas observadas en campañas reales.',
-                    note: urlhausState || urlhaus.error || 'Sin respuesta'
-                }
-            ],
-            signalCards: [
-                {
-                    label: 'IPv4',
-                    value: dns.a.records.length ? String(dns.a.records.length) : '0',
-                    tone: dns.a.records.length ? 'tone-success' : 'tone-warning',
-                    note: shortList(dns.a.records, 2)
-                },
-                {
-                    label: 'IPv6',
-                    value: dns.aaaa.records.length ? String(dns.aaaa.records.length) : '0',
-                    tone: dns.aaaa.records.length ? 'tone-success' : 'tone-neutral',
-                    note: shortList(dns.aaaa.records, 2)
-                },
-                {
-                    label: 'Nameservers',
-                    value: dns.ns.records.length ? String(dns.ns.records.length) : '0',
-                    tone: dns.ns.records.length ? 'tone-success' : 'tone-warning',
-                    note: shortList(dns.ns.records, 2)
-                },
-                {
-                    label: 'CAA',
-                    value: dns.caa.records.length ? 'Visible' : 'Ausente',
-                    tone: dns.caa.records.length ? 'tone-success' : 'tone-warning',
-                    note: dns.caa.records.length ? shortList(dns.caa.records, 2) : 'No restringe CA validas.'
-                },
-                {
-                    label: 'security.txt',
-                    value: hasSecurityTxt ? 'Visible' : 'Ausente',
-                    tone: hasSecurityTxt ? 'tone-success' : 'tone-warning',
-                    note: hasSecurityTxt ? surface.securityTxt.path : 'Sin canal publico de contacto de seguridad.'
-                },
-                {
-                    label: 'robots.txt',
-                    value: surface.robots.success ? 'Visible' : 'Ausente',
-                    tone: surface.robots.success ? 'tone-success' : 'tone-neutral',
-                    note: surface.robots.success ? 'Superficie de rastreo documentada.' : 'No se encontro robots.txt.'
-                },
-                {
-                    label: 'sitemap.xml',
-                    value: surface.sitemap.success ? 'Visible' : 'Ausente',
-                    tone: surface.sitemap.success ? 'tone-success' : 'tone-neutral',
-                    note: surface.sitemap.success ? 'Indice publico de URLs recuperado.' : 'No se encontro sitemap.xml.'
-                },
-                {
-                    label: 'Certificados',
-                    value: ct.uniqueNames.length ? String(ct.uniqueNames.length) : '0',
-                    tone: ct.uniqueNames.length ? 'tone-success' : 'tone-warning',
-                    note: ct.latestEntry ? `Ultimo registro ${formatDateTime(ct.latestEntry)}` : 'Sin registros visibles.'
-                },
-                {
-                    label: 'Wayback',
-                    value: wayback.count ? `${wayback.count} capturas` : 'Sin capturas',
-                    tone: wayback.count ? 'tone-neutral' : 'tone-warning',
-                    note: wayback.latest ? `Ultima ${wayback.latest.timestamp}` : 'No se encontraron snapshots.'
-                }
-            ],
-            rawPanels: [
-                {
-                    title: 'DNS snapshot',
-                    badge: 'A / AAAA / MX / NS / TXT / CAA',
-                    content: prettyPrint({
-                        A: dns.a.records,
-                        AAAA: dns.aaaa.records,
-                        MX: dns.mx.records,
-                        NS: dns.ns.records,
-                        TXT: dns.txt.records,
-                        CAA: dns.caa.records
-                    })
-                },
-                {
-                    title: 'Superficie publica',
-                    badge: 'robots / sitemap / security.txt',
-                    content: prettyPrint({
-                        robots: surface.robots.success ? surface.robots.content : surface.robots.error,
-                        sitemap: surface.sitemap.success ? surface.sitemap.content : surface.sitemap.error,
-                        security_txt_path: surface.securityTxt.path || 'No visible',
-                        security_txt: surface.securityTxt.success ? surface.securityTxt.content : surface.securityTxt.error
-                    })
-                },
-                {
-                    title: 'SecurityHeaders y reputacion',
-                    badge: 'SecurityHeaders / URLHaus',
-                    content: prettyPrint({
-                        security_headers: securityHeaders.success ? securityHeaders.raw : { error: securityHeaders.error },
-                        urlhaus: urlhaus.success ? urlhaus.raw : { error: urlhaus.error }
-                    })
-                },
-                {
-                    title: 'Certificados, RDAP y Wayback',
-                    badge: 'crt.sh / RDAP / Archive',
-                    content: prettyPrint({
-                        certificate_names: ct.sample,
-                        rdap: rdap.success
-                            ? {
-                                registrar: rdap.registrar,
-                                created: rdap.created,
-                                expires: rdap.expires,
-                                status: rdap.status,
-                                nameservers: rdap.nameservers
-                            }
-                            : { error: rdap.error },
-                        wayback: wayback.latest || { count: wayback.count, error: wayback.error || null }
-                    })
-                }
-            ],
-            recommendations
-        }
-    } finally {
-        targetLoading.value = false
-    }
-}
-
 function translatePattern(pattern) {
     const labels = {
         dictionary: 'Diccionario',
@@ -2034,11 +1495,6 @@ function describeAlphabet(password) {
     display: grid;
     gap: 12px;
     height: 100%;
-}
-
-.stack-panels {
-    display: grid;
-    gap: 16px;
 }
 
 .card-head {

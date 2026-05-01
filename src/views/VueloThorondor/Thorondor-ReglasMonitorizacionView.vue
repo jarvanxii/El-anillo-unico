@@ -198,7 +198,7 @@
 </template>
 
 <script>
-import ThorondorPageShell from "@/features/vueloThorondor/components/ThorondorPageShell.vue";
+import ThorondorPageShell from "@/components/VueloThorondor/ThorondorPageShell.vue";
 import thorondorBaseMixin from "@/features/vueloThorondor/mixins/thorondorBaseMixin";
 
 export default {
@@ -361,8 +361,6 @@ export default {
 </script>
 
 <style scoped>
-@import "@/features/vueloThorondor/styles/thorondor-theme.css";
-
 .rule-studio {
     display: grid;
     gap: 1rem;
@@ -379,8 +377,8 @@ export default {
 .rule-helper-card,
 .rule-preview-card,
 .rule-editor-card {
-    background: linear-gradient(180deg, rgba(16, 27, 49, 0.98), rgba(11, 18, 33, 0.98));
-    border: 1px solid rgba(94, 156, 255, 0.16);
+    background: linear-gradient(180deg, rgba(25, 36, 50, 0.98), rgba(17, 25, 36, 0.98));
+    border: 1px solid rgba(148, 163, 184, 0.22);
 }
 
 .preset-grid {
@@ -391,9 +389,9 @@ export default {
 }
 
 .preset-pill {
-    border: 1px solid rgba(101, 163, 255, 0.28);
-    background: rgba(29, 55, 96, 0.55);
-    color: #dceafe;
+    border: 1px solid rgba(148, 163, 184, 0.34);
+    background: rgba(48, 63, 80, 0.5);
+    color: #dce6ef;
     border-radius: 999px;
     padding: 0.55rem 0.9rem;
     font-size: 0.9rem;
@@ -401,8 +399,8 @@ export default {
 }
 
 .preset-pill:hover {
-    background: rgba(45, 84, 145, 0.75);
-    border-color: rgba(123, 183, 255, 0.48);
+    background: rgba(48, 63, 80, 0.88);
+    border-color: rgba(169, 186, 203, 0.48);
 }
 
 .helper-list {
@@ -412,13 +410,13 @@ export default {
 
 .helper-item strong {
     display: block;
-    color: #f3f7fd;
+    color: #f4f8fb;
     margin-bottom: 0.3rem;
 }
 
 .helper-item p {
     margin: 0;
-    color: rgba(221, 232, 249, 0.82);
+    color: rgba(218, 229, 240, 0.82);
 }
 
 .rule-preview-grid {
@@ -431,7 +429,7 @@ export default {
     justify-content: space-between;
     gap: 1rem;
     padding-bottom: 0.75rem;
-    border-bottom: 1px solid rgba(122, 168, 232, 0.14);
+    border-bottom: 1px solid rgba(148, 163, 184, 0.16);
 }
 
 .preview-line:last-child {
@@ -440,14 +438,14 @@ export default {
 }
 
 .preview-line label {
-    color: rgba(188, 211, 244, 0.68);
+    color: rgba(198, 210, 222, 0.7);
     font-size: 0.8rem;
     letter-spacing: 0.08em;
     text-transform: uppercase;
 }
 
 .preview-line span {
-    color: #eef5ff;
+    color: #eef4f9;
     text-align: right;
 }
 </style>

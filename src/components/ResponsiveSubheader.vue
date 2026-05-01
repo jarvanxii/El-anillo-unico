@@ -12,11 +12,13 @@
             <span></span>
         </button>
 
-        <div class="container-fluid px-4 px-xl-5 secondary-desktop-menu">
+        <div class="container-fluid secondary-desktop-menu">
             <div class="row g-0 justify-content-center">
                 <div v-for="item in items" :key="item.id" class="col-xl col-lg-3 col-md-4 col-sm-6 col-6">
-                    <div :class="['sub-item', 'h-100', { active: active === item.id }]"
-                        @mouseenter="openDropdown(item.id, $event)" @mouseleave="closeDropdownDelayed">
+                    <div :class="['sub-item', 'h-100', { active: itemActive(item) }]"
+                        @click="handleItemClick(item)"
+                        @mouseenter="handleItemEnter(item, $event)"
+                        @mouseleave="handleItemLeave(item)">
                         <span class="sub-item-label">{{ item.name }}</span>
                     </div>
                 </div>
@@ -27,12 +29,12 @@
             <div v-for="item in items" :key="item.id" class="secondary-mobile-section">
                 <button
                     type="button"
-                    :class="['secondary-mobile-item', { active: openMobileSections.includes(item.id) }]"
-                    @click="toggleMobileSection(item.id)">
+                    :class="['secondary-mobile-item', { active: mobileItemActive(item) }]"
+                    @click="handleMobileItemClick(item)">
                     <span>{{ item.name }}</span>
-                    <span class="secondary-mobile-arrow" :class="{ open: openMobileSections.includes(item.id) }">&#9662;</span>
+                    <span v-if="hasSubs(item)" class="secondary-mobile-arrow" :class="{ open: openMobileSections.includes(item.id) }">&#9662;</span>
                 </button>
-                <div v-if="openMobileSections.includes(item.id)" class="secondary-mobile-subitems">
+                <div v-if="hasSubs(item) && openMobileSections.includes(item.id)" class="secondary-mobile-subitems">
                     <template v-for="(sub, index) in item.subs" :key="subKey(sub, index)">
                         <router-link v-if="subRoute(sub)" :to="subRoute(sub)" @click="closeMobileMenu">
                             {{ subLabel(sub) }}
@@ -46,7 +48,7 @@
         </div>
     </nav>
 
-    <div v-if="active && !mobileMenuOpen" :class="dropdownClasses"
+    <div v-if="active && !mobileMenuOpen && currentSubs.length" :class="dropdownClasses"
         :style="{ top: dropdownTop + 'px', left: dropdownLeft + 'px', width: dropdownWidth + 'px' }"
         @mouseenter="cancelClose" @mouseleave="closeDropdownDelayed">
         <div class="submenu">
@@ -89,7 +91,10 @@ export default {
     computed: {
         currentSubs() {
             const found = this.items.find(i => i.id === this.active);
-            return found ? found.subs : [];
+            return this.hasSubs(found) ? found.subs : [];
+        },
+        currentRouteName() {
+            return this.$route?.name || "";
         },
         headerClasses() {
             return [
@@ -111,6 +116,77 @@ export default {
         }
     },
     methods: {
+        hasSubs(item) {
+            return Array.isArray(item?.subs) && item.subs.length > 0;
+        },
+        itemRoute(item) {
+            if (!item || this.hasSubs(item)) {
+                return null;
+            }
+            if (item.route) {
+                return item.route;
+            }
+            if (item.routeName) {
+                return { name: item.routeName };
+            }
+            return null;
+        },
+        itemRouteName(item) {
+            if (!item) {
+                return "";
+            }
+            if (item.routeName) {
+                return item.routeName;
+            }
+            if (item.route && typeof item.route === "object") {
+                return item.route.name || "";
+            }
+            return "";
+        },
+        itemActive(item) {
+            const routeName = this.itemRouteName(item);
+            return this.active === item.id || Boolean(routeName && routeName === this.currentRouteName);
+        },
+        mobileItemActive(item) {
+            return this.hasSubs(item) ? this.openMobileSections.includes(item.id) : this.itemActive(item);
+        },
+        handleItemEnter(item, event) {
+            if (this.hasSubs(item)) {
+                this.openDropdown(item.id, event);
+            }
+        },
+        handleItemLeave(item) {
+            if (this.hasSubs(item)) {
+                this.closeDropdownDelayed();
+            }
+        },
+        handleItemClick(item) {
+            const route = this.itemRoute(item);
+            if (route) {
+                this.pushItemRoute(route);
+                this.closeDropdown();
+            }
+        },
+        handleMobileItemClick(item) {
+            if (this.hasSubs(item)) {
+                this.toggleMobileSection(item.id);
+                return;
+            }
+
+            const route = this.itemRoute(item);
+            if (route) {
+                this.pushItemRoute(route);
+                this.closeMobileMenu();
+            }
+        },
+        pushItemRoute(route) {
+            const sameNamedRoute = typeof route === "object" && route.name && route.name === this.currentRouteName;
+            const samePathRoute = typeof route === "string" && route === this.$route?.path;
+            const sameObjectPathRoute = typeof route === "object" && route.path && route.path === this.$route?.path;
+            if (!sameNamedRoute && !samePathRoute && !sameObjectPathRoute) {
+                this.$router.push(route);
+            }
+        },
         openDropdown(id, event) {
             this.active = id;
             const rect = event.currentTarget.getBoundingClientRect();
@@ -194,6 +270,11 @@ export default {
     min-width: 0;
 }
 
+.secondary-desktop-menu {
+    padding-left: clamp(6px, 1vw, 12px);
+    padding-right: clamp(6px, 1vw, 12px);
+}
+
 .subheader.responsive-subheader::before {
     content: "";
     position: absolute;
@@ -236,6 +317,7 @@ export default {
 
 .sub-item-label {
     display: -webkit-box;
+    width: 100%;
     max-height: calc(1.12em * 3);
     overflow: hidden;
     overflow-wrap: anywhere;
@@ -462,7 +544,7 @@ export default {
         display: flex;
         align-items: center;
         justify-content: flex-end;
-        padding: 0 18px;
+        padding: 0 12px;
     }
 
     .secondary-desktop-menu {

@@ -154,17 +154,17 @@
 </template>
 
 <script>
-import ThorondorLineChart from "@/features/vueloThorondor/components/ThorondorLineChart.vue";
-import ThorondorPageShell from "@/features/vueloThorondor/components/ThorondorPageShell.vue";
+import ThorondorLineChart from "@/components/VueloThorondor/ThorondorLineChart.vue";
+import ThorondorPageShell from "@/components/VueloThorondor/ThorondorPageShell.vue";
 import thorondorBaseMixin from "@/features/vueloThorondor/mixins/thorondorBaseMixin";
 
 function colorFromSeed(seed, alpha = 1) {
     const palette = [
-        [56, 189, 248],
+        [148, 163, 184],
         [251, 191, 36],
         [74, 222, 128],
         [248, 113, 113],
-        [196, 181, 253],
+        [125, 140, 158],
         [251, 146, 60]
     ];
     const [r, g, b] = palette[Math.abs(seed) % palette.length];
@@ -276,8 +276,6 @@ export default {
 </script>
 
 <style scoped>
-@import "@/features/vueloThorondor/styles/thorondor-theme.css";
-
 .card-head-right {
     display: flex;
     align-items: center;
@@ -304,8 +302,8 @@ export default {
 }
 
 .os-badge--win {
-    background: rgba(96, 165, 250, 0.12);
-    border: 1px solid rgba(96, 165, 250, 0.3);
-    color: #93c5fd;
+    background: rgba(148, 163, 184, 0.14);
+    border: 1px solid rgba(169, 186, 203, 0.34);
+    color: #dbe5ef;
 }
 </style>

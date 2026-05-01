@@ -8,30 +8,13 @@
                     <p class="hero-kicker">Archivo de la Tierra Media digital</p>
                     <h1 class="main-title">El Anillo Único</h1>
                     <p class="hero-intro">
-                        Una biblioteca privada de ciberseguridad, herramientas, monitorización y utilidades
-                        inspirada en Tolkien. Cada senda abre un dominio distinto, pero toda la experiencia comparte
-                        la misma idea: conocimiento bien ordenado, con carácter y con oficio.
+                        Plataforma gratuita para aprender ciberseguridad, consultar herramientas técnicas, practicar con
+                        un SIEM y adentrarse en Mordor.
                     </p>
 
-                    <div class="hero-meta">
-                        <div class="hero-meta-item">
-                            <span class="hero-meta-label">Dominios</span>
-                            <strong>20 rutas activas</strong>
-                        </div>
-                        <div class="hero-meta-item">
-                            <span class="hero-meta-label">Enfoque</span>
-                            <strong>Estudio, operativa y consulta</strong>
-                        </div>
-                        <div class="hero-meta-item">
-                            <span class="hero-meta-label">Estilo</span>
-                            <strong>Tolkien sobrio y profesional</strong>
-                        </div>
-                    </div>
-
                     <div class="hero-quote-block">
-                        <span class="quote-mark">"</span>
                         <p class="quote">
-                            Un lugar para reunir saber, herramientas y criterio bajo una misma señal.
+                            "Un sitio para gobernarlos a todos."
                         </p>
                     </div>
                 </div>
@@ -74,7 +57,7 @@
                         <img src="@/assets/logos/feanor.png" class="option-img" />
                     </div>
                     <h3>El códice de Fëanor</h3>
-                    <span class="option-tag">Herramientas criptográficas</span>
+                    <span class="option-tag">Laboratorio Criptográfico</span>
                     <div class="option-info">
                         <p class="info-desc">Herramientas criptográficas y técnicas de codificación y cifrado.</p>
                         <p class="info-quote">"Fëanor era el más grande de los Noldor en habilidad y saber."</p>
@@ -430,50 +413,6 @@ export default {
     color: rgba(245, 230, 179, 0.8);
 }
 
-.hero-meta {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 14px;
-    padding-top: 8px;
-}
-
-.hero-meta-item {
-    position: relative;
-    min-width: 0;
-    padding: 14px 16px 16px;
-    border-top: 1px solid rgba(201, 162, 39, 0.28);
-    background: linear-gradient(180deg, rgba(25, 18, 8, 0.46), rgba(9, 7, 3, 0.18));
-}
-
-.hero-meta-item::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 28px;
-    height: 1px;
-    background: #d4af37;
-}
-
-.hero-meta-label {
-    display: block;
-    margin-bottom: 8px;
-    font-family: 'Cinzel', serif;
-    font-size: 10px;
-    letter-spacing: 3px;
-    text-transform: uppercase;
-    color: rgba(201, 162, 39, 0.58);
-}
-
-.hero-meta-item strong {
-    display: block;
-    color: #f4e7be;
-    font-family: 'EB Garamond', serif;
-    font-size: 1rem;
-    font-weight: 500;
-    line-height: 1.45;
-}
-
 .hero-quote-block {
     display: grid;
     grid-template-columns: auto minmax(0, 1fr);
@@ -558,14 +497,6 @@ export default {
     color: rgba(245, 230, 179, .7);
     margin: 0;
     letter-spacing: .18px;
-}
-
-.quote-mark {
-    font-family: 'Cinzel Decorative', serif;
-    font-size: 1.65rem;
-    line-height: 1;
-    color: rgba(201, 162, 39, .35);
-    padding-top: 2px;
 }
 
 .hero-stage {
@@ -907,15 +838,6 @@ main {
     .hero-intro,
     .hero-quote-block {
         max-width: 100%;
-    }
-
-    .hero-meta {
-        grid-template-columns: 1fr;
-        width: 100%;
-    }
-
-    .hero-meta-item {
-        text-align: left;
     }
 
     .hero-stage {

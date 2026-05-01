@@ -168,6 +168,23 @@
     --realm-glow: rgba(102, 153, 204, 0.24);
 }
 
+.subheader.realm-subheader.realm-subheader--thorondor,
+.sub-dropdown.realm-sub-dropdown.realm-subheader--thorondor {
+    --realm-bg-top: #263241;
+    --realm-bg-mid: #1d2734;
+    --realm-bg-bottom: #131b25;
+    --realm-surface: #202c3a;
+    --realm-hover: #304053;
+    --realm-border: #7d8c9b;
+    --realm-accent: #a9bacb;
+    --realm-accent-strong: #dbe5ef;
+    --realm-text: #d3dee9;
+    --realm-text-strong: #f4f8fb;
+    --realm-dropdown-top: #1a2430;
+    --realm-dropdown-bottom: #101822;
+    --realm-glow: rgba(148, 163, 184, 0.24);
+}
+
 .subheader.realm-subheader {
     background:
         radial-gradient(circle at 18% 0%, color-mix(in srgb, var(--realm-accent) 20%, transparent), transparent 34%),

@@ -79,7 +79,7 @@ export default {
 }
 
 .markdown-article :deep(blockquote) {
-    border-left: 3px solid rgba(56, 189, 248, 0.45);
+    border-left: 3px solid rgba(148, 163, 184, 0.48);
     padding-left: 14px;
     margin-left: 0;
 }

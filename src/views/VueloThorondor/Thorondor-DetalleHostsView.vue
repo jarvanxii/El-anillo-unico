@@ -661,8 +661,8 @@
 </template>
 
 <script>
-import ThorondorLineChart from "@/features/vueloThorondor/components/ThorondorLineChart.vue";
-import ThorondorPageShell from "@/features/vueloThorondor/components/ThorondorPageShell.vue";
+import ThorondorLineChart from "@/components/VueloThorondor/ThorondorLineChart.vue";
+import ThorondorPageShell from "@/components/VueloThorondor/ThorondorPageShell.vue";
 import thorondorBaseMixin from "@/features/vueloThorondor/mixins/thorondorBaseMixin";
 import { THORONDOR_LOG_SOURCES } from "@/features/vueloThorondor/data/thorondorDefaults";
 import { deriveThorondorAgentStatus } from "@/features/vueloThorondor/services/thorondorRules";
@@ -792,7 +792,7 @@ export default {
             return {
                 labels: snapshots.map((snapshot) => this.formatDateTime(snapshot.timestamp)),
                 datasets: [
-                    { label: "CPU", data: snapshots.map((snapshot) => snapshot.cpuTotal), borderColor: "rgba(56, 189, 248, 1)", backgroundColor: "rgba(56, 189, 248, 0.18)", tension: 0.25, spanGaps: true },
+                    { label: "CPU", data: snapshots.map((snapshot) => snapshot.cpuTotal), borderColor: "rgba(148, 163, 184, 1)", backgroundColor: "rgba(148, 163, 184, 0.18)", tension: 0.25, spanGaps: true },
                     { label: "RAM", data: snapshots.map((snapshot) => snapshot.memoryPercent), borderColor: "rgba(74, 222, 128, 1)", backgroundColor: "rgba(74, 222, 128, 0.18)", tension: 0.25, spanGaps: true },
                     ...this.diskDatasets
                 ]
@@ -991,8 +991,6 @@ export default {
 </script>
 
 <style scoped>
-@import "@/features/vueloThorondor/styles/thorondor-theme.css";
-
 .small-code {
     font-size: 0.78rem;
     color: #94a3b8;
@@ -1060,8 +1058,8 @@ export default {
 }
 
 .disk-toggle-btn.disk-toggle-active {
-    border-color: var(--tcol, rgba(56, 189, 248, 0.55));
-    color: var(--tcol, rgba(56, 189, 248, 1));
+    border-color: var(--tcol, rgba(148, 163, 184, 0.58));
+    color: var(--tcol, rgba(203, 213, 225, 1));
     background: rgba(255, 255, 255, 0.04);
 }
 

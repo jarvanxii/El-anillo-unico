@@ -20,7 +20,7 @@
                 <div class="footer-column">
                     <h3>Ciberseguridad</h3>
                     <a @click="$router.push('/el-baston-de-saruman')">
-                        Redes, protocolos y conceptos de ciberseguridad
+                        Conceptos de Ciberseguridad
                     </a>
                     <a @click="$router.push('/el-hacha-de-gimli')">
                         Red Team
@@ -43,17 +43,14 @@
                 </div>
                 <div class="footer-column">
                     <h3>Herramientas</h3>
-                    <a @click="$router.push('/la-forja-de-celebrimbor')">
-                        Herramientas Externas
+                    <a @click="$router.push('/el-vuelo-de-thorondor')">
+                        Monitorización SIEM
                     </a>
                     <a @click="$router.push('/el-codice-de-feanor')">
-                        Herramientas de codificación y cifrado
+                        Laboratorio Criptográfico
                     </a>
                     <a @click="$router.push('/la-guardia-de-faramir')">
                         Comprobación de URLs
-                    </a>
-                    <a @click="$router.push('/el-vuelo-de-thorondor')">
-                        Monitorización de sistemas Linux
                     </a>
                     <a @click="$router.push('/el-espejo-de-galadriel')">
                         Filtraciones
@@ -64,6 +61,9 @@
                     <a @click="$router.push('/la-identidad-de-gollum')">
                         WHOAMI
                     </a>
+                    <a @click="$router.push('/la-forja-de-celebrimbor')">
+                        Herramientas Externas
+                    </a>
                 </div>
                 <div class="footer-column">
                     <h3>Comunidad</h3>
@@ -71,7 +71,7 @@
                         Chat
                     </a>
                     <a href="http://192.168.0.254/#/" target="_blank">
-                        Películas y Series
+                        Películas, Series Y Juegos
                     </a>
                     <a @click="$router.push('/la-jarra-de-pippin')">
                         Humor
@@ -83,7 +83,7 @@
                 <div class="footer-column">
                     <h3>Otros</h3>
                     <a @click="$router.push('/los-champiñones-de-radagast')">
-                        Rendimiento cognitivo
+                        Rendimiento Cognitivo
                     </a>
                     <a @click="$router.push('/el-libro-rojo-de-la-frontera-del-oeste')">
                         FAQ

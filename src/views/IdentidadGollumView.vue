@@ -7,44 +7,19 @@
         <div class="container py-5">
             <section class="section-box intro-box">
                 <div class="section-heading">
-                    <span class="section-kicker">Diagnostico local del navegador</span>
+                    <span class="section-kicker">WhoAmI local</span>
                     <h1 class="section-name">La Identidad de Gollum</h1>
                     <p class="section-copy">
-                        Un panel tecnico para inspeccionar la superficie visible del navegador, el dispositivo y la
-                        pagina actual desde el propio cliente. La lectura es transparente: muestra datos observables,
-                        permisos, almacenamiento, capacidades y senales de exposicion sin recurrir a fingerprinting
-                        persistente ni a recoleccion encubierta.
+                        Lectura tecnica del navegador, red, dispositivo, permisos, almacenamiento y pagina actual.
+                        La ubicacion se solicita al entrar en la vista y el informe se genera localmente.
                     </p>
-                </div>
-
-                <div class="guide-grid">
-                    <div class="guide-card">
-                        <label>Transparencia</label>
-                        <span>Solo se muestran datos que el navegador expone al propio usuario o a la pagina actual.</span>
-                    </div>
-                    <div class="guide-card">
-                        <label>Lectura util</label>
-                        <span>Resume red, sistema, pantalla, GPU, permisos, almacenamiento, scripts y capacidades.</span>
-                    </div>
-                    <div class="guide-card">
-                        <label>Acciones opt-in</label>
-                        <span>La geolocalizacion y la copia del informe requieren accion explicita del usuario.</span>
-                    </div>
-                    <div class="guide-card">
-                        <label>Sin huella oculta</label>
-                        <span>No se genera un identificador persistente para rastrear usuarios entre sesiones.</span>
-                    </div>
                 </div>
             </section>
 
             <section class="section-box">
                 <div class="module-header">
-                    <span class="section-kicker">Modulo 01</span>
-                    <h2 class="module-title">Lectura general del entorno</h2>
-                    <p class="module-copy">
-                        Refresca el estado local del navegador, consulta IP publica y compone un informe tecnico con el
-                        contexto visible de la sesion.
-                    </p>
+                    <span class="section-kicker">Resumen</span>
+                    <h2 class="module-title">Lectura operativa</h2>
                 </div>
 
                 <div class="inline-actions">
@@ -54,8 +29,11 @@
                     <button class="btn btn-subtle" :disabled="copying || !reportText" @click="copyReport">
                         {{ copying ? "Copiando..." : "Copiar informe" }}
                     </button>
-                    <button class="btn btn-subtle" :disabled="geoLoading" @click="requestGeoLocation">
-                        {{ geoLoading ? "Consultando ubicacion..." : "Solicitar ubicacion" }}
+                    <button class="btn btn-subtle" :disabled="!reportText" @click="downloadJson">
+                        Descargar JSON
+                    </button>
+                    <button class="btn btn-subtle" :disabled="geoLoading" @click="requestGeoLocation()">
+                        {{ geoLoading ? "Leyendo ubicacion..." : "Reintentar ubicacion" }}
                     </button>
                 </div>
 
@@ -82,15 +60,20 @@
                         <p>{{ verdictBody }}</p>
                     </div>
                 </div>
+
+                <div class="finding-list mt-4">
+                    <div class="finding-row" v-for="item in operationalFindings" :key="item.label">
+                        <strong>{{ item.label }}</strong>
+                        <span :class="item.tone">{{ item.value }}</span>
+                        <small>{{ item.note }}</small>
+                    </div>
+                </div>
             </section>
 
             <section class="section-box">
                 <div class="module-header">
-                    <span class="section-kicker">Modulo 02</span>
-                    <h2 class="module-title">Identidad del navegador y sesion</h2>
-                    <p class="module-copy">
-                        Describe navegador, motor, sistema, idiomas, contexto seguro, sesion y procedencia visible.
-                    </p>
+                    <span class="section-kicker">Navegador</span>
+                    <h2 class="module-title">Identidad y sesion</h2>
                 </div>
 
                 <div class="row g-3">
@@ -106,12 +89,8 @@
 
             <section class="section-box">
                 <div class="module-header">
-                    <span class="section-kicker">Modulo 03</span>
+                    <span class="section-kicker">Red</span>
                     <h2 class="module-title">Red, privacidad y almacenamiento</h2>
-                    <p class="module-copy">
-                        Revisa conectividad, IP publica, ahorro de datos, cookies, scripts de terceros, almacenamiento
-                        local y politicas de privacidad observables.
-                    </p>
                 </div>
 
                 <h5 class="subsection-title">Red y conectividad</h5>
@@ -139,12 +118,8 @@
 
             <section class="section-box">
                 <div class="module-header">
-                    <span class="section-kicker">Modulo 04</span>
+                    <span class="section-kicker">Dispositivo</span>
                     <h2 class="module-title">Hardware, pantalla y render</h2>
-                    <p class="module-copy">
-                        Expone las senales tecnicas locales del dispositivo: CPU, memoria, pantalla, preferencias del
-                        usuario, bateria, GPU y capacidades multimedia detectables.
-                    </p>
                 </div>
 
                 <h5 class="subsection-title">Dispositivo y pantalla</h5>
@@ -172,11 +147,8 @@
 
             <section class="section-box">
                 <div class="module-header">
-                    <span class="section-kicker">Modulo 05</span>
+                    <span class="section-kicker">Permisos</span>
                     <h2 class="module-title">Permisos, geolocalizacion y superficie de pagina</h2>
-                    <p class="module-copy">
-                        Consulta el estado visible de permisos web y muestra informacion contextual de la pagina actual.
-                    </p>
                 </div>
 
                 <h5 class="subsection-title">Permisos observables</h5>
@@ -206,9 +178,6 @@
                 <div class="module-header">
                     <span class="section-kicker">Salida tecnica</span>
                     <h2 class="module-title">Paneles crudos</h2>
-                    <p class="module-copy">
-                        Resumen estructurado para inspeccion o copia rapida de la lectura actual.
-                    </p>
                 </div>
 
                 <div class="row g-3">
@@ -379,6 +348,48 @@ export default {
                     value: this.snapshot.storageUsage,
                     tone: "tone-neutral",
                     note: `${this.snapshot.localStorageItems} claves locales y ${this.snapshot.cookieCount} cookies`
+                }
+            ];
+        },
+
+        operationalFindings() {
+            const thirdPartyScripts = this.numericValue(this.snapshot.thirdPartyScripts);
+            const localKeys = this.numericValue(this.snapshot.localStorageItems) + this.numericValue(this.snapshot.sessionStorageItems);
+            const locationReady = this.snapshot.geoLat !== "-";
+            const permissionTotal = Object.keys(this.permissionState).length;
+
+            return [
+                {
+                    label: "Ubicacion",
+                    value: this.geoLoading ? "Consultando" : (locationReady ? "Disponible" : "No disponible"),
+                    note: locationReady
+                        ? `${this.snapshot.geoLat}, ${this.snapshot.geoLon} (${this.snapshot.geoAccuracy})`
+                        : `Permiso: ${this.formatPermission(this.permissionState.geolocation)}`,
+                    tone: locationReady ? "tone-warning" : "tone-neutral"
+                },
+                {
+                    label: "IP publica",
+                    value: this.publicIpStatus,
+                    note: `${this.snapshot.publicIp} - ${this.snapshot.ipSource}`,
+                    tone: this.publicIpStatus === "Error" ? "tone-warning" : "tone-neutral"
+                },
+                {
+                    label: "Permisos",
+                    value: `${this.permissionGrantedCount}/${permissionTotal || 0}`,
+                    note: `${this.permissionPromptCount} pendientes; concedidos elevan la superficie visible.`,
+                    tone: this.permissionGrantedCount ? "tone-warning" : "tone-success"
+                },
+                {
+                    label: "Persistencia",
+                    value: `${localKeys} claves`,
+                    note: `${this.snapshot.cookieCount} cookies visibles en el dominio actual.`,
+                    tone: localKeys || this.numericValue(this.snapshot.cookieCount) ? "tone-warning" : "tone-success"
+                },
+                {
+                    label: "Terceros",
+                    value: `${thirdPartyScripts} scripts`,
+                    note: `${this.snapshot.trackerMatches} coincidencias con proveedores conocidos.`,
+                    tone: thirdPartyScripts ? "tone-warning" : "tone-success"
                 }
             ];
         },
@@ -635,7 +646,9 @@ export default {
     },
 
     mounted() {
-        this.refreshAll();
+        this.refreshAll().finally(() => {
+            this.requestGeoLocation({ automatic: true });
+        });
         window.addEventListener("resize", this.handleResize);
         window.addEventListener("online", this.handleConnectivityChange);
         window.addEventListener("offline", this.handleConnectivityChange);
@@ -965,36 +978,101 @@ export default {
             this.snapshot.pdfViewerEnabled = typeof nav.pdfViewerEnabled === "boolean" ? (nav.pdfViewerEnabled ? "Si" : "No") : "No expuesto";
         },
 
-        async requestGeoLocation() {
+        async requestGeoLocation(options = {}) {
             if (!navigator.geolocation) {
-                this.snapshot.issues.push("Geolocation API no soportada.");
-                return;
+                this.pushIssue("Geolocation API no soportada.");
+                this.buildReport();
+                return false;
+            }
+
+            if (this.geoLoading) {
+                return false;
             }
 
             this.geoLoading = true;
-            this.statusMessage = "Esperando permiso y lectura de geolocalizacion...";
+            this.statusMessage = options.automatic
+                ? "Solicitando ubicacion al acceder..."
+                : "Esperando permiso y lectura de geolocalizacion...";
 
-            navigator.geolocation.getCurrentPosition(
-                (position) => {
-                    this.snapshot.geoLat = position.coords.latitude.toFixed(5);
-                    this.snapshot.geoLon = position.coords.longitude.toFixed(5);
-                    this.snapshot.geoAccuracy = `${Math.round(position.coords.accuracy)} m`;
-                    this.snapshot.geoTimestamp = new Date(position.timestamp).toLocaleString();
-                    this.statusMessage = "Ubicacion local actualizada.";
-                    this.buildReport();
-                    this.geoLoading = false;
-                },
-                (error) => {
-                    this.snapshot.issues.push(`Geolocalizacion: ${error.message}`);
-                    this.statusMessage = "No se pudo completar la geolocalizacion.";
-                    this.geoLoading = false;
-                },
-                {
-                    enableHighAccuracy: false,
-                    maximumAge: 60000,
-                    timeout: 10000
+            return new Promise((resolve) => {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        this.snapshot.geoLat = position.coords.latitude.toFixed(5);
+                        this.snapshot.geoLon = position.coords.longitude.toFixed(5);
+                        this.snapshot.geoAccuracy = `${Math.round(position.coords.accuracy)} m`;
+                        this.snapshot.geoTimestamp = new Date(position.timestamp).toLocaleString();
+                        this.statusMessage = "Ubicacion local actualizada.";
+                        this.geoLoading = false;
+                        this.inspectPermissions().finally(() => {
+                            this.buildReport();
+                            resolve(true);
+                        });
+                    },
+                    (error) => {
+                        this.pushIssue(`Geolocalizacion: ${this.describeGeolocationError(error)}`);
+                        this.statusMessage = "No se pudo completar la geolocalizacion.";
+                        this.geoLoading = false;
+                        this.inspectPermissions().finally(() => {
+                            this.buildReport();
+                            resolve(false);
+                        });
+                    },
+                    {
+                        enableHighAccuracy: false,
+                        maximumAge: 60000,
+                        timeout: 10000
+                    }
+                );
+            });
+        },
+
+        describeGeolocationError(error) {
+            if (error?.code === 1) return "permiso denegado por el navegador.";
+            if (error?.code === 2) return "posicion no disponible.";
+            if (error?.code === 3) return "tiempo de espera agotado.";
+            return error?.message || "error desconocido.";
+        },
+
+        pushIssue(message) {
+            if (!message || this.snapshot.issues.includes(message)) {
+                return;
+            }
+
+            this.snapshot.issues.push(message);
+        },
+
+        downloadJson() {
+            const payload = this.buildExportPayload();
+            const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            const stamp = new Date().toISOString().slice(0, 19).replace(/[:T]/g, "-");
+
+            link.href = url;
+            link.download = `identidad-gollum-${stamp}.json`;
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            URL.revokeObjectURL(url);
+            this.statusMessage = "JSON descargado con la lectura actual.";
+        },
+
+        buildExportPayload() {
+            return {
+                tool: "Identidad de Gollum",
+                scannedAt: this.snapshot.scannedAt,
+                exposureScore: this.exposureScore,
+                permissionState: this.permissionState,
+                findings: this.operationalFindings.map((item) => ({
+                    label: item.label,
+                    value: item.value,
+                    note: item.note
+                })),
+                snapshot: {
+                    ...this.snapshot,
+                    issues: [...this.snapshot.issues]
                 }
-            );
+            };
         },
 
         async copyReport() {
@@ -1269,22 +1347,13 @@ export default {
     font-weight: 700;
 }
 
-.section-copy,
-.module-copy {
+.section-copy {
     margin: 0;
     color: #9ca3af;
     line-height: 1.7;
     max-width: 960px;
 }
 
-.guide-grid {
-    display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 16px;
-    margin-top: 8px;
-}
-
-.guide-card,
 .tool-card,
 .signal-card,
 .metric-card {
@@ -1293,13 +1362,6 @@ export default {
     border-radius: 8px;
 }
 
-.guide-card {
-    padding: 16px;
-    display: grid;
-    gap: 6px;
-}
-
-.guide-card label,
 .metric-card label,
 .signal-card label {
     color: #9ca3af;
@@ -1308,11 +1370,6 @@ export default {
     letter-spacing: 0.03em;
     display: block;
     margin-bottom: 6px;
-}
-
-.guide-card span {
-    color: #dbe4ee;
-    line-height: 1.6;
 }
 
 .inline-actions {
@@ -1447,6 +1504,36 @@ export default {
     border-color: rgba(148, 163, 184, 0.24);
 }
 
+.finding-list {
+    display: grid;
+    gap: 8px;
+}
+
+.finding-row {
+    display: grid;
+    grid-template-columns: minmax(130px, 0.8fr) minmax(120px, 0.7fr) minmax(0, 2fr);
+    gap: 12px;
+    align-items: center;
+    padding: 10px 12px;
+    border: 1px solid #1e293b;
+    border-radius: 8px;
+    background: #020617;
+}
+
+.finding-row strong {
+    color: #e2e8f0;
+    font-size: 0.86rem;
+}
+
+.finding-row span {
+    font-weight: 700;
+}
+
+.finding-row small {
+    color: #94a3b8;
+    line-height: 1.45;
+}
+
 .tool-card {
     padding: 16px;
     display: grid;
@@ -1514,19 +1601,14 @@ export default {
     color: #cbd5e1 !important;
 }
 
-@media (max-width: 1199px) {
-    .guide-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-}
-
 @media (max-width: 767px) {
     .section-box {
         padding: 18px;
     }
 
-    .guide-grid {
+    .finding-row {
         grid-template-columns: 1fr;
+        gap: 4px;
     }
 
     .inline-actions {

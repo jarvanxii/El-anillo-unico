@@ -5,21 +5,15 @@
         <img src="/anillo.ico" alt="logo" />
         <span>El Anillo Único</span>
       </div>
-      
+
       <!-- Hamburguesa para móvil/tablet -->
-      <button
-        class="mobile-menu-toggle"
-        type="button"
-        aria-label="Abrir navegación principal"
-        :aria-expanded="mobileMenuOpen.toString()"
-        @click="toggleMobileMenu"
-        :class="{ active: mobileMenuOpen }"
-      >
+      <button class="mobile-menu-toggle" type="button" aria-label="Abrir navegación principal"
+        :aria-expanded="mobileMenuOpen.toString()" @click="toggleMobileMenu" :class="{ active: mobileMenuOpen }">
         <span></span>
         <span></span>
         <span></span>
       </button>
-      
+
       <!-- Menú desktop -->
       <div class="nav-links" :class="{ 'mobile-open': mobileMenuOpen }">
         <div class="nav-items">
@@ -32,7 +26,7 @@
         </div>
       </div>
     </nav>
-    
+
     <!-- Submenú desktop -->
     <div v-if="active && !mobileMenuOpen" class="sub-dropdown"
       :style="{ top: headerHeight + 'px', left: dropdownLeft + 'px', width: dropdownWidth + 'px' }"
@@ -43,7 +37,7 @@
         </a>
       </div>
     </div>
-    
+
     <!-- Submenú móvil -->
     <div v-if="mobileMenuOpen" class="mobile-submenu">
       <div v-for="item in items" :key="item.id" class="mobile-section">
@@ -79,10 +73,10 @@ export default {
           id: "Teoria",
           name: "Teoría",
           subs: [
-            { name: "Redes, protocolos y conceptos de ciberseguridad", route: "/el-baston-de-saruman" },
+            { name: "Conceptos de Ciberseguridad", route: "/el-baston-de-saruman" },
             { name: "Red Team", route: "/el-hacha-de-gimli" },
             { name: "Blue Team", route: "/el-escudo-de-boromir" },
-            { name: "Privacidad y anonimato", route: "/la-capa-de-los-nazgul" },
+            { name: "Privacidad y Anonimato", route: "/la-capa-de-los-nazgul" },
             { name: "Darkweb", route: "/la-mano-de-sauron" },
             { name: "Inteligencia Artificial", route: "/la-piedra-palantir" },
             { name: "Certificaciones", route: "/la-biblioteca-de-rivendel" }
@@ -92,13 +86,13 @@ export default {
           id: "herramientas",
           name: "Herramientas",
           subs: [
-            { name: "Herramientas Externas", route: "/la-forja-de-celebrimbor" },
-            { name: "Herramientas de codificación y cifrado", route: "/el-codice-de-feanor" },
+            { name: "Monitorización SIEM", route: "/el-vuelo-de-thorondor" },
+            { name: "Laboratorio Criptográfico", route: "/el-codice-de-feanor" },
             { name: "Comprobación de URLs", route: "/la-guardia-de-faramir" },
-            { name: "Monitorización de sistemas Linux", route: "/el-vuelo-de-thorondor" },
             { name: "Filtraciones", route: "/el-espejo-de-galadriel" },
             { name: "Tests", route: "/el-antiguo-mapa-de-bilbo" },
-            { name: "WHOAMI", route: "/la-identidad-de-gollum" },
+            { name: "WhoAmI", route: "/la-identidad-de-gollum" },
+            { name: "Herramientas Externas", route: "/la-forja-de-celebrimbor" },
           ]
         },
         {
@@ -106,7 +100,7 @@ export default {
           name: "Comunidad",
           subs: [
             { name: "Chat", route: "/el-concilio-de-elrond" },
-            { name: "Películas, series y otros", route: "http://192.168.0.254/#/" },
+            { name: "Películas, Series y Juegos", route: "http://192.168.0.254/#/" },
             { name: "Memes", route: "/la-jarra-de-pippin" },
             { name: "Música", route: "https://www.youtube.com/@TomBombadil-SONGS" }
           ]
@@ -115,7 +109,7 @@ export default {
           id: "otros",
           name: "Otros",
           subs: [
-            { name: "Rendimiento cognitivo", route: "/los-champiñones-de-radagast" },
+            { name: "Rendimiento Cognitivo", route: "/los-champiñones-de-radagast" },
             { name: "FAQ", route: "/el-libro-rojo-de-la-frontera-del-oeste" }
           ]
         }
@@ -142,7 +136,7 @@ export default {
         this.active = null;
       }
     },
-    
+
     toggleMobileSection(itemId) {
       const index = this.openMobileSections.indexOf(itemId);
       if (index > -1) {
@@ -151,13 +145,13 @@ export default {
         this.openMobileSections = [itemId];
       }
     },
-    
+
     handleMobileClick(item) {
       if (window.innerWidth <= 1199) {
         this.toggleMobileSection(item.id);
       }
     },
-    
+
     showMenu(id, event) {
       this.active = id;
       const rect = event.currentTarget.getBoundingClientRect();
@@ -217,10 +211,10 @@ export default {
   width: 100%;
   height: 100%;
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-start;
   align-items: center;
   position: relative;
-  padding: 0 20px;
+  padding: 0 12px;
 }
 
 .logo {
@@ -234,12 +228,16 @@ export default {
   letter-spacing: 0.5px;
   transition: all 0.25s ease;
   flex-shrink: 0;
-  margin-right: 20px;
+  position: absolute;
+  top: 50%;
+  left: 12px;
+  transform: translateY(-50%);
+  margin-right: 0;
 }
 
 .logo:hover {
   color: #f0cf72;
-  transform: translateY(-1px) scale(1.05);
+  transform: translateY(-50%) scale(1.05);
   text-shadow: 0 0 12px rgba(212, 175, 55, 0.4);
 }
 
@@ -257,25 +255,31 @@ export default {
 }
 
 .nav-links {
-  flex: 1;
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: min(680px, calc(100vw - 360px));
+  height: 100%;
+  transform: translateX(-50%);
   display: flex;
   justify-content: center;
   align-items: center;
 }
 
 .nav-items {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(120px, 1fr));
   gap: 0;
-  max-width: 1060px;
+  max-width: 680px;
   width: 100%;
 }
 
 .nav-item-wrapper {
-  flex: 1;
   min-width: 0;
 }
 
 .nav-item {
+  height: 100%;
   min-height: 52px;
   padding: 12px 16px;
   display: flex;
@@ -521,11 +525,18 @@ export default {
   }
 
   .nav-container {
-    padding: 0 16px;
+    padding: 0 12px;
+    justify-content: space-between;
   }
 
   .logo {
+    position: static;
+    transform: none;
     margin-right: 16px;
+  }
+
+  .logo:hover {
+    transform: translateY(-1px) scale(1.05);
   }
 }
 

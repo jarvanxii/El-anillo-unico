@@ -1,44 +1,33 @@
 <template>
     <nav class="subheader" ref="subheader">
         <div class="subheader-container">
-            <!-- Logo/Nombre para móvil -->
-            <div class="subheader-title">Thorondor</div>
-            
+
             <!-- Hamburguesa para móvil -->
             <button class="mobile-menu-toggle" @click="toggleMobileMenu" :class="{ active: mobileMenuOpen }">
                 <span></span>
                 <span></span>
                 <span></span>
             </button>
-            
+
             <!-- Menú desktop -->
             <div class="container-fluid px-4 px-xl-5 desktop-menu">
                 <div class="row g-0 justify-content-center">
-                    <div
-                        v-for="item in items"
-                        :key="item.id"
-                        class="col-xl col-lg-3 col-md-4 col-sm-6 col-6"
-                    >
-                        <button
-                            type="button"
+                    <div v-for="item in items" :key="item.id" class="col-xl col-lg-3 col-md-4 col-sm-6 col-6">
+                        <button type="button"
                             :class="['sub-item', 'h-100', { active: activeRouteName === item.routeName }]"
-                            @click="goTo(item.routeName)"
-                        >
+                            @click="goTo(item.routeName)">
                             {{ item.name }}
                         </button>
                     </div>
                 </div>
             </div>
         </div>
-        
+
         <!-- Submenú móvil -->
         <div v-if="mobileMenuOpen" class="mobile-submenu">
             <div v-for="item in items" :key="item.id" class="mobile-item">
-                <button
-                    type="button"
-                    :class="['mobile-sub-item', { active: activeRouteName === item.routeName }]"
-                    @click="goTo(item.routeName)"
-                >
+                <button type="button" :class="['mobile-sub-item', { active: activeRouteName === item.routeName }]"
+                    @click="goTo(item.routeName)">
                     {{ item.name }}
                 </button>
             </div>
@@ -69,7 +58,7 @@ export default {
         toggleMobileMenu() {
             this.mobileMenuOpen = !this.mobileMenuOpen;
         },
-        
+
         goTo(routeName) {
             if (this.activeRouteName === routeName) return;
             this.$router.push({ name: routeName });
@@ -159,14 +148,12 @@ export default {
     transform: translateX(-50%);
     width: 0;
     height: 2px;
-    background: linear-gradient(
-        90deg,
-        transparent 0%,
-        #7dd3fc 20%,
-        #38bdf8 50%,
-        #7dd3fc 80%,
-        transparent 100%
-    );
+    background: linear-gradient(90deg,
+            transparent 0%,
+            #7dd3fc 20%,
+            #38bdf8 50%,
+            #7dd3fc 80%,
+            transparent 100%);
     box-shadow:
         0 0 8px rgba(56, 189, 248, 0.55),
         0 0 16px rgba(14, 165, 233, 0.24);
@@ -267,15 +254,15 @@ export default {
     .desktop-menu {
         display: none;
     }
-    
+
     .mobile-menu-toggle {
         display: flex;
     }
-    
+
     .mobile-submenu {
         display: block;
     }
-    
+
     .subheader-container {
         padding: 0 16px;
     }

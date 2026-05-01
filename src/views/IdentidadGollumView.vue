@@ -1221,8 +1221,6 @@ export default {
 </script>
 
 <style scoped>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-
 .gollum-page {
     background: #0b0f17;
     color: #e6edf3;

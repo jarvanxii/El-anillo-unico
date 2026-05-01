@@ -1,18 +1,55 @@
 <template>
     <div class="home">
         <header class="hero-section">
-            <div class="rune-bar">᚛ · · · ᚜</div>
-            <div class="ring-wrapper">
-                <div class="ring-glow"></div>
-                <img src="@/assets/anillo.png" alt="Anillo Único" class="ring-img" />
+            <div class="hero-backdrop"></div>
+            <div class="hero-shell">
+                <div class="hero-copy">
+                    <div class="rune-bar">᚛ · ᚨ · ᚜ · ᚱ</div>
+                    <p class="hero-kicker">Archivo de la Tierra Media digital</p>
+                    <h1 class="main-title">El Anillo Único</h1>
+                    <p class="hero-intro">
+                        Una biblioteca privada de ciberseguridad, herramientas, monitorización y utilidades
+                        inspirada en Tolkien. Cada senda abre un dominio distinto, pero toda la experiencia comparte
+                        la misma idea: conocimiento bien ordenado, con carácter y con oficio.
+                    </p>
+
+                    <div class="hero-meta">
+                        <div class="hero-meta-item">
+                            <span class="hero-meta-label">Dominios</span>
+                            <strong>20 rutas activas</strong>
+                        </div>
+                        <div class="hero-meta-item">
+                            <span class="hero-meta-label">Enfoque</span>
+                            <strong>Estudio, operativa y consulta</strong>
+                        </div>
+                        <div class="hero-meta-item">
+                            <span class="hero-meta-label">Estilo</span>
+                            <strong>Tolkien sobrio y profesional</strong>
+                        </div>
+                    </div>
+
+                    <div class="hero-quote-block">
+                        <span class="quote-mark">"</span>
+                        <p class="quote">
+                            Un lugar para reunir saber, herramientas y criterio bajo una misma señal.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="hero-stage">
+                    <div class="hero-stage-frame"></div>
+                    <div class="hero-stage-orbit orbit-one"></div>
+                    <div class="hero-stage-orbit orbit-two"></div>
+                    <div class="ring-wrapper">
+                        <div class="ring-glow"></div>
+                        <img src="@/assets/anillo.png" alt="Anillo Único" class="ring-img" />
+                    </div>
+                    <div class="hero-stage-caption">
+                        <span class="hero-stage-line"></span>
+                        <p>Un índice central para recorrer cada reino del proyecto.</p>
+                    </div>
+                </div>
             </div>
-            <h1 class="main-title">El Anillo Único</h1>
-            <div class="title-underline"></div>
-            <p class="quote">
-                <span class="quote-mark">"</span>
-                Un sitio para gobernarlos a todos.
-                <span class="quote-mark">"</span>
-            </p>
         </header>
         <main>
             <p class="section-label">· Elige tu camino ·</p>
@@ -314,17 +351,18 @@ export default {
 
 .hero-section {
     position: relative;
-    text-align: center;
-    padding: 54px 20px 28px; /* 52px header + 2px gap */
+    padding: 54px 20px 34px;
     overflow: hidden;
-    border-bottom: 1px solid rgba(212, 175, 55, .08);
+    border-bottom: 1px solid rgba(212, 175, 55, 0.1);
 }
 
 .hero-section::before {
     content: '';
     position: absolute;
     inset: 0;
-    background: radial-gradient(ellipse 70% 60% at 50% 40%, rgba(212, 175, 55, 0.08) 0%, transparent 70%);
+    background:
+        radial-gradient(ellipse 48% 52% at 24% 38%, rgba(212, 175, 55, 0.08) 0%, transparent 72%),
+        radial-gradient(ellipse 42% 48% at 78% 34%, rgba(179, 86, 24, 0.1) 0%, transparent 70%);
     pointer-events: none;
 }
 
@@ -340,26 +378,125 @@ export default {
     background: linear-gradient(90deg, transparent, rgba(201, 162, 39, 0.6) 30%, #c9a227 50%, rgba(201, 162, 39, 0.6) 70%, transparent);
 }
 
+.hero-backdrop {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0.55;
+    background:
+        linear-gradient(90deg, transparent 0%, rgba(212, 175, 55, 0.05) 16%, transparent 32%),
+        linear-gradient(90deg, transparent 68%, rgba(212, 175, 55, 0.04) 84%, transparent 100%);
+}
+
+.hero-shell {
+    position: relative;
+    z-index: 1;
+    max-width: 1280px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: minmax(0, 1.18fr) minmax(340px, 470px);
+    gap: 48px;
+    align-items: center;
+    padding: 34px 12px 12px;
+}
+
+.hero-copy {
+    display: grid;
+    gap: 18px;
+    text-align: left;
+}
+
 .rune-bar {
     font-family: 'Cinzel', serif;
     font-size: 10px;
     letter-spacing: 7px;
-    color: rgba(201, 162, 39, 0.35);
-    margin-bottom: 18px;
+    color: rgba(201, 162, 39, 0.36);
+}
+
+.hero-kicker {
+    margin: 0;
+    font-family: 'Cinzel', serif;
+    font-size: 11px;
+    letter-spacing: 5px;
+    text-transform: uppercase;
+    color: rgba(245, 230, 179, 0.6);
+}
+
+.hero-intro {
+    max-width: 720px;
+    margin: 0;
+    font-size: clamp(1.02rem, 1.5vw, 1.18rem);
+    line-height: 1.8;
+    color: rgba(245, 230, 179, 0.8);
+}
+
+.hero-meta {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 14px;
+    padding-top: 8px;
+}
+
+.hero-meta-item {
+    position: relative;
+    min-width: 0;
+    padding: 14px 16px 16px;
+    border-top: 1px solid rgba(201, 162, 39, 0.28);
+    background: linear-gradient(180deg, rgba(25, 18, 8, 0.46), rgba(9, 7, 3, 0.18));
+}
+
+.hero-meta-item::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 28px;
+    height: 1px;
+    background: #d4af37;
+}
+
+.hero-meta-label {
+    display: block;
+    margin-bottom: 8px;
+    font-family: 'Cinzel', serif;
+    font-size: 10px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: rgba(201, 162, 39, 0.58);
+}
+
+.hero-meta-item strong {
+    display: block;
+    color: #f4e7be;
+    font-family: 'EB Garamond', serif;
+    font-size: 1rem;
+    font-weight: 500;
+    line-height: 1.45;
+}
+
+.hero-quote-block {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 12px;
+    align-items: start;
+    max-width: 640px;
+    padding-top: 2px;
 }
 
 .ring-wrapper {
     position: relative;
-    display: inline-block;
-    margin-bottom: 18px;
+    display: inline-grid;
+    place-items: center;
+    width: 100%;
+    height: 100%;
 }
 
 .ring-glow {
     position: absolute;
-    inset: -18px;
+    inset: -26px;
     border-radius: 50%;
     background: radial-gradient(circle,
-            rgba(212, 175, 55, .22) 0%,
+            rgba(212, 175, 55, .24) 0%,
             transparent 72%);
     animation: pulse 4s ease-in-out infinite;
 }
@@ -380,8 +517,8 @@ export default {
 
 .ring-img {
     position: relative;
-    width: 112px;
-    height: 112px;
+    width: clamp(152px, 24vw, 240px);
+    height: clamp(152px, 24vw, 240px);
     object-fit: contain;
     filter:
         drop-shadow(0 0 18px rgba(255, 180, 0, .55)) drop-shadow(0 0 35px rgba(200, 100, 0, .22));
@@ -402,43 +539,91 @@ export default {
 
 .main-title {
     font-family: 'Cinzel Decorative', serif;
-    font-size: clamp(1.55rem, 4vw, 2.5rem);
+    font-size: clamp(2.2rem, 5vw, 4.25rem);
     font-weight: 700;
     color: #d4af37;
     letter-spacing: 3px;
-    line-height: 1.15;
-    margin-bottom: 8px;
+    line-height: 1.04;
+    margin: 0;
     text-shadow:
         0 0 22px rgba(212, 175, 55, .30),
         0 2px 4px rgba(0, 0, 0, .8);
 }
 
-.title-underline {
-    width: 90px;
-    height: 1px;
-    background: linear-gradient(90deg,
-            transparent,
-            #c9a227,
-            transparent);
-    margin: 10px auto 18px;
-}
-
 .quote {
     font-family: 'EB Garamond', serif;
     font-style: italic;
-    font-size: clamp(.92rem, 2vw, 1.08rem);
-    line-height: 1.55;
-    color: rgba(245, 230, 179, .72);
-    max-width: 620px;
-    margin: 0 auto;
-    letter-spacing: .25px;
+    font-size: clamp(0.98rem, 1.5vw, 1.12rem);
+    line-height: 1.65;
+    color: rgba(245, 230, 179, .7);
+    margin: 0;
+    letter-spacing: .18px;
 }
 
 .quote-mark {
     font-family: 'Cinzel Decorative', serif;
-    font-size: 1.45rem;
-    color: rgba(201, 162, 39, .28);
-    vertical-align: -0.2em;
+    font-size: 1.65rem;
+    line-height: 1;
+    color: rgba(201, 162, 39, .35);
+    padding-top: 2px;
+}
+
+.hero-stage {
+    position: relative;
+    min-height: 420px;
+    display: grid;
+    place-items: center;
+}
+
+.hero-stage-frame {
+    position: absolute;
+    inset: 28px;
+    border: 1px solid rgba(201, 162, 39, 0.16);
+    border-radius: 50%;
+    box-shadow:
+        inset 0 0 0 1px rgba(255, 255, 255, 0.02),
+        0 0 48px rgba(0, 0, 0, 0.18);
+}
+
+.hero-stage-orbit {
+    position: absolute;
+    border-radius: 50%;
+    border: 1px solid rgba(201, 162, 39, 0.12);
+}
+
+.orbit-one {
+    inset: 4px;
+}
+
+.orbit-two {
+    inset: 52px;
+    border-color: rgba(201, 162, 39, 0.08);
+}
+
+.hero-stage-caption {
+    position: absolute;
+    bottom: 8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: min(320px, 78%);
+    text-align: center;
+}
+
+.hero-stage-line {
+    display: block;
+    width: 100%;
+    height: 1px;
+    margin-bottom: 14px;
+    background: linear-gradient(90deg, transparent, rgba(212, 175, 55, 0.6), transparent);
+}
+
+.hero-stage-caption p {
+    margin: 0;
+    font-family: 'Cinzel', serif;
+    font-size: 10px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: rgba(245, 230, 179, 0.48);
 }
 
 main {
@@ -708,9 +893,46 @@ main {
 }
 
 @media (max-width: 768px) {
+    .hero-shell {
+        grid-template-columns: 1fr;
+        gap: 22px;
+        padding: 24px 4px 8px;
+    }
+
+    .hero-copy {
+        text-align: center;
+        justify-items: center;
+    }
+
+    .hero-intro,
+    .hero-quote-block {
+        max-width: 100%;
+    }
+
+    .hero-meta {
+        grid-template-columns: 1fr;
+        width: 100%;
+    }
+
+    .hero-meta-item {
+        text-align: left;
+    }
+
+    .hero-stage {
+        min-height: 300px;
+    }
+
+    .hero-stage-frame {
+        inset: 20px;
+    }
+
+    .orbit-two {
+        inset: 44px;
+    }
+
     .ring-img {
-        width: 140px;
-        height: 140px;
+        width: 156px;
+        height: 156px;
     }
 
     .option-card {

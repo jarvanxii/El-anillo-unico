@@ -1,0 +1,877 @@
+.saruman-page {
+    --view-bg-top: #262d33;
+    --view-bg-mid: #171d23;
+    --view-bg-bottom: #0d1115;
+    --view-glow: rgba(174, 184, 191, 0.16);
+    --view-surface: rgba(25, 31, 36, 0.92);
+    --view-surface-strong: rgba(15, 19, 23, 0.86);
+    --view-surface-soft: rgba(19, 24, 28, 0.9);
+    --view-border: #3f4a54;
+    --view-border-soft: #66727c;
+    --view-accent: #b8c2c8;
+    --view-accent-strong: #eef4f7;
+    --view-accent-faint: rgba(174, 184, 191, 0.2);
+    --view-text: #d7dde1;
+    --view-text-strong: #f6f8f9;
+    --view-text-muted: #9ca7b0;
+    --view-text-soft: #c5cdd3;
+    --view-shadow: rgba(5, 7, 9, 0.38);
+}
+
+.gimli-page {
+    --view-bg-top: #311714;
+    --view-bg-mid: #21100e;
+    --view-bg-bottom: #130908;
+    --view-glow: rgba(204, 85, 68, 0.16);
+    --view-surface: rgba(35, 18, 17, 0.92);
+    --view-surface-strong: rgba(22, 11, 10, 0.86);
+    --view-surface-soft: rgba(27, 14, 13, 0.9);
+    --view-border: #6e3129;
+    --view-border-soft: #92483c;
+    --view-accent: #d77b5d;
+    --view-accent-strong: #f8b68d;
+    --view-accent-faint: rgba(204, 85, 68, 0.22);
+    --view-text: #ead2c5;
+    --view-text-strong: #fde9de;
+    --view-text-muted: #c8a999;
+    --view-text-soft: #dec6ba;
+    --view-shadow: rgba(16, 7, 6, 0.4);
+}
+
+.boromir-page {
+    --view-bg-top: #172131;
+    --view-bg-mid: #101827;
+    --view-bg-bottom: #09111a;
+    --view-glow: rgba(102, 153, 204, 0.16);
+    --view-surface: rgba(18, 30, 46, 0.92);
+    --view-surface-strong: rgba(10, 19, 31, 0.86);
+    --view-surface-soft: rgba(13, 24, 37, 0.9);
+    --view-border: #355979;
+    --view-border-soft: #587fa0;
+    --view-accent: #7aa8cf;
+    --view-accent-strong: #cfe4f7;
+    --view-accent-faint: rgba(102, 153, 204, 0.2);
+    --view-text: #d5e2ec;
+    --view-text-strong: #f1f7fc;
+    --view-text-muted: #98adbf;
+    --view-text-soft: #c2d4e2;
+    --view-shadow: rgba(5, 10, 17, 0.38);
+}
+
+.nazgul-page {
+    --view-bg-top: #12161d;
+    --view-bg-mid: #090c11;
+    --view-bg-bottom: #05070a;
+    --view-glow: rgba(123, 132, 149, 0.15);
+    --view-surface: rgba(15, 18, 24, 0.93);
+    --view-surface-strong: rgba(8, 10, 14, 0.88);
+    --view-surface-soft: rgba(11, 13, 18, 0.91);
+    --view-border: #38404d;
+    --view-border-soft: #535b69;
+    --view-accent: #99a3b3;
+    --view-accent-strong: #e6ebf2;
+    --view-accent-faint: rgba(123, 132, 149, 0.2);
+    --view-text: #d7dce4;
+    --view-text-strong: #f5f7fb;
+    --view-text-muted: #9ea7b5;
+    --view-text-soft: #cbd2db;
+    --view-shadow: rgba(2, 3, 5, 0.45);
+}
+
+.sauron-page {
+    --view-bg-top: #1c0909;
+    --view-bg-mid: #110606;
+    --view-bg-bottom: #050303;
+    --view-glow: rgba(201, 52, 40, 0.2);
+    --view-surface: rgba(24, 8, 8, 0.93);
+    --view-surface-strong: rgba(14, 4, 4, 0.88);
+    --view-surface-soft: rgba(18, 6, 6, 0.91);
+    --view-border: #6a1916;
+    --view-border-soft: #8f2722;
+    --view-accent: #de5547;
+    --view-accent-strong: #ffb0a5;
+    --view-accent-faint: rgba(201, 52, 40, 0.24);
+    --view-text: #efd6d1;
+    --view-text-strong: #fff0ec;
+    --view-text-muted: #c8a19d;
+    --view-text-soft: #dfc0bb;
+    --view-shadow: rgba(11, 2, 2, 0.48);
+}
+
+.palantir-page {
+    --view-bg-top: #33230d;
+    --view-bg-mid: #1e1508;
+    --view-bg-bottom: #100903;
+    --view-glow: rgba(215, 164, 59, 0.18);
+    --view-surface: rgba(41, 29, 12, 0.92);
+    --view-surface-strong: rgba(24, 17, 7, 0.86);
+    --view-surface-soft: rgba(31, 22, 9, 0.9);
+    --view-border: #8e6826;
+    --view-border-soft: #b28534;
+    --view-accent: #d8a64b;
+    --view-accent-strong: #ffe6a0;
+    --view-accent-faint: rgba(215, 164, 59, 0.24);
+    --view-text: #f0ddb0;
+    --view-text-strong: #fff5d8;
+    --view-text-muted: #c7b185;
+    --view-text-soft: #e1cfaa;
+    --view-shadow: rgba(13, 8, 3, 0.42);
+}
+
+.biblioteca-page {
+    --view-bg-top: #0e2c2d;
+    --view-bg-mid: #081d1f;
+    --view-bg-bottom: #041112;
+    --view-glow: rgba(56, 183, 167, 0.17);
+    --view-surface: rgba(10, 33, 34, 0.92);
+    --view-surface-strong: rgba(5, 20, 21, 0.86);
+    --view-surface-soft: rgba(8, 26, 27, 0.9);
+    --view-border: #1a6f67;
+    --view-border-soft: #2a9288;
+    --view-accent: #57c7b7;
+    --view-accent-strong: #c9fff8;
+    --view-accent-faint: rgba(56, 183, 167, 0.22);
+    --view-text: #d7f1ec;
+    --view-text-strong: #f2fffd;
+    --view-text-muted: #98c5be;
+    --view-text-soft: #c7e3de;
+    --view-shadow: rgba(2, 10, 10, 0.4);
+}
+
+.celebrimbor-page {
+    --view-bg-top: #2a2412;
+    --view-bg-mid: #191509;
+    --view-bg-bottom: #0e0c05;
+    --view-glow: rgba(124, 151, 76, 0.14);
+    --view-surface: rgba(34, 28, 13, 0.92);
+    --view-surface-strong: rgba(22, 17, 8, 0.86);
+    --view-surface-soft: rgba(27, 21, 10, 0.9);
+    --view-border: #6e6130;
+    --view-border-soft: #90773d;
+    --view-accent: #d58a4a;
+    --view-accent-strong: #f1c28c;
+    --view-accent-faint: rgba(213, 138, 74, 0.22);
+    --view-text: #ecdfc4;
+    --view-text-strong: #fff3de;
+    --view-text-muted: #c1b08f;
+    --view-text-soft: #dfcfb2;
+    --view-shadow: rgba(11, 9, 4, 0.42);
+}
+
+.radagast-page {
+    --view-bg-top: #17311d;
+    --view-bg-mid: #0d1d12;
+    --view-bg-bottom: #060d08;
+    --view-glow: rgba(103, 168, 88, 0.18);
+    --view-surface: rgba(16, 35, 19, 0.92);
+    --view-surface-strong: rgba(9, 19, 10, 0.86);
+    --view-surface-soft: rgba(12, 25, 13, 0.9);
+    --view-border: #2f5f30;
+    --view-border-soft: #4a8848;
+    --view-accent: #7db868;
+    --view-accent-strong: #d6efb2;
+    --view-accent-faint: rgba(103, 168, 88, 0.24);
+    --view-text: #deecd5;
+    --view-text-strong: #f4fbe9;
+    --view-text-muted: #aac49d;
+    --view-text-soft: #d0dfc8;
+    --view-shadow: rgba(4, 8, 5, 0.42);
+}
+
+.feanor-page {
+    --view-bg-top: #2a1c13;
+    --view-bg-mid: #1b120d;
+    --view-bg-bottom: #0d0806;
+    --view-glow: rgba(204, 106, 62, 0.18);
+    --view-surface: rgba(34, 22, 16, 0.92);
+    --view-surface-strong: rgba(19, 12, 9, 0.86);
+    --view-surface-soft: rgba(24, 16, 11, 0.9);
+    --view-border: #6d402b;
+    --view-border-soft: #94563a;
+    --view-accent: #d88a64;
+    --view-accent-strong: #f2c4a1;
+    --view-accent-faint: rgba(204, 106, 62, 0.22);
+    --view-text: #ecdbcf;
+    --view-text-strong: #fff3eb;
+    --view-text-muted: #bfa695;
+    --view-text-soft: #dbc8bb;
+    --view-shadow: rgba(12, 7, 5, 0.42);
+}
+
+.gollum-page {
+    --view-bg-top: #26251d;
+    --view-bg-mid: #171711;
+    --view-bg-bottom: #0b0b08;
+    --view-glow: rgba(128, 140, 91, 0.16);
+    --view-surface: rgba(28, 28, 21, 0.92);
+    --view-surface-strong: rgba(16, 16, 11, 0.86);
+    --view-surface-soft: rgba(21, 21, 15, 0.9);
+    --view-border: #4a4f38;
+    --view-border-soft: #656d4b;
+    --view-accent: #98a87a;
+    --view-accent-strong: #dfe7bf;
+    --view-accent-faint: rgba(128, 140, 91, 0.2);
+    --view-text: #e1e3d4;
+    --view-text-strong: #f7f9ec;
+    --view-text-muted: #aeb59a;
+    --view-text-soft: #cfd4c3;
+    --view-shadow: rgba(8, 8, 6, 0.42);
+}
+
+.mirror-page {
+    --view-bg-top: #4b4c2c;
+    --view-bg-mid: #2d2e18;
+    --view-bg-bottom: #131408;
+    --view-glow: rgba(176, 180, 98, 0.18);
+    --view-surface: rgba(34, 36, 18, 0.92);
+    --view-surface-strong: rgba(20, 21, 10, 0.86);
+    --view-surface-soft: rgba(26, 27, 13, 0.9);
+    --view-border: #656939;
+    --view-border-soft: #878d4d;
+    --view-accent: #c8c86b;
+    --view-accent-strong: #f1f2b2;
+    --view-accent-faint: rgba(176, 180, 98, 0.22);
+    --view-text: #ebeccf;
+    --view-text-strong: #fbfce6;
+    --view-text-muted: #bcc08f;
+    --view-text-soft: #d9dbba;
+    --view-shadow: rgba(10, 10, 5, 0.42);
+}
+
+.faramir-page {
+    --view-bg-top: #322618;
+    --view-bg-mid: #1e1710;
+    --view-bg-bottom: #0f0b08;
+    --view-glow: rgba(147, 121, 82, 0.17);
+    --view-surface: rgba(34, 25, 18, 0.92);
+    --view-surface-strong: rgba(19, 14, 10, 0.86);
+    --view-surface-soft: rgba(25, 18, 13, 0.9);
+    --view-border: #5d4633;
+    --view-border-soft: #7c6047;
+    --view-accent: #b59674;
+    --view-accent-strong: #ead8b6;
+    --view-accent-faint: rgba(147, 121, 82, 0.2);
+    --view-text: #eadfce;
+    --view-text-strong: #fdf5ea;
+    --view-text-muted: #b7a48e;
+    --view-text-soft: #d6c7b3;
+    --view-shadow: rgba(10, 8, 6, 0.42);
+}
+
+.bilbo-page {
+    --view-bg-top: #3b2910;
+    --view-bg-mid: #22170a;
+    --view-bg-bottom: #100a05;
+    --view-glow: rgba(183, 136, 58, 0.18);
+    --view-surface: rgba(38, 26, 12, 0.92);
+    --view-surface-strong: rgba(22, 15, 7, 0.86);
+    --view-surface-soft: rgba(28, 19, 9, 0.9);
+    --view-border: #775222;
+    --view-border-soft: #9b6f35;
+    --view-accent: #d4a15e;
+    --view-accent-strong: #f6d7a0;
+    --view-accent-faint: rgba(183, 136, 58, 0.22);
+    --view-text: #ecdfcb;
+    --view-text-strong: #fef5e8;
+    --view-text-muted: #c3ad8a;
+    --view-text-soft: #dbcdb7;
+    --view-shadow: rgba(12, 8, 4, 0.42);
+}
+
+.elrond-page {
+    --view-bg-top: #3a2a1a;
+    --view-bg-mid: #24190f;
+    --view-bg-bottom: #120c07;
+    --view-glow: rgba(158, 126, 84, 0.17);
+    --view-surface: rgba(36, 26, 17, 0.92);
+    --view-surface-strong: rgba(21, 15, 10, 0.86);
+    --view-surface-soft: rgba(27, 19, 12, 0.9);
+    --view-border: #6d4f2e;
+    --view-border-soft: #8f6841;
+    --view-accent: #c59c6a;
+    --view-accent-strong: #f0d9af;
+    --view-accent-faint: rgba(158, 126, 84, 0.22);
+    --view-text: #eee0cb;
+    --view-text-strong: #fef6e7;
+    --view-text-muted: #c5ae8e;
+    --view-text-soft: #deceb8;
+    --view-shadow: rgba(13, 8, 4, 0.42);
+}
+
+.libro-rojo-page {
+    --view-bg-top: #41210e;
+    --view-bg-mid: #261308;
+    --view-bg-bottom: #110805;
+    --view-glow: rgba(165, 80, 44, 0.18);
+    --view-surface: rgba(40, 20, 12, 0.92);
+    --view-surface-strong: rgba(23, 11, 7, 0.86);
+    --view-surface-soft: rgba(30, 15, 9, 0.9);
+    --view-border: #733420;
+    --view-border-soft: #954d31;
+    --view-accent: #d17d58;
+    --view-accent-strong: #f0c3a9;
+    --view-accent-faint: rgba(165, 80, 44, 0.22);
+    --view-text: #f0ddd0;
+    --view-text-strong: #fff3eb;
+    --view-text-muted: #c6a38f;
+    --view-text-soft: #dec8bc;
+    --view-shadow: rgba(12, 6, 4, 0.44);
+}
+
+.pippin-page {
+    --view-bg-top: #403016;
+    --view-bg-mid: #261b0c;
+    --view-bg-bottom: #120c05;
+    --view-glow: rgba(190, 144, 71, 0.18);
+    --view-surface: rgba(39, 29, 14, 0.92);
+    --view-surface-strong: rgba(23, 17, 8, 0.86);
+    --view-surface-soft: rgba(28, 21, 10, 0.9);
+    --view-border: #7c5d2a;
+    --view-border-soft: #a07a3e;
+    --view-accent: #dfb069;
+    --view-accent-strong: #f8ddab;
+    --view-accent-faint: rgba(190, 144, 71, 0.22);
+    --view-text: #f0e2ca;
+    --view-text-strong: #fff6e5;
+    --view-text-muted: #c9b28c;
+    --view-text-soft: #deceb3;
+    --view-shadow: rgba(12, 9, 4, 0.42);
+}
+
+.thorondor-page {
+    --view-bg-top: #132034;
+    --view-bg-mid: #0d1524;
+    --view-bg-bottom: #080e17;
+    --view-glow: rgba(56, 189, 248, 0.17);
+    --view-surface: rgba(14, 24, 41, 0.92);
+    --view-surface-strong: rgba(8, 15, 28, 0.86);
+    --view-surface-soft: rgba(10, 19, 34, 0.9);
+    --view-border: #234564;
+    --view-border-soft: #376d97;
+    --view-accent: #6fc7ee;
+    --view-accent-strong: #d4effa;
+    --view-accent-faint: rgba(56, 189, 248, 0.22);
+    --view-text: #dbe8f2;
+    --view-text-strong: #f5fbff;
+    --view-text-muted: #9fb6c9;
+    --view-text-soft: #c9d8e6;
+    --view-shadow: rgba(4, 8, 14, 0.4);
+}
+
+:is(
+    .saruman-page,
+    .gimli-page,
+    .boromir-page,
+    .nazgul-page,
+    .sauron-page,
+    .palantir-page,
+    .biblioteca-page,
+    .celebrimbor-page,
+    .radagast-page,
+    .feanor-page,
+    .gollum-page,
+    .mirror-page,
+    .faramir-page,
+    .bilbo-page,
+    .elrond-page,
+    .libro-rojo-page,
+    .pippin-page,
+    .thorondor-page
+) {
+    background:
+        radial-gradient(circle at top right, var(--view-glow), transparent 30%),
+        linear-gradient(180deg, var(--view-bg-top) 0%, var(--view-bg-mid) 46%, var(--view-bg-bottom) 100%) !important;
+    color: var(--view-text);
+}
+
+:is(
+    .saruman-page,
+    .gimli-page,
+    .boromir-page,
+    .nazgul-page,
+    .sauron-page,
+    .palantir-page,
+    .biblioteca-page,
+    .celebrimbor-page,
+    .radagast-page,
+    .feanor-page,
+    .gollum-page,
+    .mirror-page,
+    .faramir-page,
+    .bilbo-page,
+    .elrond-page,
+    .libro-rojo-page,
+    .pippin-page,
+    .thorondor-page
+) .section-box,
+:is(
+    .saruman-page,
+    .gimli-page,
+    .boromir-page,
+    .nazgul-page,
+    .sauron-page,
+    .palantir-page,
+    .biblioteca-page,
+    .celebrimbor-page,
+    .radagast-page,
+    .feanor-page,
+    .gollum-page,
+    .mirror-page,
+    .faramir-page,
+    .bilbo-page,
+    .elrond-page,
+    .libro-rojo-page,
+    .pippin-page,
+    .thorondor-page
+) .guide-card,
+:is(
+    .saruman-page,
+    .gimli-page,
+    .boromir-page,
+    .nazgul-page,
+    .sauron-page,
+    .palantir-page,
+    .biblioteca-page,
+    .celebrimbor-page,
+    .radagast-page,
+    .feanor-page,
+    .gollum-page,
+    .mirror-page,
+    .faramir-page,
+    .bilbo-page,
+    .elrond-page,
+    .libro-rojo-page,
+    .pippin-page,
+    .thorondor-page
+) .metric-card,
+:is(
+    .saruman-page,
+    .gimli-page,
+    .boromir-page,
+    .nazgul-page,
+    .sauron-page,
+    .palantir-page,
+    .biblioteca-page,
+    .celebrimbor-page,
+    .radagast-page,
+    .feanor-page,
+    .gollum-page,
+    .mirror-page,
+    .faramir-page,
+    .bilbo-page,
+    .elrond-page,
+    .libro-rojo-page,
+    .pippin-page,
+    .thorondor-page
+) .signal-card,
+:is(
+    .saruman-page,
+    .gimli-page,
+    .boromir-page,
+    .nazgul-page,
+    .sauron-page,
+    .palantir-page,
+    .biblioteca-page,
+    .celebrimbor-page,
+    .radagast-page,
+    .feanor-page,
+    .gollum-page,
+    .mirror-page,
+    .faramir-page,
+    .bilbo-page,
+    .elrond-page,
+    .libro-rojo-page,
+    .pippin-page,
+    .thorondor-page
+) .tool-card,
+:is(
+    .saruman-page,
+    .gimli-page,
+    .boromir-page,
+    .nazgul-page,
+    .sauron-page,
+    .palantir-page,
+    .biblioteca-page,
+    .celebrimbor-page,
+    .radagast-page,
+    .feanor-page,
+    .gollum-page,
+    .mirror-page,
+    .faramir-page,
+    .bilbo-page,
+    .elrond-page,
+    .libro-rojo-page,
+    .pippin-page,
+    .thorondor-page
+) .source-card,
+:is(
+    .saruman-page,
+    .gimli-page,
+    .boromir-page,
+    .nazgul-page,
+    .sauron-page,
+    .palantir-page,
+    .biblioteca-page,
+    .celebrimbor-page,
+    .radagast-page,
+    .feanor-page,
+    .gollum-page,
+    .mirror-page,
+    .faramir-page,
+    .bilbo-page,
+    .elrond-page,
+    .libro-rojo-page,
+    .pippin-page,
+    .thorondor-page
+) .mini-stat {
+    background: var(--view-surface-strong) !important;
+    border-color: var(--view-border) !important;
+    box-shadow: 0 18px 34px var(--view-shadow);
+}
+
+:is(
+    .saruman-page,
+    .gimli-page,
+    .boromir-page,
+    .nazgul-page,
+    .sauron-page,
+    .palantir-page,
+    .biblioteca-page,
+    .celebrimbor-page,
+    .radagast-page,
+    .feanor-page,
+    .gollum-page,
+    .mirror-page,
+    .faramir-page,
+    .bilbo-page,
+    .elrond-page,
+    .libro-rojo-page,
+    .pippin-page,
+    .thorondor-page
+) .section-box {
+    background: var(--view-surface) !important;
+    border-color: var(--view-border) !important;
+}
+
+:is(
+    .saruman-page,
+    .gimli-page,
+    .boromir-page,
+    .nazgul-page,
+    .sauron-page,
+    .palantir-page,
+    .biblioteca-page,
+    .celebrimbor-page,
+    .radagast-page,
+    .feanor-page,
+    .gollum-page,
+    .mirror-page,
+    .faramir-page,
+    .bilbo-page,
+    .elrond-page,
+    .libro-rojo-page,
+    .pippin-page,
+    .thorondor-page
+) .intro-emblem,
+:is(
+    .saruman-page,
+    .gimli-page,
+    .boromir-page,
+    .nazgul-page,
+    .sauron-page,
+    .palantir-page,
+    .biblioteca-page,
+    .celebrimbor-page,
+    .radagast-page,
+    .feanor-page,
+    .gollum-page,
+    .mirror-page,
+    .faramir-page,
+    .bilbo-page,
+    .elrond-page,
+    .libro-rojo-page,
+    .pippin-page,
+    .thorondor-page
+) .phase-badge,
+:is(
+    .saruman-page,
+    .gimli-page,
+    .boromir-page,
+    .nazgul-page,
+    .sauron-page,
+    .palantir-page,
+    .biblioteca-page,
+    .celebrimbor-page,
+    .radagast-page,
+    .feanor-page,
+    .gollum-page,
+    .mirror-page,
+    .faramir-page,
+    .bilbo-page,
+    .elrond-page,
+    .libro-rojo-page,
+    .pippin-page,
+    .thorondor-page
+) .mini-badge,
+:is(
+    .saruman-page,
+    .gimli-page,
+    .boromir-page,
+    .nazgul-page,
+    .sauron-page,
+    .palantir-page,
+    .biblioteca-page,
+    .celebrimbor-page,
+    .radagast-page,
+    .feanor-page,
+    .gollum-page,
+    .mirror-page,
+    .faramir-page,
+    .bilbo-page,
+    .elrond-page,
+    .libro-rojo-page,
+    .pippin-page,
+    .thorondor-page
+) .detail-tab,
+:is(
+    .saruman-page,
+    .gimli-page,
+    .boromir-page,
+    .nazgul-page,
+    .sauron-page,
+    .palantir-page,
+    .biblioteca-page,
+    .celebrimbor-page,
+    .radagast-page,
+    .feanor-page,
+    .gollum-page,
+    .mirror-page,
+    .faramir-page,
+    .bilbo-page,
+    .elrond-page,
+    .libro-rojo-page,
+    .pippin-page,
+    .thorondor-page
+) .output-box,
+:is(
+    .saruman-page,
+    .gimli-page,
+    .boromir-page,
+    .nazgul-page,
+    .sauron-page,
+    .palantir-page,
+    .biblioteca-page,
+    .celebrimbor-page,
+    .radagast-page,
+    .feanor-page,
+    .gollum-page,
+    .mirror-page,
+    .faramir-page,
+    .bilbo-page,
+    .elrond-page,
+    .libro-rojo-page,
+    .pippin-page,
+    .thorondor-page
+) .empty-box {
+    background: color-mix(in srgb, var(--view-surface-soft) 92%, black 8%) !important;
+    border-color: color-mix(in srgb, var(--view-accent) 18%, var(--view-border)) !important;
+}
+
+:is(
+    .saruman-page,
+    .gimli-page,
+    .boromir-page,
+    .nazgul-page,
+    .sauron-page,
+    .palantir-page,
+    .biblioteca-page,
+    .celebrimbor-page,
+    .radagast-page,
+    .feanor-page,
+    .gollum-page,
+    .mirror-page,
+    .faramir-page,
+    .bilbo-page,
+    .elrond-page,
+    .libro-rojo-page,
+    .pippin-page,
+    .thorondor-page
+) .input-dark,
+:is(
+    .saruman-page,
+    .gimli-page,
+    .boromir-page,
+    .nazgul-page,
+    .sauron-page,
+    .palantir-page,
+    .biblioteca-page,
+    .celebrimbor-page,
+    .radagast-page,
+    .feanor-page,
+    .gollum-page,
+    .mirror-page,
+    .faramir-page,
+    .bilbo-page,
+    .elrond-page,
+    .libro-rojo-page,
+    .pippin-page,
+    .thorondor-page
+) .textarea-dark {
+    background: color-mix(in srgb, var(--view-surface-strong) 86%, black 14%) !important;
+    border-color: var(--view-border-soft) !important;
+    color: var(--view-text-strong) !important;
+}
+
+:is(
+    .saruman-page,
+    .gimli-page,
+    .boromir-page,
+    .nazgul-page,
+    .sauron-page,
+    .palantir-page,
+    .biblioteca-page,
+    .celebrimbor-page,
+    .radagast-page,
+    .feanor-page,
+    .gollum-page,
+    .mirror-page,
+    .faramir-page,
+    .bilbo-page,
+    .elrond-page,
+    .libro-rojo-page,
+    .pippin-page,
+    .thorondor-page
+) .btn-main {
+    background: linear-gradient(135deg, color-mix(in srgb, var(--view-accent) 85%, white 8%), var(--view-accent-strong)) !important;
+    border-color: color-mix(in srgb, var(--view-accent) 70%, transparent) !important;
+    color: #091017 !important;
+    box-shadow: 0 12px 24px color-mix(in srgb, var(--view-accent-faint) 75%, transparent) !important;
+}
+
+:is(
+    .saruman-page,
+    .gimli-page,
+    .boromir-page,
+    .nazgul-page,
+    .sauron-page,
+    .palantir-page,
+    .biblioteca-page,
+    .celebrimbor-page,
+    .radagast-page,
+    .feanor-page,
+    .gollum-page,
+    .mirror-page,
+    .faramir-page,
+    .bilbo-page,
+    .elrond-page,
+    .libro-rojo-page,
+    .pippin-page,
+    .thorondor-page
+) .btn-subtle,
+:is(
+    .saruman-page,
+    .gimli-page,
+    .boromir-page,
+    .nazgul-page,
+    .sauron-page,
+    .palantir-page,
+    .biblioteca-page,
+    .celebrimbor-page,
+    .radagast-page,
+    .feanor-page,
+    .gollum-page,
+    .mirror-page,
+    .faramir-page,
+    .bilbo-page,
+    .elrond-page,
+    .libro-rojo-page,
+    .pippin-page,
+    .thorondor-page
+) .btn-quiet,
+:is(
+    .saruman-page,
+    .gimli-page,
+    .boromir-page,
+    .nazgul-page,
+    .sauron-page,
+    .palantir-page,
+    .biblioteca-page,
+    .celebrimbor-page,
+    .radagast-page,
+    .feanor-page,
+    .gollum-page,
+    .mirror-page,
+    .faramir-page,
+    .bilbo-page,
+    .elrond-page,
+    .libro-rojo-page,
+    .pippin-page,
+    .thorondor-page
+) .inline-code {
+    background: color-mix(in srgb, var(--view-surface) 84%, transparent) !important;
+    border-color: color-mix(in srgb, var(--view-accent) 22%, transparent) !important;
+    color: var(--view-text) !important;
+}
+
+:is(
+    .saruman-page,
+    .gimli-page,
+    .boromir-page,
+    .nazgul-page,
+    .sauron-page,
+    .palantir-page,
+    .biblioteca-page,
+    .celebrimbor-page,
+    .radagast-page,
+    .feanor-page,
+    .gollum-page,
+    .mirror-page,
+    .faramir-page,
+    .bilbo-page,
+    .elrond-page,
+    .libro-rojo-page,
+    .pippin-page,
+    .thorondor-page
+) .section-kicker,
+:is(
+    .saruman-page,
+    .gimli-page,
+    .boromir-page,
+    .nazgul-page,
+    .sauron-page,
+    .palantir-page,
+    .biblioteca-page,
+    .celebrimbor-page,
+    .radagast-page,
+    .feanor-page,
+    .gollum-page,
+    .mirror-page,
+    .faramir-page,
+    .bilbo-page,
+    .elrond-page,
+    .libro-rojo-page,
+    .pippin-page,
+    .thorondor-page
+) .tone-info,
+:is(
+    .saruman-page,
+    .gimli-page,
+    .boromir-page,
+    .nazgul-page,
+    .sauron-page,
+    .palantir-page,
+    .biblioteca-page,
+    .celebrimbor-page,
+    .radagast-page,
+    .feanor-page,
+    .gollum-page,
+    .mirror-page,
+    .faramir-page,
+    .bilbo-page,
+    .elrond-page,
+    .libro-rojo-page,
+    .pippin-page,
+    .thorondor-page
+) .tone-blue {
+    color: var(--view-accent) !important;
+}

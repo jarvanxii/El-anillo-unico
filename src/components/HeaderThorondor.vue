@@ -3,7 +3,13 @@
         <div class="subheader-container">
 
             <!-- Hamburguesa para móvil -->
-            <button class="mobile-menu-toggle" @click="toggleMobileMenu" :class="{ active: mobileMenuOpen }">
+            <button
+                class="mobile-menu-toggle"
+                type="button"
+                aria-label="Abrir navegacion secundaria"
+                :aria-expanded="mobileMenuOpen.toString()"
+                @click="toggleMobileMenu"
+                :class="{ active: mobileMenuOpen }">
                 <span></span>
                 <span></span>
                 <span></span>
@@ -16,7 +22,7 @@
                         <button type="button"
                             :class="['sub-item', 'h-100', { active: activeRouteName === item.routeName }]"
                             @click="goTo(item.routeName)">
-                            {{ item.name }}
+                            <span class="sub-item-label">{{ item.name }}</span>
                         </button>
                     </div>
                 </div>
@@ -60,8 +66,9 @@ export default {
         },
 
         goTo(routeName) {
-            if (this.activeRouteName === routeName) return;
-            this.$router.push({ name: routeName });
+            if (this.activeRouteName !== routeName) {
+                this.$router.push({ name: routeName });
+            }
             this.mobileMenuOpen = false;
         }
     }
@@ -74,6 +81,7 @@ export default {
     top: 52px;
     left: 0;
     width: 100%;
+    height: 54px;
     z-index: 2400;
     background:
         linear-gradient(180deg, #0e1828 0%, #0d1422 55%, #0b121c 100%);
@@ -89,7 +97,7 @@ export default {
     justify-content: space-between;
     align-items: center;
     padding: 0 16px;
-    height: 54px;
+    height: 100%;
 }
 
 .subheader-title {
@@ -104,21 +112,31 @@ export default {
     flex: 1;
     display: flex;
     justify-content: center;
+    height: 100%;
+}
+
+.desktop-menu > .row,
+.desktop-menu > .row > [class*="col"] {
+    height: 100%;
+    min-width: 0;
 }
 
 .sub-item {
     width: 100%;
-    min-height: 54px;
-    padding: 12px 18px;
+    height: 100%;
+    min-height: 52px;
+    min-width: 0;
+    padding: 6px 12px;
     display: flex;
     align-items: center;
     justify-content: center;
     text-align: center;
     white-space: normal;
-    line-height: 1.25;
+    overflow: hidden;
+    line-height: 1.12;
     color: #dbeafe;
     font-family: "Cinzel", serif;
-    font-size: 12.5px;
+    font-size: clamp(10.5px, calc(0.38vw + 7px), 12.5px);
     font-weight: 600;
     letter-spacing: 0.3px;
     cursor: pointer;
@@ -128,6 +146,16 @@ export default {
     background: transparent;
     transition: all 0.22s ease;
     position: relative;
+}
+
+.sub-item-label {
+    display: -webkit-box;
+    max-height: calc(1.12em * 3);
+    overflow: hidden;
+    overflow-wrap: anywhere;
+    text-wrap: balance;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
 }
 
 .sub-item:hover,
@@ -243,14 +271,6 @@ export default {
 }
 
 @media (max-width: 1199px) {
-    .sub-item {
-        padding: 12px 14px;
-        font-size: 11.5px;
-        min-height: 58px;
-    }
-}
-
-@media (max-width: 767px) {
     .desktop-menu {
         display: none;
     }

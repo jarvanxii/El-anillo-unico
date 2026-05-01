@@ -6,8 +6,15 @@
         <span>El Anillo Único</span>
       </div>
       
-      <!-- Hamburguesa para móvil -->
-      <button class="mobile-menu-toggle" @click="toggleMobileMenu" :class="{ active: mobileMenuOpen }">
+      <!-- Hamburguesa para móvil/tablet -->
+      <button
+        class="mobile-menu-toggle"
+        type="button"
+        aria-label="Abrir navegación principal"
+        :aria-expanded="mobileMenuOpen.toString()"
+        @click="toggleMobileMenu"
+        :class="{ active: mobileMenuOpen }"
+      >
         <span></span>
         <span></span>
         <span></span>
@@ -146,7 +153,7 @@ export default {
     },
     
     handleMobileClick(item) {
-      if (window.innerWidth <= 820) {
+      if (window.innerWidth <= 1199) {
         this.toggleMobileSection(item.id);
       }
     },
@@ -183,6 +190,8 @@ export default {
         this.$router.push(sub.route);
       }
       this.active = null;
+      this.mobileMenuOpen = false;
+      this.openMobileSections = [];
     }
   }
 };
@@ -391,7 +400,7 @@ export default {
   }
 }
 
-/* Hamburguesa móvil */
+/* Hamburguesa móvil/tablet */
 .mobile-menu-toggle {
   display: none;
   flex-direction: column;
@@ -425,7 +434,7 @@ export default {
   transform: rotate(-45deg) translate(7px, -6px);
 }
 
-/* Submenú móvil */
+/* Submenú móvil/tablet */
 .mobile-submenu {
   display: none;
   position: fixed;
@@ -495,46 +504,40 @@ export default {
 }
 
 @media (max-width: 1199px) {
-  .nav-item {
-    padding: 12px 12px;
-    font-size: 12px;
-    min-height: 52px;
+  .nav-links {
+    display: none;
   }
-  
+
+  .mobile-menu-toggle {
+    display: flex;
+  }
+
+  .mobile-submenu {
+    display: block;
+  }
+
+  .sub-dropdown {
+    display: none;
+  }
+
+  .nav-container {
+    padding: 0 16px;
+  }
+
   .logo {
-    font-size: 13px;
-  }
-  
-  .logo img {
-    width: 20px;
+    margin-right: 16px;
   }
 }
 
 @media (max-width: 820px) {
-  .nav-links {
-    display: none;
-  }
-  
-  .nav-links.mobile-open {
-    display: block;
-  }
-  
-  .mobile-menu-toggle {
-    display: flex;
-  }
-  
-  .mobile-submenu {
-    display: block;
-  }
-  
-  .nav-container {
-    padding: 0 16px;
-  }
-  
   .logo {
-    margin-right: 16px;
+    font-size: 13px;
   }
-  
+
+  .logo img {
+    width: 20px;
+  }
+
   .logo:hover {
     transform: translateY(-1px) scale(1.05);
   }

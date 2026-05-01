@@ -1,56 +1,47 @@
 <template>
-    <div class="radagast-page">
-        <section class="hero-banner">
-            <img src="@/assets/banners/banner-radagast.png" alt="Los champiñones de Radagast" />
-        </section>
-        <main class="content container">
-            <section class="section-box">
-                <h2>Loren Ipsum</h2>
-                <p>
-                    Loren ipsun dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore
-                    et dolore magna aliqua.
-                </p>
-            </section>
-        </main>
-    </div>
+    <SimpleLorePage
+        page-class="radagast-page"
+        :banner-src="bannerRadagast"
+        banner-alt="Los champinones de Radagast"
+        :logo-src="logoRadagast"
+        logo-alt="Sello de Radagast"
+        kicker="Exploracion organica"
+        title="Los Champinones de Radagast"
+        description="Una portada con mas cuerpo para una seccion que ahora respira mejor, mantiene el tono de bosque oscuro del header y se integra con el sistema visual comun."
+        emblem-title="6 senderos de entrada"
+        emblem-copy="La seccion gana una identidad mas refinada sin perder su caracter: fondo profundo, acento verde y bloques faciles de escanear."
+        module-kicker="Uso recomendado"
+        module-title="Como aprovechar la portada"
+        module-copy="Piensala como un indice editorial: entra por el resumen, localiza la categoria que te interesa en la cabecera y profundiza desde ahi."
+        :guide-cards="guideCards"
+        :focus-cards="focusCards"
+    />
 </template>
 
 <script>
+import SimpleLorePage from "@/components/SimpleLorePage.vue";
+import bannerRadagast from "@/assets/banners/banner-radagast.png";
+import logoRadagast from "@/assets/logos/radagast.png";
+
 export default {
-    name: "RadagastPage"
+    name: "RadagastPage",
+    components: { SimpleLorePage },
+    data() {
+        return {
+            bannerRadagast,
+            logoRadagast,
+            guideCards: [
+                { label: "Ambiente", copy: "Conserva la identidad verde y terrosa, pero con una composicion mucho mas solida." },
+                { label: "Resumen", copy: "Ofrece una introduccion breve que ayuda a entender para que sirve esta rama." },
+                { label: "Ruta", copy: "Deja claras las entradas posibles antes de bajar a categorias y subcategorias." },
+                { label: "Escaneo", copy: "Las tarjetas sintetizan el valor de la seccion en segundos, sin parrafos de relleno." }
+            ],
+            focusCards: [
+                { label: "Entrada recomendada", value: "Vista general", copy: "Empieza por el resumen y usa el menu para ir directo a cada tema." },
+                { label: "Uso rapido", value: "Portada", copy: "Ideal para ubicarte antes de navegar por las categorias secundarias." },
+                { label: "Valor", value: "Presencia", copy: "La pagina deja de parecer provisional y pasa a sentirse parte del sistema comun." }
+            ]
+        };
+    }
 };
 </script>
-
-<style scoped>
-.radagast-page {
-    background: #0f1419;
-    color: #e8f4fd;
-    min-height: 100vh;
-    font-family: "EB Garamond", serif;
-}
-
-.hero-banner {
-    margin-top: 111px;
-}
-
-.hero-banner img {
-    width: 100%;
-    display: block;
-    object-fit: cover;
-}
-
-.content {
-    padding-top: 45px;
-    padding-bottom: 60px;
-}
-
-@media (max-width: 767px) {
-    .hero-banner {
-        margin-top: 52px;
-    }
-
-    .content {
-        padding-top: 30px;
-    }
-}
-</style>

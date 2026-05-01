@@ -201,6 +201,7 @@ const routes = [
   // CHAMPIÑONES DE RADAGAST
   {
     path: "/los-champiñones-de-radagast",
+    alias: ["/los-champi%C3%B1ones-de-radagast"],
     name: "los-champiñones-de-radagast",
     component: ChampiñonesRadagastView,
     meta: { showRadagastHeader: true },

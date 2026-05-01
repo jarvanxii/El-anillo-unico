@@ -1,17 +1,19 @@
 <template>
-  <Header v-if="showHeader" />
-  <HeaderSaruman v-if="showSarumanHeader" />
-  <HeaderGimli v-if="showGimliHeader" />
-  <HeaderBoromir v-if="showBoromirHeader" />
-  <HeaderNazgul v-if="showNazgulHeader" />
-  <HeaderBiblioteca v-if="showBibliotecaHeader" />
-  <HeaderCelebrimbor v-if="showCelebrimborHeader" />
-  <HeaderSauron v-if="showSauronHeader" />
-  <HeaderPalantir v-if="showPalantirHeader" />
-  <HeaderRadagast v-if="showRadagastHeader" />
-  <HeaderThorondor v-if="showThorondorHeader" />
-  <router-view />
-  <Footer v-if="showFooter" />
+  <div :class="['app-shell', { 'app-shell--secondary-header': showSecondaryHeader }]">
+    <Header v-if="showHeader" />
+    <HeaderSaruman v-if="showSarumanHeader" />
+    <HeaderGimli v-if="showGimliHeader" />
+    <HeaderBoromir v-if="showBoromirHeader" />
+    <HeaderNazgul v-if="showNazgulHeader" />
+    <HeaderBiblioteca v-if="showBibliotecaHeader" />
+    <HeaderCelebrimbor v-if="showCelebrimborHeader" />
+    <HeaderSauron v-if="showSauronHeader" />
+    <HeaderPalantir v-if="showPalantirHeader" />
+    <HeaderRadagast v-if="showRadagastHeader" />
+    <HeaderThorondor v-if="showThorondorHeader" />
+    <router-view />
+    <Footer v-if="showFooter" />
+  </div>
 </template>
 
 <script>
@@ -67,6 +69,20 @@ export default {
     },
     showThorondorHeader() {
       return this.$route?.meta?.showThorondorHeader;
+    },
+    showSecondaryHeader() {
+      return Boolean(
+        this.showSarumanHeader ||
+        this.showGimliHeader ||
+        this.showBoromirHeader ||
+        this.showNazgulHeader ||
+        this.showBibliotecaHeader ||
+        this.showCelebrimborHeader ||
+        this.showSauronHeader ||
+        this.showPalantirHeader ||
+        this.showRadagastHeader ||
+        this.showThorondorHeader
+      );
     }
   }
 }
@@ -76,6 +92,12 @@ export default {
 * {
   caret-color: transparent;
   box-sizing: border-box;
+}
+
+:root {
+  --main-header-height: 52px;
+  --secondary-header-height: 54px;
+  --header-banner-gap: 2px;
 }
 
 /* Quitar cursor de escritura en toda la web */
@@ -135,6 +157,19 @@ body {
   background: #0b0f17;
   color: #e6e0d4;
   caret-color: transparent;
+}
+
+.app-shell.app-shell .hero-banner {
+  margin-top: calc(var(--main-header-height) + var(--header-banner-gap)) !important;
+}
+
+.app-shell.app-shell.app-shell--secondary-header .hero-banner {
+  margin-top: calc(var(--main-header-height) + var(--secondary-header-height) + var(--header-banner-gap)) !important;
+}
+
+.app-shell.app-shell .hero-banner > img {
+  margin-top: 0 !important;
+  padding-top: 0 !important;
 }
 
 input,

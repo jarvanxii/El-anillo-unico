@@ -1,30 +1,13 @@
 <template>
-    <nav class="subheader">
-        <div class="container-fluid px-4 px-xl-5">
-            <div class="row g-0 justify-content-center">
-                <div v-for="item in subItems" :key="item.id" class="col-xl col-lg-3 col-md-4 col-sm-6 col-6">
-                    <div :class="['sub-item', 'h-100', { active: active === item.id }]"
-                        @mouseenter="openDropdown(item.id, $event)" @mouseleave="closeDropdownDelayed">
-                        {{ item.name }}
-                    </div>
-                </div>
-            </div>
-        </div>
-    </nav>
-    <div v-if="active" class="sub-dropdown"
-        :style="{ top: dropdownTop + 'px', left: dropdownLeft + 'px', width: dropdownWidth + 'px' }"
-        @mouseenter="cancelClose" @mouseleave="closeDropdownDelayed">
-        <div class="submenu">
-            <a v-for="(sub, index) in currentSubs" :key="index" href="#">
-                {{ sub }}
-            </a>
-        </div>
-    </div>
+    <ResponsiveSubheader :items="subItems" theme="nazgul" />
 </template>
 
 <script>
+import ResponsiveSubheader from "./ResponsiveSubheader.vue";
+
 export default {
-    name: 'HeaderSaruman',
+    name: 'HeaderNazgul',
+    components: { ResponsiveSubheader },
     data() {
         return {
             active: null,

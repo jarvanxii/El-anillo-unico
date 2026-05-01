@@ -33,9 +33,14 @@
                     <span class="secondary-mobile-arrow" :class="{ open: openMobileSections.includes(item.id) }">&#9662;</span>
                 </button>
                 <div v-if="openMobileSections.includes(item.id)" class="secondary-mobile-subitems">
-                    <a v-for="(sub, index) in item.subs" :key="index" href="#" @click.prevent="closeMobileMenu">
-                        {{ sub }}
-                    </a>
+                    <template v-for="(sub, index) in item.subs" :key="subKey(sub, index)">
+                        <router-link v-if="subRoute(sub)" :to="subRoute(sub)" @click="closeMobileMenu">
+                            {{ subLabel(sub) }}
+                        </router-link>
+                        <a v-else href="#" @click.prevent="closeMobileMenu">
+                            {{ subLabel(sub) }}
+                        </a>
+                    </template>
                 </div>
             </div>
         </div>
@@ -45,9 +50,14 @@
         :style="{ top: dropdownTop + 'px', left: dropdownLeft + 'px', width: dropdownWidth + 'px' }"
         @mouseenter="cancelClose" @mouseleave="closeDropdownDelayed">
         <div class="submenu">
-            <a v-for="(sub, index) in currentSubs" :key="index" href="#">
-                {{ sub }}
-            </a>
+            <template v-for="(sub, index) in currentSubs" :key="subKey(sub, index)">
+                <router-link v-if="subRoute(sub)" :to="subRoute(sub)" @click="closeDropdown">
+                    {{ subLabel(sub) }}
+                </router-link>
+                <a v-else href="#">
+                    {{ subLabel(sub) }}
+                </a>
+            </template>
         </div>
     </div>
 </template>
@@ -136,6 +146,19 @@ export default {
             } else {
                 this.openMobileSections = [id];
             }
+        },
+        subLabel(sub) {
+            return sub && typeof sub === "object" ? sub.label : sub;
+        },
+        subRoute(sub) {
+            return sub && typeof sub === "object" && sub.route ? sub.route : null;
+        },
+        subKey(sub, index) {
+            return `${index}-${this.subLabel(sub)}`;
+        },
+        closeDropdown() {
+            this.active = null;
+            this.cancelClose();
         },
         closeMobileMenu() {
             this.mobileMenuOpen = false;

@@ -22,6 +22,8 @@ import ThorondorConfiguracionSplunkView from "../views/VueloThorondor/Thorondor-
 
 // BASTÓN SARUMAN
 import BastonSarumanView from "../views/BastonSaruman/BastonSarumanView.vue";
+import SarumanModeloOSIView from "../views/BastonSaruman/Saruman-ModeloOSIView.vue";
+import SarumanModeloTCPIPView from "../views/BastonSaruman/Saruman-ModeloTCPIPView.vue";
 
 // HACHA GIMLI
 import HachaGimliView from "../views/HachaGimli/HachaGimliView.vue";
@@ -155,6 +157,18 @@ const routes = [
     path: "/el-baston-de-saruman",
     name: "el-baston-de-saruman",
     component: BastonSarumanView,
+    meta: { showSarumanHeader: true },
+  },
+  {
+    path: "/el-baston-de-saruman/modelo-osi",
+    name: "saruman-modelo-osi",
+    component: SarumanModeloOSIView,
+    meta: { showSarumanHeader: true },
+  },
+  {
+    path: "/el-baston-de-saruman/modelo-tcp-ip",
+    name: "saruman-modelo-tcp-ip",
+    component: SarumanModeloTCPIPView,
     meta: { showSarumanHeader: true },
   },
 

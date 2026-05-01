@@ -21,8 +21,8 @@ export default {
                     name: "Redes y Protocolos",
                     subs: [
                         // Fundamentos de Redes
-                        "Modelo OSI",
-                        "Modelo TCP/IP",
+                        { label: "Modelo OSI", route: { name: "saruman-modelo-osi" } },
+                        { label: "Modelo TCP/IP", route: { name: "saruman-modelo-tcp-ip" } },
                         "Encapsulación de datos",
                         "Direcciones MAC",
                         "Direcciones IP (IPv4 / IPv6)",

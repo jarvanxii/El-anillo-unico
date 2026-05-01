@@ -17,69 +17,147 @@ export default {
             hideTimeout: null,
             subItems: [
                 {
-                    id: "nootropics_basics",
-                    name: "Fundamentos y Nootrópicos",
+                    id: "learning_science",
+                    name: "Aprendizaje y Memoria",
                     subs: [
-                        "Qué es biohacking cognitivo",
-                        "Cómo medir rendimiento mental",
-                        "Nootrópicos legales",
-                        "Stacks básicos",
-                        "Tolerancia y ciclos"
+                        "Spaced repetition",
+                        "Active recall",
+                        "Interleaving y variacion de practica",
+                        "Elaboracion y tecnica Feynman",
+                        "Mapas mentales y modelos mentales",
+                        "Cornell notes y notas atomicas",
+                        "Flashcards para certificaciones",
+                        "Practica deliberada",
+                        "Simulacros de examen",
+                        "Correccion de errores y diario de fallos",
+                        "Retencion a largo plazo",
+                        "Planificacion de estudio por bloques"
+                    ]
+                },
+                {
+                    id: "sleep_recovery",
+                    name: "Sueno y Recuperacion",
+                    subs: [
+                        "Arquitectura del sueno",
+                        "Ritmo circadiano",
+                        "Higiene del sueno",
+                        "Luz matinal y luz azul nocturna",
+                        "Cafeina y vida media",
+                        "Siestas estrategicas",
+                        "Descanso activo",
+                        "Fatiga mental y senales de sobrecarga",
+                        "Recuperacion despues de jornadas largas",
+                        "Burnout en ciberseguridad",
+                        "Guardias, turnos y recuperacion",
+                        "Rutinas pre-examen"
                     ]
                 },
                 {
                     id: "focus_energy",
-                    name: "Foco y Energía Mental",
+                    name: "Foco y Energia Mental",
                     subs: [
-                        "Cafeína",
-                        "L-teanina",
-                        "Teacrina",
-                        "Tyrosina",
-                        "Nicotina legal y riesgos"
+                        "Deep work",
+                        "Pomodoro y variantes",
+                        "Control de interrupciones",
+                        "Diseno del entorno de trabajo",
+                        "Cafeina y L-teanina",
+                        "Hidratacion y electrolitos",
+                        "Creatina y rendimiento cognitivo",
+                        "Tyrosina y estres agudo",
+                        "Teacrina y estimulantes legales",
+                        "Tolerancia, ciclos y descanso",
+                        "Riesgos de dependencia a estimulantes",
+                        "Medicion subjetiva vs objetiva del foco"
                     ]
                 },
                 {
-                    id: "memory_learning",
-                    name: "Memoria y Aprendizaje",
+                    id: "health_foundations",
+                    name: "Salud Base para Rendimiento",
                     subs: [
-                        "Creatina",
+                        "Ejercicio aerobico y cognicion",
+                        "Fuerza y salud metabolica",
+                        "Nutricion para estabilidad energetica",
+                        "Proteina, fibra y micronutrientes",
                         "Omega 3",
-                        "Citicolina",
-                        "Alpha GPC",
-                        "Bacopa Monnieri"
+                        "Vitamina D y analiticas",
+                        "Magnesio",
+                        "Glucosa, picos y energia",
+                        "Respiracion y regulacion del estres",
+                        "Meditacion y atencion",
+                        "Ergonomia de escritorio",
+                        "Vision, pausas y fatiga ocular"
                     ]
                 },
                 {
-                    id: "performance_stacks",
-                    name: "Stacks de Rendimiento",
+                    id: "productivity_systems",
+                    name: "Sistemas de Productividad",
                     subs: [
-                        "Stack para estudiar",
-                        "Stack para programar",
-                        "Stack para gaming",
-                        "Stack pre-entrenamiento mental",
-                        "Cómo combinar compuestos"
+                        "GTD y captura confiable",
+                        "Time blocking",
+                        "Kanban personal",
+                        "Segundo cerebro",
+                        "PKM: Obsidian, Notion y markdown",
+                        "Gestion de objetivos trimestrales",
+                        "Checklists para laboratorios",
+                        "Plantillas de informes",
+                        "Automatizacion de tareas repetitivas",
+                        "Gestion de contexto entre proyectos",
+                        "Revision semanal",
+                        "Sistemas anti-procrastinacion"
                     ]
                 },
                 {
-                    id: "advanced_tools",
-                    name: "Herramientas Técnicas",
+                    id: "exam_performance",
+                    name: "Rendimiento en Examenes",
                     subs: [
-                        "Neurofeedback",
-                        "Blue light blockers",
-                        "Tracking cognitivo",
+                        "Plan de estudio por blueprint",
+                        "Descomponer dominios y pesos",
+                        "Practicar PBQs y laboratorios",
+                        "Gestion del tiempo de examen",
+                        "Lectura de preguntas trampa",
+                        "Tecnica de descarte",
+                        "Ansiedad pre-examen",
+                        "Repaso final de alto rendimiento",
+                        "Simulacros con revision profunda",
+                        "Memorizacion de puertos, comandos y frameworks",
+                        "Dormir antes del examen",
+                        "Post-mortem despues de suspender o aprobar"
+                    ]
+                },
+                {
+                    id: "tools_tracking",
+                    name: "Medicion y Herramientas",
+                    subs: [
+                        "Tracking de habitos",
                         "Reaction time tests",
-                        "Apps de productividad extrema"
+                        "Diario de energia y foco",
+                        "Wearables y HRV",
+                        "Ruido, musica y concentracion",
+                        "Bloqueadores de distracciones",
+                        "Lectura rapida vs lectura profunda",
+                        "Dictado y notas por voz",
+                        "Automatizacion de flashcards",
+                        "Dashboards personales",
+                        "Metricas utiles y metricas vanidosas",
+                        "Privacidad al medir salud y productividad"
                     ]
                 },
                 {
-                    id: "advanced_legal",
-                    name: "Avanzado y Sustancias Legales",
+                    id: "safety_legal_ethics",
+                    name: "Seguridad, Legalidad y Limites",
                     subs: [
-                        "Adaptógenos",
-                        "Racetams (según país)",
-                        "Modafinil legalidad según país",
-                        "Microdosis legales herbales",
-                        "Qué evitar y riesgos"
+                        "Diferenciar habitos, suplementos y medicamentos",
+                        "Consultar profesionales sanitarios cuando proceda",
+                        "Interacciones y contraindicaciones",
+                        "No mezclar sustancias sin criterio",
+                        "Legalidad por pais",
+                        "Riesgos de comprar compuestos online",
+                        "Etiquetado, pureza y terceros laboratorios",
+                        "Efecto placebo y sesgos de medicion",
+                        "Principio de minima intervencion",
+                        "Red flags de comunidades de biohacking",
+                        "Etica del rendimiento extremo",
+                        "Sostenibilidad a largo plazo"
                     ]
                 }
             ]

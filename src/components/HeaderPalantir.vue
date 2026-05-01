@@ -17,69 +17,147 @@ export default {
             hideTimeout: null,
             subItems: [
                 {
-                    id: "ai_foundations",
-                    name: "Fundamentos de IA",
+                    id: "ai_ml_foundations",
+                    name: "Fundamentos de IA y ML",
                     subs: [
-                        "Qué es la inteligencia artificial",
-                        "Tipos de IA",
-                        "Machine Learning",
-                        "Deep Learning",
-                        "IA generativa"
+                        "IA, ML, Deep Learning e IA generativa",
+                        "Aprendizaje supervisado, no supervisado y por refuerzo",
+                        "Clasificación, regresión, clustering y ranking",
+                        "Redes neuronales, transformers y embeddings",
+                        "Datasets, features, labels y data leakage",
+                        "Entrenamiento, validación y test",
+                        "Overfitting, underfitting y regularización",
+                        "Métricas: accuracy, precision, recall, F1, ROC-AUC",
+                        "Sesgo, varianza y generalización",
+                        "Tokenización, contexto y ventanas de contexto",
+                        "Latencia, coste, throughput y calidad de inferencia",
+                        "Limitaciones: alucinaciones, deriva y falta de causalidad"
                     ]
                 },
                 {
-                    id: "ai_tools",
-                    name: "Herramientas y Aplicaciones",
+                    id: "llm_prompting_evaluation",
+                    name: "LLMs, Prompting y Evaluación",
                     subs: [
-                        "Chatbots",
-                        "Generación de imágenes",
-                        "Generación de vídeo",
-                        "Asistentes de voz",
-                        "Automatización con IA"
+                        "Modelos fundacionales y modelos especializados",
+                        "Prompt engineering: rol, contexto, restricciones y ejemplos",
+                        "Zero-shot, few-shot y chain-of-thought controlado",
+                        "System prompts, tool prompts y prompt templates",
+                        "Prompt injection y jailbreaks",
+                        "Evaluación humana vs evaluación automatizada",
+                        "Evals de seguridad, calidad, factualidad y robustez",
+                        "Red teaming de modelos de IA",
+                        "Guardrails, filtros y políticas de salida",
+                        "Grounding y citación de fuentes",
+                        "Trazabilidad de decisiones y explicabilidad",
+                        "Benchmarks y límites de los benchmarks"
                     ]
                 },
                 {
-                    id: "productivity",
-                    name: "Productividad y Trabajo",
+                    id: "rag_agents_automation",
+                    name: "RAG, Agentes y Automatización",
                     subs: [
-                        "IA para programar",
-                        "IA para estudiar",
-                        "IA para escribir",
-                        "IA para empresas",
-                        "IA para marketing"
+                        "RAG: chunking, embeddings, retrieval y reranking",
+                        "Bases vectoriales y búsqueda semántica",
+                        "RAG híbrido: BM25 + vectores",
+                        "Calidad del corpus y gobierno documental",
+                        "Fine-tuning vs RAG vs prompting",
+                        "Function calling y tool use",
+                        "Agentes autónomos y agentes supervisados",
+                        "Planificación, memoria y ejecución por pasos",
+                        "Automatización de flujos SOC, GRC y desarrollo",
+                        "Human-in-the-loop y aprobaciones seguras",
+                        "Observabilidad de agentes",
+                        "Fallos comunes: loops, acciones no autorizadas y drift"
                     ]
                 },
                 {
-                    id: "technical",
-                    name: "Conceptos Técnicos",
+                    id: "ai_security_defense",
+                    name: "IA Defensiva",
                     subs: [
-                        "Prompts efectivos",
-                        "Fine-tuning",
-                        "RAG",
-                        "APIs de IA",
-                        "Agentes autónomos"
+                        "Detección de phishing y fraude con IA",
+                        "Clasificación y priorización de alertas",
+                        "Enriquecimiento de IOCs e inteligencia de amenazas",
+                        "Resumen de incidentes y timeline automático",
+                        "Análisis de logs y lenguaje natural para SIEM",
+                        "UEBA y detección de anomalías",
+                        "Análisis de malware asistido por IA",
+                        "Revisión de código seguro con IA",
+                        "Threat hunting asistido",
+                        "Generación de reglas Sigma, YARA y KQL",
+                        "Copilotos defensivos y riesgos operativos",
+                        "Validación humana de resultados de IA"
                     ]
                 },
                 {
-                    id: "security",
-                    name: "IA y Ciberseguridad",
+                    id: "ai_offensive_abuse",
+                    name: "Abuso Ofensivo y Riesgos",
                     subs: [
-                        "IA defensiva",
-                        "IA ofensiva",
-                        "Detección de fraude",
-                        "Phishing con IA",
-                        "OSINT con IA"
+                        "Phishing, vishing y deepfakes con IA",
+                        "Generación de malware y ofuscación asistida",
+                        "Automatización de OSINT hostil",
+                        "Suplantación de identidad y fraude sintético",
+                        "Data poisoning y model poisoning",
+                        "Adversarial examples",
+                        "Model extraction y model inversion",
+                        "Membership inference",
+                        "Exfiltración mediante prompts y herramientas",
+                        "Abuso de agentes con permisos excesivos",
+                        "Riesgos de modelos locales no confiables",
+                        "Detección y respuesta ante abuso de IA"
                     ]
                 },
                 {
-                    id: "future",
-                    name: "Futuro e Impacto",
+                    id: "llm_appsec",
+                    name: "Seguridad de Apps con IA",
                     subs: [
-                        "IA y empleo",
-                        "Regulación",
-                        "Ética",
-                        "Privacidad",
-                        "Tendencias futuras"
+                        "OWASP Top 10 for LLM Applications",
+                        "Prompt injection directa e indirecta",
+                        "Insecure output handling",
+                        "Excessive agency",
+                        "Data leakage y fuga de secretos",
+                        "Vector and embedding weaknesses",
+                        "RAG poisoning",
+                        "Autorización en herramientas y conectores",
+                        "Aislamiento de tenants y memoria",
+                        "Rate limiting, abuso y costes inesperados",
+                        "Logging seguro de prompts y respuestas",
+                        "Pruebas de seguridad para aplicaciones LLM"
+                    ]
+                },
+                {
+                    id: "ai_governance_privacy",
+                    name: "Gobierno, Privacidad y Cumplimiento",
+                    subs: [
+                        "AI governance y modelo de responsabilidades",
+                        "Inventario de sistemas de IA",
+                        "Clasificación de riesgos de IA",
+                        "Privacidad, minimización y retención de datos",
+                        "Datos sensibles en prompts",
+                        "Propiedad intelectual y licencias",
+                        "Transparencia, explicabilidad y auditabilidad",
+                        "Evaluación de proveedores de IA",
+                        "NIST AI RMF",
+                        "ISO/IEC 42001",
+                        "EU AI Act y enfoque basado en riesgo",
+                        "Políticas internas de uso aceptable de IA"
+                    ]
+                },
+                {
+                    id: "mlops_ai_operations",
+                    name: "MLOps y Operación de IA",
+                    subs: [
+                        "Ciclo de vida de modelos",
+                        "Versionado de datos, modelos y prompts",
+                        "Model registry y aprobaciones",
+                        "CI/CD para modelos y prompts",
+                        "Monitorización de drift y degradación",
+                        "Seguridad de pipelines de datos",
+                        "Secretos y credenciales en notebooks",
+                        "Controles de acceso a modelos y datasets",
+                        "Cost management y cuotas",
+                        "Evaluación continua en producción",
+                        "Rollback y respuesta ante incidentes de IA",
+                        "Documentación: model cards y datasheets"
                     ]
                 }
             ]

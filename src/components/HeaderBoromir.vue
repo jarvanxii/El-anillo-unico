@@ -30,6 +30,12 @@ export default {
                         "Zero Trust Architecture",
                         "Segmentación y microsegmentación de red",
                         "Gestión del ciclo de vida de identidades",
+                        "Revisiones de acceso",
+                        "PAM defensivo",
+                        "Protección de cuentas privilegiadas",
+                        "Security awareness",
+                        "Data Loss Prevention (DLP)",
+                        "Backup 3-2-1 e inmutabilidad",
                         // Hardening
                         "CIS Benchmarks",
                         "Hardening Linux (SSH, servicios, permisos, kernel)",
@@ -52,6 +58,8 @@ export default {
                         "CVE / CVSS / NVD",
                         "Escaneo de vulnerabilidades (Nessus, Qualys, OpenVAS)",
                         "Priorización de vulnerabilidades",
+                        "EPSS y explotabilidad real",
+                        "KEV Catalog",
                         "Gestión de parches (Patch Management)",
                         "WSUS / SCCM / herramientas de parcheo",
                         "Gestión de configuraciones inseguras",
@@ -59,7 +67,11 @@ export default {
                         "Seguimiento de CVEs críticos",
                         "Remediación vs mitigación",
                         "SLA de parcheo",
-                        "Gestión de vulnerabilidades en contenedores e imágenes"
+                        "Gestión de vulnerabilidades en contenedores e imágenes",
+                        "Attack Surface Management",
+                        "Exposure Management",
+                        "Validación de remediación",
+                        "Excepciones y aceptación de riesgo"
                     ]
                 },
                 {
@@ -80,11 +92,20 @@ export default {
                         "Casos de uso y reglas de detección",
                         "Tuning de reglas SIEM",
                         "Dashboards y visualización",
+                        "SPL / KQL / EQL",
+                        "Data onboarding",
+                        "Log source management",
+                        "Retención y calidad de logs",
                         // Monitorización
                         "Monitorización de endpoints (EDR)",
                         "Monitorización de red (NDR)",
                         "NetFlow y análisis de tráfico",
-                        "UEBA (User and Entity Behavior Analytics)"
+                        "UEBA (User and Entity Behavior Analytics)",
+                        "XDR",
+                        "Deception technology",
+                        "Canary tokens",
+                        "Windows Event IDs clave",
+                        "Sysmon y telemetría avanzada"
                     ]
                 },
                 {
@@ -113,7 +134,12 @@ export default {
                         "Análisis de artefactos Linux (/var/log, bash_history, cron)",
                         "Análisis de tráfico de red (PCAP, Wireshark)",
                         "Timeline analysis",
-                        "Recuperación de archivos eliminados"
+                        "Recuperación de archivos eliminados",
+                        "Forense en cloud",
+                        "Forense en contenedores",
+                        "Triage rápido",
+                        "Evidence bags digitales",
+                        "Coordinación con comunicaciones y negocio"
                     ]
                 },
                 {
@@ -125,6 +151,10 @@ export default {
                         "Análisis de malware dinámico",
                         "Sandboxing (Any.run, Cuckoo, VirusTotal)",
                         "Ingeniería inversa básica (IDA, Ghidra)",
+                        "YARA para clasificación",
+                        "Strings, imports y PE headers",
+                        "Análisis de comportamiento",
+                        "Detonación controlada",
                         "Indicadores de compromiso (IOCs)",
                         "Análisis de ofuscación y empaquetado",
                         "Familias de malware comunes",
@@ -153,10 +183,39 @@ export default {
                         "Detección basada en comportamiento vs firma",
                         "Mapeo de detecciones a MITRE ATT&CK",
                         "Testing de detecciones (Atomic Red Team)",
+                        "Caldera",
+                        "AttackIQ / BAS concepts",
+                        "Detection as Code",
+                        "GitOps para reglas",
                         "Gestión del ciclo de vida de detecciones",
                         "Reducción de falsos positivos",
                         "Cobertura de detección y gaps",
-                        "Purple teaming como mejora de detecciones"
+                        "Purple teaming como mejora de detecciones",
+                        "Alert fidelity",
+                        "Mean Time To Detect (MTTD)",
+                        "Mean Time To Respond (MTTR)"
+                    ]
+                },
+                {
+                    id: "cloud_appsec_supply_defense",
+                    name: "Cloud, AppSec y Supply Chain Defense",
+                    subs: [
+                        "Cloud Security Posture Management",
+                        "Cloud Workload Protection",
+                        "CNAPP",
+                        "IAM hardening en AWS, Azure y GCP",
+                        "Logging cloud: CloudTrail, Azure Activity, GCP Audit Logs",
+                        "Kubernetes security monitoring",
+                        "Container image scanning",
+                        "Runtime security con Falco",
+                        "SAST / DAST / SCA defensivo",
+                        "Secrets scanning",
+                        "SBOM y Dependency Track",
+                        "Firma de artefactos y Cosign",
+                        "SLSA y niveles de supply chain",
+                        "Protección de CI/CD",
+                        "WAF y API Gateway defense",
+                        "Security champions"
                     ]
                 },
                 {

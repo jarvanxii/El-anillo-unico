@@ -34,21 +34,27 @@ export default {
                         "LinkedIn / redes sociales como fuente",
                         "Búsqueda de credenciales filtradas (HaveIBeenPwned, Dehashed)",
                         "GitHub Dorking",
+                        "GitLab y repositorios públicos",
+                        "OSINT de cloud buckets",
                         "Huella digital corporativa",
                         "Wayback Machine / caché web",
                         // Escaneo y Enumeración
                         "Escaneo de puertos (Nmap)",
+                        "Escaneo masivo (Masscan)",
+                        "Priorización de superficie expuesta",
                         "Detección de servicios y versiones",
                         "Fingerprinting de sistemas operativos",
                         "Enumeración de usuarios",
                         "Enumeración de recursos compartidos (SMB)",
                         "Enumeración SNMP",
                         "Enumeración LDAP / Active Directory",
+                        "Enumeración Kerberos",
                         "Enumeración DNS (Zone Transfer, brute force)",
                         "Enumeración web (directorios, archivos, parámetros)",
                         "Gobuster / ffuf / dirbuster",
                         "Nikto",
                         "Escaneo de vulnerabilidades (Nessus, OpenVAS)",
+                        "Nuclei templates",
                         "Banner grabbing",
                         "Identificación de tecnologías web (Wappalyzer, WhatWeb)"
                     ]
@@ -76,14 +82,23 @@ export default {
                         "XXE",
                         "IDOR",
                         "LFI / RFI",
+                        "Command Injection",
+                        "Insecure Deserialization",
+                        "Prototype Pollution",
+                        "File Upload bypass",
                         "Open Redirect",
                         "SSTI (Server-Side Template Injection)",
+                        "Race conditions en web",
+                        "Web cache poisoning",
                         "Subdomain Takeover",
                         "Broken Authentication",
                         "Pentesting de APIs REST y GraphQL",
+                        "OAuth / OIDC attack paths",
                         "JWT attacks",
                         "OAuth misconfigurations",
-                        "Fuzzing web"
+                        "Fuzzing web",
+                        "Business logic vulnerabilities",
+                        "OWASP ASVS como checklist"
                     ]
                 },
                 {
@@ -103,7 +118,16 @@ export default {
                         "Volcado de credenciales (Mimikatz, secretsdump)",
                         "Abuso de GPOs",
                         "Abuso de ACLs en AD",
-                        "Delegation attacks (Constrained / Unconstrained)"
+                        "Delegation attacks (Constrained / Unconstrained)",
+                        "Resource-Based Constrained Delegation",
+                        "AD CS abuse",
+                        "PetitPotam / NTLM relay",
+                        "LLMNR / NBT-NS poisoning",
+                        "Kerberos constrained delegation",
+                        "LAPS y secretos locales",
+                        "Azure AD / Entra ID attack paths",
+                        "Password spraying",
+                        "Shadow credentials"
                     ]
                 },
                 {
@@ -117,12 +141,18 @@ export default {
                         "Living off the Land (LOLBins)",
                         "Persistencia (cron jobs, tareas programadas, registros, servicios)",
                         "Pivoting y tunneling",
+                        "Port forwarding",
                         "Proxychains",
+                        "Ligolo-ng / Chisel",
                         "Exfiltración de datos",
                         "In-memory execution",
                         "Process injection",
                         "Timestomping",
-                        "Log tampering"
+                        "Log tampering",
+                        "Credential hunting",
+                        "Abuso de tokens y sesiones",
+                        "Persistencia en cloud y SaaS",
+                        "Limpieza y restauración post-ejercicio"
                     ]
                 },
                 {
@@ -152,7 +182,33 @@ export default {
                         "Deauthentication attacks",
                         "Bluetooth attacks",
                         "RFID / NFC cloning",
-                        "Raspberry Pi como herramienta de ataque"
+                        "Raspberry Pi como herramienta de ataque",
+                        "Lock picking ético",
+                        "Shoulder surfing",
+                        "Tailgating",
+                        "OSINT físico de instalaciones"
+                    ]
+                },
+                {
+                    id: "cloud_container_attacks",
+                    name: "Cloud, Contenedores y CI/CD",
+                    subs: [
+                        "Metodología de pentest cloud",
+                        "Enumeración AWS, Azure y GCP",
+                        "IAM privilege escalation en cloud",
+                        "S3 buckets y storage expuesto",
+                        "Metadata service attacks",
+                        "SSRF hacia credenciales cloud",
+                        "AssumeRole y trust policies",
+                        "Azure Entra ID y OAuth abuse",
+                        "Service principals y managed identities",
+                        "Docker breakout concepts",
+                        "Kubernetes API enumeration",
+                        "Kubernetes RBAC abuse",
+                        "Secrets en contenedores",
+                        "CI/CD secrets y runners",
+                        "Supply chain attacks",
+                        "Terraform/IaC misconfigurations"
                     ]
                 },
                 {
@@ -166,10 +222,17 @@ export default {
                         "Living off the Land (LOLBins / LOLScripts)",
                         "Infraestructura de C2 (Command & Control)",
                         "Domain fronting",
+                        "Traffic shaping y redirectors",
+                        "Payload staging",
+                        "AMSI bypass concepts",
+                        "ETW tampering concepts",
                         "OPSEC para red teamers",
                         "Uso de Tor / proxies / VPNs",
                         "Cobalt Strike (conceptos)",
-                        "Sliver / Havoc (frameworks C2 alternativos)"
+                        "Sliver / Havoc (frameworks C2 alternativos)",
+                        "Mythic",
+                        "Gestión de infraestructura de red team",
+                        "Detección esperada y purple team"
                     ]
                 },
                 {
@@ -180,10 +243,17 @@ export default {
                         "Diferencia entre Pentest, Red Team y Bug Bounty",
                         "MITRE ATT&CK como guía ofensiva",
                         "PTES (Penetration Testing Execution Standard)",
+                        "OWASP Web Security Testing Guide",
+                        "NIST SP 800-115",
+                        "OSSTMM",
                         "Scoping y reglas de enfrentamiento (Rules of Engagement)",
+                        "Autorización y límites legales",
                         "Redacción de informes de pentest",
                         "Gestión de evidencias",
                         "CVSS (puntuación de vulnerabilidades)",
+                        "CWE y CAPEC",
+                        "Priorización de hallazgos",
+                        "Re-test y cierre de vulnerabilidades",
                         "Laboratorios de práctica (HackTheBox, TryHackMe, VulnHub)",
                         "Bug Bounty (HackerOne, Bugcrowd)"
                     ]

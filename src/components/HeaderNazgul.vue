@@ -33,7 +33,11 @@ export default {
                         "Doxxing y cómo prevenirlo",
                         "OPSEC personal",
                         "Separación de identidades digitales",
-                        "Compartimentación de la vida digital"
+                        "Compartimentación de la vida digital",
+                        "Privacidad contextual",
+                        "Data retention y data deletion",
+                        "Riesgo reputacional",
+                        "Evaluación de proveedores desde privacidad"
                     ]
                 },
                 {
@@ -55,9 +59,14 @@ export default {
                         "Proxies y sus limitaciones",
                         "Fingerprinting de navegador (Browser Fingerprinting)",
                         "Canvas fingerprinting",
+                        "Font, audio y WebGL fingerprinting",
+                        "Resistencia a fingerprinting",
                         "WebRTC leaks",
                         "Modo incógnito: mitos y realidad",
-                        "Compartir conexión de forma segura"
+                        "Compartir conexión de forma segura",
+                        "Tor bridges y pluggable transports",
+                        "Onion services propios",
+                        "Navegación compartimentada por perfiles"
                     ]
                 },
                 {
@@ -79,7 +88,11 @@ export default {
                         "Rastreo en aplicaciones de mensajería",
                         "Shadow profiles (perfiles en la sombra)",
                         "Agregación de datos y perfilado",
-                        "Cámaras de vigilancia y reconocimiento facial"
+                        "Cámaras de vigilancia y reconocimiento facial",
+                        "Rastreo por Bluetooth beacons",
+                        "Rastreo por WiFi probe requests",
+                        "Data brokers y enriquecimiento de perfiles",
+                        "AI profiling"
                     ]
                 },
                 {
@@ -100,7 +113,11 @@ export default {
                         "Números de teléfono virtuales",
                         "Comunicación anónima en situaciones de riesgo",
                         "Dead drops digitales",
-                        "Canales seguros para whistleblowers (SecureDrop)"
+                        "Canales seguros para whistleblowers (SecureDrop)",
+                        "Verificación de claves",
+                        "Forward secrecy",
+                        "Autodestrucción de mensajes y límites",
+                        "Seguridad de grupos y admins"
                     ]
                 },
                 {
@@ -122,7 +139,11 @@ export default {
                         "Cifrado de archivos locales (Veracrypt, Cryptomator)",
                         "Eliminación segura de datos (shred, Eraser)",
                         "BIOS/UEFI y firmware: riesgos de privacidad",
-                        "Micrófonos y cámaras: gestión física y lógica"
+                        "Micrófonos y cámaras: gestión física y lógica",
+                        "Secure Boot y firmware",
+                        "Actualizaciones y cadena de confianza",
+                        "Aislamiento por perfiles o máquinas virtuales",
+                        "Backups cifrados"
                     ]
                 },
                 {
@@ -144,7 +165,31 @@ export default {
                         "eSIM y privacidad",
                         "Stingrays y IMSI catchers",
                         "Modo avión como herramienta de privacidad",
-                        "Faraday bags"
+                        "Faraday bags",
+                        "Bloqueo de SIM con PIN",
+                        "Perfiles de trabajo en Android",
+                        "MDM personal",
+                        "Copias de seguridad móviles cifradas"
+                    ]
+                },
+                {
+                    id: "account_data_hygiene",
+                    name: "Cuentas, Datos y Huella Pública",
+                    subs: [
+                        "Inventario de cuentas",
+                        "Password managers y passkeys",
+                        "MFA resistente a phishing",
+                        "Alias de correo por servicio",
+                        "Alias de teléfono y números virtuales",
+                        "Eliminar cuentas antiguas",
+                        "Reducir datos en redes sociales",
+                        "Privacidad en LinkedIn y GitHub",
+                        "Metadatos en documentos e imágenes",
+                        "Limpieza de EXIF",
+                        "Borrado seguro y destrucción de datos",
+                        "Backups privados",
+                        "Control de permisos OAuth",
+                        "Revisiones periódicas de privacidad"
                     ]
                 },
                 {
@@ -164,7 +209,32 @@ export default {
                         "Air-gapped computers",
                         "Comunicación en entornos de alto riesgo",
                         "Privacidad post-mortem (qué ocurre con tus datos al morir)",
-                        "Cómo eliminar tu presencia de internet"
+                        "Cómo eliminar tu presencia de internet",
+                        "Modelos de alto riesgo",
+                        "Plan de emergencia digital",
+                        "Crossing borders con dispositivos",
+                        "Documentación segura para fuentes",
+                        "Riesgos de IA generativa para privacidad"
+                    ]
+                },
+                {
+                    id: "privacy_law_rights",
+                    name: "Derechos, Leyes y Gobierno",
+                    subs: [
+                        "GDPR / RGPD: derechos del interesado",
+                        "Acceso, rectificación, supresión y oposición",
+                        "Portabilidad de datos",
+                        "DPIA / Evaluación de impacto",
+                        "Privacy by Design y by Default",
+                        "Bases legales de tratamiento",
+                        "Data controller vs processor",
+                        "Transferencias internacionales",
+                        "CCPA / CPRA",
+                        "ePrivacy y cookies",
+                        "NIS2 y DORA desde privacidad",
+                        "Políticas de privacidad legibles",
+                        "Dark patterns",
+                        "Consentimiento real vs forzado"
                     ]
                 }
             ]

@@ -17,101 +17,147 @@ export default {
             hideTimeout: null,
             subItems: [
                 {
-                    id: "darkweb_basics",
-                    name: "Fundamentos de Darkweb",
+                    id: "darkweb_foundations",
+                    name: "Fundamentos y Ecosistema",
                     subs: [
-                        "Qué es Deep Web, Dark Web y Surface Web",
-                        "Cómo funciona la red Tor",
-                        "Servicios .onion",
-                        "Historia de la Darkweb",
-                        "Mitos vs realidad",
-                        "Anonimato real y limitaciones",
-                        "Nodos, relays y exit nodes",
-                        "Riesgos comunes al navegar"
+                        "Surface Web, Deep Web y Dark Web",
+                        "Tor, I2P, Freenet y redes anonimas",
+                        "Servicios .onion y onion routing",
+                        "Relays, bridges, guards y exit nodes",
+                        "Hidden services y descriptor directories",
+                        "Amenazas reales vs mitos",
+                        "Historia: Silk Road, AlphaBay y operaciones policiales",
+                        "Foros, paste sites, leak sites y mercados",
+                        "Lenguaje habitual: escrow, mirrors, vendors, dumps",
+                        "Economia criminal como objeto de inteligencia",
+                        "Riesgos tecnicos, legales y personales",
+                        "Casos de uso legitimos: periodismo, investigacion y censura"
                     ]
                 },
                 {
-                    id: "secure_access",
+                    id: "safe_access_opsec",
                     name: "Acceso Seguro y OPSEC",
                     subs: [
-                        "Cómo entrar de forma segura",
-                        "Tor Browser configuración segura",
-                        "Uso de Tails OS",
-                        "VPN + Tor: ventajas y límites",
-                        "Separación de identidades",
-                        "Buenas prácticas OPSEC",
-                        "Evitar leaks DNS / WebRTC",
-                        "Errores comunes de principiantes"
+                        "Modelo de amenazas antes de acceder",
+                        "Tor Browser: configuracion segura",
+                        "Tails OS y sesiones amnesicas",
+                        "Whonix y aislamiento por gateway",
+                        "Maquinas virtuales y snapshots",
+                        "Separacion de identidades y pseudonimos",
+                        "VPN + Tor: ventajas, limites y riesgos",
+                        "Bridges, pluggable transports y censura",
+                        "DNS leaks, WebRTC leaks y fingerprinting",
+                        "Descargas, macros y archivos peligrosos",
+                        "Reglas de no autenticacion cruzada",
+                        "Errores de OPSEC comunes"
                     ]
                 },
                 {
-                    id: "directories_search",
-                    name: "Directorios y Búsqueda",
+                    id: "search_validation",
+                    name: "Busqueda y Verificacion",
                     subs: [
-                        "Cómo encontrar recursos legítimos",
-                        "Motores de búsqueda .onion",
-                        "Directorios fiables",
-                        "Verificación de mirrors",
-                        "Sitios caídos y rotación de dominios",
-                        "Cómo detectar enlaces falsos",
-                        "Bookmarks seguros",
-                        "Fuentes actualizadas"
+                        "Motores de busqueda .onion",
+                        "Directorios y reputacion de fuentes",
+                        "Verificacion de mirrors y enlaces",
+                        "Firmas PGP y canales oficiales",
+                        "Deteccion de clones y phishing .onion",
+                        "Rotacion de dominios y enlaces caidos",
+                        "Wayback, caches y trazas historicas",
+                        "Correlacion con fuentes OSINT",
+                        "Captura segura de evidencias publicas",
+                        "Gestor de bookmarks y notas operativas",
+                        "Indicadores de confianza y de fraude",
+                        "Gestion de fuentes en investigaciones"
                     ]
                 },
                 {
-                    id: "privacy_tools",
-                    name: "Privacidad y Herramientas",
+                    id: "threat_intel_leaks",
+                    name: "Threat Intel y Filtraciones",
                     subs: [
-                        "PGP / GPG en la Darkweb",
-                        "Mensajería segura",
+                        "Monitorizacion de leak sites",
+                        "Ransomware data leak sites",
+                        "Credenciales filtradas y combo lists",
+                        "Stealer logs y mercados de accesos",
+                        "Initial Access Brokers",
+                        "Foros clandestinos y reputacion",
+                        "Carding y fraude como inteligencia defensiva",
+                        "Tracking de actores y aliases",
+                        "IOCs, TTPs y atribucion prudente",
+                        "STIX/TAXII y modelos de intercambio",
+                        "Integracion con SIEM/TIP",
+                        "Limitaciones eticas de la inteligencia clandestina"
+                    ]
+                },
+                {
+                    id: "scams_malware_risks",
+                    name: "Estafas, Malware y Amenazas",
+                    subs: [
+                        "Scams y exit scams",
+                        "Phishing y suplantacion en .onion",
+                        "Mercados falsos y escrow falso",
+                        "Malware en descargas y adjuntos",
+                        "Troyanos, stealers y loaders",
+                        "Documentos trampa y exploits de cliente",
+                        "Ingenieria social en foros",
+                        "Doxxing, extorsion y sextortion",
+                        "Riesgos de criptomonedas trazables",
+                        "Malware-as-a-Service",
+                        "Botnets, DDoS-for-hire y su seguimiento",
+                        "Senales tempranas de fraude"
+                    ]
+                },
+                {
+                    id: "privacy_crypto_payments",
+                    name: "Privacidad, Cripto y Trazabilidad",
+                    subs: [
+                        "PGP/GPG para verificacion, no confianza ciega",
+                        "Mensajeria cifrada y metadatos",
+                        "Bitcoin y pseudoanonimato",
                         "Monero y privacidad financiera",
-                        "Bitcoin y trazabilidad",
-                        "Gestores de contraseñas",
-                        "Cifrado de archivos",
-                        "Máquinas virtuales aisladas",
-                        "Navegación compartimentada"
+                        "Blockchain analytics y clustering",
+                        "Mixers, tumblers y riesgos legales",
+                        "Wallet hygiene",
+                        "KYC, exchanges y trazabilidad",
+                        "Cifrado de archivos y contenedores",
+                        "Gestion de claves y passphrases",
+                        "Compartimentacion de navegador y sistema",
+                        "Privacidad operacional frente a investigacion"
                     ]
                 },
                 {
-                    id: "threats_scams",
-                    name: "Estafas, Riesgos y Amenazas",
+                    id: "investigation_evidence",
+                    name: "Investigacion y Evidencia",
                     subs: [
-                        "Scams habituales",
-                        "Phishing en .onion",
-                        "Mercados falsos",
-                        "Exit scams",
-                        "Malware distribuido en foros",
-                        "Ingeniería social",
-                        "Suplantaciones",
-                        "Cómo detectar fraudes"
-                    ]
-                },
-                {
-                    id: "intelligence_osint",
-                    name: "Investigación y OSINT",
-                    subs: [
-                        "Monitorización de filtraciones",
-                        "Leaks y brechas de datos",
-                        "Threat Intelligence",
-                        "Rastreo de menciones",
-                        "Foros clandestinos",
-                        "Análisis de reputación",
-                        "Fuentes útiles para investigadores",
-                        "Casos reales conocidos"
+                        "Investigacion pasiva y limites operativos",
+                        "Preservacion de evidencias web",
+                        "Hashing, timestamps y cadena de custodia",
+                        "Capturas reproducibles y notas de caso",
+                        "Analisis de alias, handles y pivots",
+                        "Analisis de infraestructura .onion",
+                        "Correlacion con dominios, wallets y correos",
+                        "OSINT defensivo de filtraciones",
+                        "Notificacion responsable a afectados",
+                        "Coordinacion con legal y cumplimiento",
+                        "Informes de inteligencia accionable",
+                        "No interaccion con material ilegal"
                     ]
                 },
                 {
                     id: "legal_ethics",
-                    name: "Legalidad y Ética",
+                    name: "Legalidad y Etica",
                     subs: [
-                        "Qué es legal consultar",
-                        "Qué actividades evitar",
-                        "Riesgos jurídicos por país",
-                        "Privacidad vs delito",
-                        "Investigación responsable",
-                        "Uso periodístico y académico",
-                        "Buenas prácticas éticas",
-                        "Límites personales"
+                        "Diferencia entre observar, descargar e interactuar",
+                        "Actividades prohibidas y riesgos penales",
+                        "Material ilegal y obligacion de no manipularlo",
+                        "Investigacion periodistica y academica",
+                        "Investigacion corporativa autorizada",
+                        "Privacidad, proporcionalidad y minimizacion",
+                        "Jurisdiccion y cooperacion internacional",
+                        "Politicas internas de investigacion",
+                        "Consentimiento y autorizacion",
+                        "Proteccion del investigador",
+                        "Divulgacion responsable",
+                        "Etica profesional en inteligencia"
                     ]
                 }
             ]

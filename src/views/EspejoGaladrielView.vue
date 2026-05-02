@@ -1344,12 +1344,15 @@ function describeAlphabet(password) {
     padding: 14px;
     max-height: 420px;
     overflow: auto;
+    max-width: 100%;
+    -webkit-overflow-scrolling: touch;
 }
 
 .result-pre {
     margin: 0;
     color: #cbd5e1;
     white-space: pre-wrap;
+    overflow-wrap: anywhere;
     word-break: break-word;
     font-size: 0.84rem;
     line-height: 1.6;
@@ -1400,7 +1403,7 @@ function describeAlphabet(password) {
 
 @media (max-width: 767px) {
     .section-box {
-        padding: 18px;
+        padding: 16px;
     }
 
     .guide-grid {
@@ -1413,6 +1416,7 @@ function describeAlphabet(password) {
 
     .action-button {
         width: 100%;
+        min-width: 0;
     }
 
     .card-head {
@@ -1420,5 +1424,31 @@ function describeAlphabet(password) {
         align-items: flex-start;
     }
 
+    .source-head,
+    .verdict-card {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .mini-badge {
+        white-space: normal;
+        text-align: center;
+        overflow-wrap: anywhere;
+    }
+
+    .result-pre {
+        font-size: 0.78rem;
+    }
+}
+
+@media (max-width: 420px) {
+    .section-box {
+        padding: 14px;
+        border-radius: 8px;
+    }
+
+    .section-kicker {
+        letter-spacing: 0.08em;
+    }
 }
 </style>

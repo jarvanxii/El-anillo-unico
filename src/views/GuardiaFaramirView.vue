@@ -1238,12 +1238,16 @@ export default {
     border-radius: 8px;
     padding: 14px;
     min-height: 260px;
+    max-width: 100%;
+    overflow: auto;
+    -webkit-overflow-scrolling: touch;
 }
 
 .result-pre {
     margin: 0;
     color: #cbd5e1;
     white-space: pre-wrap;
+    overflow-wrap: anywhere;
     word-break: break-word;
     font-size: 0.84rem;
     line-height: 1.6;
@@ -1274,7 +1278,7 @@ export default {
 
 @media (max-width: 767px) {
     .section-box {
-        padding: 18px;
+        padding: 16px;
     }
 
     .scan-row {
@@ -1283,6 +1287,7 @@ export default {
 
     .btn-main {
         width: 100%;
+        min-width: 0;
     }
 
     .card-head,
@@ -1293,6 +1298,31 @@ export default {
 
     .output-box {
         min-height: 220px;
+    }
+
+    .verdict-card {
+        grid-template-columns: 1fr;
+    }
+
+    .mini-badge {
+        white-space: normal;
+        text-align: center;
+        overflow-wrap: anywhere;
+    }
+
+    .result-pre {
+        font-size: 0.78rem;
+    }
+}
+
+@media (max-width: 420px) {
+    .section-box {
+        padding: 14px;
+        border-radius: 8px;
+    }
+
+    .section-kicker {
+        letter-spacing: 0.08em;
     }
 }
 </style>

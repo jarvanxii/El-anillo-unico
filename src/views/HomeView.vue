@@ -579,20 +579,8 @@ main {
 }
 
 .cards-grid.big-cards {
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
     gap: 28px;
-}
-
-@media (max-width: 900px) {
-    .cards-grid.big-cards {
-        grid-template-columns: repeat(2, 1fr);
-    }
-}
-
-@media (max-width: 500px) {
-    .cards-grid.big-cards {
-        grid-template-columns: 1fr;
-    }
 }
 
 .option-card {
@@ -607,6 +595,7 @@ main {
     text-decoration: none;
     display: block;
     color: inherit;
+    min-width: 0;
     transition:
         transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1),
         box-shadow 0.4s ease,
@@ -723,6 +712,7 @@ main {
     transition: color 0.3s ease;
     position: relative;
     z-index: 1;
+    overflow-wrap: anywhere;
 }
 
 .option-card:hover h3 {
@@ -742,6 +732,8 @@ main {
     transition: color 0.3s ease, border-color 0.3s ease;
     position: relative;
     z-index: 1;
+    max-width: 100%;
+    overflow-wrap: anywhere;
 }
 
 .option-card:hover .option-tag {
@@ -859,6 +851,9 @@ main {
 
     .option-card {
         padding: 28px 16px 24px;
+        overflow: hidden;
+        border-bottom-left-radius: 4px;
+        border-bottom-right-radius: 4px;
     }
 
     .option-img {
@@ -866,8 +861,45 @@ main {
         height: 76px;
     }
 
+    .option-card:hover {
+        z-index: 1;
+        transform: translateY(-3px);
+        border-bottom-left-radius: 4px;
+        border-bottom-right-radius: 4px;
+    }
+
+    .option-info {
+        position: static;
+        max-height: none;
+        opacity: 1;
+        margin-top: 14px;
+        padding: 12px 0 0;
+        border: 0;
+        border-top: 1px solid rgba(212, 175, 55, 0.18);
+        border-radius: 0;
+        background: transparent;
+        box-shadow: none;
+        pointer-events: auto;
+    }
+
+    .option-card:hover .option-info {
+        max-height: none;
+        padding: 12px 0 0;
+    }
+
     main {
         padding: 50px 16px 60px;
+    }
+}
+
+@media (max-width: 480px) {
+    .cards-grid.big-cards {
+        grid-template-columns: 1fr;
+        gap: 18px;
+    }
+
+    .section-label {
+        letter-spacing: 3px;
     }
 }
 </style>

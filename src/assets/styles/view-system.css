@@ -20,6 +20,36 @@
     --view-shadow: rgba(2, 6, 23, 0.28);
 }
 
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+html,
+body,
+#app {
+    max-width: 100%;
+}
+
+body {
+    overflow-x: clip;
+}
+
+img,
+svg,
+video,
+canvas {
+    max-width: 100%;
+}
+
+button,
+input,
+select,
+textarea {
+    min-width: 0;
+}
+
 .app-view {
     min-height: 100vh;
     background:
@@ -32,6 +62,11 @@
 .app-view-content {
     padding-top: 45px;
     padding-bottom: 60px;
+}
+
+.container,
+.container-fluid {
+    min-width: 0;
 }
 
 .hero-banner img {
@@ -47,6 +82,7 @@
     padding: 24px;
     margin-bottom: 24px;
     box-shadow: 0 18px 34px var(--view-shadow);
+    min-width: 0;
 }
 
 .intro-box {
@@ -149,6 +185,7 @@
     background: var(--view-surface-strong);
     border: 1px solid var(--view-border);
     border-radius: 8px;
+    min-width: 0;
 }
 
 .guide-card,
@@ -234,6 +271,7 @@
     flex-wrap: wrap;
     gap: 12px;
     margin: 18px 0 12px;
+    min-width: 0;
 }
 
 .btn-main,
@@ -244,6 +282,8 @@
     font-size: 0.92rem;
     font-weight: 600;
     transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+    min-width: 0;
+    white-space: normal;
 }
 
 .btn-main {
@@ -355,6 +395,7 @@
     align-items: center;
     justify-content: space-between;
     gap: 12px;
+    min-width: 0;
 }
 
 .card-head h5,
@@ -377,6 +418,8 @@
     border: 1px solid color-mix(in srgb, var(--view-border) 92%, black 8%);
     padding: 14px;
     overflow: auto;
+    max-width: 100%;
+    -webkit-overflow-scrolling: touch;
 }
 
 .result-pre {
@@ -385,6 +428,7 @@
     font-size: 0.84rem;
     line-height: 1.65;
     white-space: pre-wrap;
+    overflow-wrap: anywhere;
     word-break: break-word;
 }
 
@@ -518,16 +562,23 @@
     .section-topline {
         grid-template-columns: minmax(0, 1fr);
     }
+
+    .card-head,
+    .source-head {
+        align-items: flex-start;
+    }
 }
 
 @media (max-width: 767px) {
     .app-view-content {
-        padding-top: 30px;
+        width: 100%;
+        max-width: 100%;
+        padding: 30px 14px 42px;
         padding-bottom: 42px;
     }
 
     .section-box {
-        padding: 18px;
+        padding: 16px;
         margin-bottom: 18px;
     }
 
@@ -535,5 +586,55 @@
     .card-grid,
     .control-grid {
         grid-template-columns: minmax(0, 1fr);
+        gap: 12px;
+    }
+
+    .inline-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .inline-actions .btn,
+    .inline-actions button,
+    .control-grid .btn,
+    .control-grid button {
+        width: 100%;
+    }
+
+    .card-head,
+    .source-head,
+    .verdict-card {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .mini-badge {
+        white-space: normal;
+        text-align: center;
+        overflow-wrap: anywhere;
+    }
+
+    .output-box {
+        padding: 12px;
+    }
+
+    .result-pre {
+        font-size: 0.78rem;
+    }
+}
+
+@media (max-width: 420px) {
+    .app-view-content {
+        padding-left: 10px;
+        padding-right: 10px;
+    }
+
+    .section-box {
+        padding: 14px;
+        border-radius: 8px;
+    }
+
+    .section-kicker {
+        letter-spacing: 0.08em;
     }
 }

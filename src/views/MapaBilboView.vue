@@ -4,7 +4,7 @@
             <img src="@/assets/banners/banner-bilbo.webp" alt="El antiguo mapa de Bilbo" />
         </section>
 
-        <div class="container py-5">
+        <div class="container bilbo-content">
             <section class="section-box intro-box">
                 <div class="section-heading">
                     <span class="section-kicker">Ruta guiada de aprendizaje</span>
@@ -508,6 +508,11 @@ export default {
     object-fit: cover;
 }
 
+.bilbo-content {
+    padding-top: 3rem;
+    padding-bottom: 3rem;
+}
+
 .section-box {
     background: #111827;
     border: 1px solid #1f2937;
@@ -555,11 +560,11 @@ export default {
 }
 
 .guide-grid {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
 }
 
 .category-grid {
-    grid-template-columns: repeat(5, minmax(0, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
 }
 
 .guide-card,
@@ -621,7 +626,9 @@ export default {
     padding: 16px;
     text-align: left;
     color: inherit;
+    min-width: 0;
     transition: border-color 0.2s ease, transform 0.2s ease, background 0.2s ease;
+    touch-action: manipulation;
 }
 
 .category-card:hover,
@@ -637,6 +644,7 @@ export default {
     margin: 0;
     color: #cbd5e1;
     line-height: 1.6;
+    overflow-wrap: anywhere;
 }
 
 .category-card-head,
@@ -646,11 +654,13 @@ export default {
     justify-content: space-between;
     gap: 12px;
     align-items: center;
+    min-width: 0;
 }
 
 .category-card-head strong {
     display: block;
     margin-top: 2px;
+    word-break: break-word;
 }
 
 .progress-rail {
@@ -741,7 +751,7 @@ export default {
 
 .test-layout {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) 320px;
+    grid-template-columns: minmax(0, 1fr) minmax(260px, 320px);
     gap: 24px;
 }
 
@@ -761,6 +771,7 @@ export default {
     padding-left: 18px;
     color: #cbd5e1;
     line-height: 1.65;
+    overflow-wrap: anywhere;
 }
 
 .compact-list {
@@ -831,6 +842,7 @@ export default {
     padding: 14px;
     color: #e2e8f0;
     transition: border-color 0.2s ease, transform 0.2s ease, background 0.2s ease;
+    touch-action: manipulation;
 }
 
 .option-card:hover:enabled {
@@ -855,6 +867,8 @@ export default {
 
 .option-copy {
     line-height: 1.6;
+    min-width: 0;
+    overflow-wrap: anywhere;
 }
 
 .option-idle {
@@ -893,13 +907,14 @@ export default {
 
 .level-track {
     display: grid;
-    grid-template-columns: repeat(5, minmax(0, 1fr));
+    grid-template-columns: repeat(5, minmax(42px, 1fr));
     gap: 10px;
     margin: 4px 0 2px;
 }
 
 .level-node {
-    height: 42px;
+    min-height: 42px;
+    aspect-ratio: 1 / 1;
     border-radius: 8px;
     border: 1px solid #334155;
     background: #0f172a;
@@ -994,28 +1009,51 @@ export default {
 
 @media (max-width: 1399px) {
     .category-grid {
-        grid-template-columns: repeat(3, minmax(0, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
     }
 }
 
 @media (max-width: 1199px) {
-    .guide-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-
     .test-layout {
         grid-template-columns: 1fr;
+    }
+
+    .test-sidebar {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
     }
 }
 
 @media (max-width: 767px) {
+    .hero-banner {
+        margin-top: 52px;
+    }
+
+    .bilbo-content {
+        width: 100%;
+        max-width: 100%;
+        padding: 28px 14px 40px;
+    }
+
     .section-box {
-        padding: 18px;
+        padding: 16px;
+        margin-bottom: 16px;
     }
 
     .guide-grid,
-    .category-grid,
-    .level-track {
+    .category-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+
+    .test-layout,
+    .test-main,
+    .test-sidebar,
+    .question-card,
+    .question-stage {
+        gap: 14px;
+    }
+
+    .test-sidebar {
         grid-template-columns: 1fr;
     }
 
@@ -1034,8 +1072,59 @@ export default {
         width: 100%;
     }
 
+    .metric-card,
+    .side-card,
+    .guide-card,
+    .category-card,
+    .focus-card,
+    .feedback-card {
+        padding: 14px;
+    }
+
+    .option-card {
+        grid-template-columns: 30px minmax(0, 1fr);
+        gap: 10px;
+        padding: 12px;
+    }
+
+    .option-index {
+        width: 30px;
+        height: 30px;
+    }
+
+    .level-track {
+        grid-template-columns: repeat(5, minmax(42px, 1fr));
+        gap: 8px;
+    }
+
+    .level-node {
+        min-height: 40px;
+        font-size: 0.86rem;
+    }
+
+    .mini-badge {
+        white-space: normal;
+        text-align: center;
+    }
+
     .question-state {
         white-space: normal;
+    }
+}
+
+@media (max-width: 420px) {
+    .bilbo-content {
+        padding-left: 10px;
+        padding-right: 10px;
+    }
+
+    .section-box {
+        padding: 14px;
+        border-radius: 8px;
+    }
+
+    .level-track {
+        grid-template-columns: repeat(3, minmax(44px, 1fr));
     }
 }
 </style>

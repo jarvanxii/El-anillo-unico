@@ -6002,6 +6002,8 @@ function runRegexTest() {
     border-radius: 6px;
     font-weight: 600;
     padding: 9px 14px;
+    min-width: 0;
+    white-space: normal;
 }
 
 .btn-main {
@@ -6209,11 +6211,14 @@ function runRegexTest() {
     padding: 14px;
     max-height: 420px;
     overflow: auto;
+    max-width: 100%;
+    -webkit-overflow-scrolling: touch;
 }
 
 .result-pre {
     margin: 0;
     white-space: pre-wrap;
+    overflow-wrap: anywhere;
     word-break: break-word;
     font-family: 'Courier New', monospace;
     color: #cbd5e1;
@@ -6285,7 +6290,7 @@ function runRegexTest() {
 
 @media (max-width: 767px) {
     .section-box {
-        padding: 18px;
+        padding: 16px;
     }
 
     .section-name,
@@ -6300,6 +6305,7 @@ function runRegexTest() {
     .info-popover {
         left: auto;
         right: 0;
+        width: min(320px, calc(100vw - 28px));
         transform: translate(0, 6px);
     }
 
@@ -6315,9 +6321,13 @@ function runRegexTest() {
 
     .inline-actions {
         flex-direction: column;
+        align-items: stretch;
     }
 
-    .inline-actions .btn {
+    .inline-actions .btn,
+    .module-actions .btn,
+    .guide-button,
+    .info-button {
         width: 100%;
     }
 
@@ -6329,6 +6339,35 @@ function runRegexTest() {
 
     .card-actions {
         justify-content: flex-start;
+    }
+
+    .transfer-panel,
+    .asymmetric-guide-panel,
+    .key-exchange-box {
+        padding: 14px;
+    }
+
+    .copy-toast {
+        width: 100%;
+        text-align: center;
+        border-radius: 8px;
+    }
+
+    .result-pre,
+    .mono-textarea,
+    .mono-input {
+        font-size: 0.78rem;
+    }
+}
+
+@media (max-width: 420px) {
+    .section-box {
+        padding: 14px;
+        border-radius: 8px;
+    }
+
+    .section-kicker {
+        letter-spacing: 0.08em;
     }
 }
 </style>

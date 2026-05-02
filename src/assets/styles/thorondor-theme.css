@@ -8,11 +8,13 @@
         radial-gradient(circle at top right, rgba(169, 186, 203, 0.14), transparent 30%),
         linear-gradient(180deg, #131f2c 0%, #101a26 45%, #0b121b 100%);
     font-family: 'Inter', sans-serif;
+    overflow-x: clip;
 }
 
 .thorondor-page .thorondor-content {
     padding-top: calc(var(--thorondor-header-offset) + var(--thorondor-content-gap));
     padding-bottom: 60px;
+    min-width: 0;
 }
 
 .thorondor-page .thorondor-content.with-banner {
@@ -36,6 +38,7 @@
     padding: 24px;
     margin-bottom: 24px;
     box-shadow: 0 18px 34px rgba(5, 11, 18, 0.34);
+    min-width: 0;
 }
 
 .thorondor-page .intro-box {
@@ -136,6 +139,7 @@
     background: rgba(13, 20, 29, 0.82);
     border: 1px solid rgba(51, 65, 85, 0.72);
     border-radius: 8px;
+    min-width: 0;
 }
 
 .thorondor-page .guide-card,
@@ -319,6 +323,8 @@
     border-radius: 6px;
     font-weight: 600;
     padding: 9px 14px;
+    min-width: 0;
+    white-space: normal;
 }
 
 .thorondor-page .btn-main {
@@ -373,6 +379,7 @@
     justify-content: space-between;
     align-items: center;
     gap: 12px;
+    min-width: 0;
 }
 
 .thorondor-page .card-head h5 {
@@ -394,6 +401,8 @@
     font-size: 0.74rem;
     font-weight: 700;
     text-transform: uppercase;
+    white-space: normal;
+    text-align: center;
 }
 
 .thorondor-page .output-box {
@@ -402,6 +411,8 @@
     border-radius: 8px;
     padding: 14px;
     overflow: auto;
+    max-width: 100%;
+    -webkit-overflow-scrolling: touch;
 }
 
 .thorondor-page .fixed-output {
@@ -415,6 +426,7 @@
 .thorondor-page .result-pre {
     margin: 0;
     white-space: pre-wrap;
+    overflow-wrap: anywhere;
     word-break: break-word;
     font-family: 'Courier New', monospace;
     color: #cbd5e1;
@@ -432,6 +444,8 @@
 
 .thorondor-page .table-wrap {
     overflow: auto;
+    max-width: 100%;
+    -webkit-overflow-scrolling: touch;
 }
 
 .thorondor-page .table-dark {
@@ -664,7 +678,12 @@
     }
 
     .thorondor-page .thorondor-content {
+        width: 100%;
+        max-width: 100%;
+        padding-left: 14px;
+        padding-right: 14px;
         padding-top: calc(var(--thorondor-header-offset) + var(--thorondor-content-gap-mobile));
+        padding-bottom: 42px;
     }
 
     .thorondor-page .thorondor-content.with-banner {
@@ -672,7 +691,8 @@
     }
 
     .thorondor-page .section-box {
-        padding: 18px;
+        padding: 16px;
+        margin-bottom: 18px;
     }
 
     .thorondor-page .guide-grid,
@@ -688,5 +708,35 @@
     .thorondor-page .inline-actions .btn,
 .thorondor-page .detail-tab {
         width: 100%;
+    }
+
+    .thorondor-page .inline-actions,
+    .thorondor-page .table-actions,
+    .thorondor-page .card-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .thorondor-page .table-actions .btn,
+    .thorondor-page .card-actions .btn,
+    .thorondor-page .btn-main,
+    .thorondor-page .btn-subtle {
+        width: 100%;
+    }
+}
+
+@media (max-width: 420px) {
+    .thorondor-page .thorondor-content {
+        padding-left: 10px;
+        padding-right: 10px;
+    }
+
+    .thorondor-page .section-box {
+        padding: 14px;
+        border-radius: 8px;
+    }
+
+    .thorondor-page .section-kicker {
+        letter-spacing: 0.08em;
     }
 }

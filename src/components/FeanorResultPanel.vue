@@ -229,11 +229,14 @@ defineEmits(["copy"]);
     padding: 14px;
     max-height: 420px;
     overflow: auto;
+    max-width: 100%;
+    -webkit-overflow-scrolling: touch;
 }
 
 .result-pre {
     margin: 0;
     white-space: pre-wrap;
+    overflow-wrap: anywhere;
     word-break: break-word;
     font-family: "Courier New", monospace;
     color: #cbd5e1;
@@ -258,6 +261,11 @@ defineEmits(["copy"]);
 }
 
 @media (max-width: 767px) {
+    .verdict-card {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
     .card-head {
         flex-direction: column;
         align-items: flex-start;
@@ -265,6 +273,16 @@ defineEmits(["copy"]);
 
     .card-actions {
         justify-content: flex-start;
+        width: 100%;
+    }
+
+    .card-actions .btn,
+    .btn-quiet {
+        width: 100%;
+    }
+
+    .result-pre {
+        font-size: 0.78rem;
     }
 }
 </style>

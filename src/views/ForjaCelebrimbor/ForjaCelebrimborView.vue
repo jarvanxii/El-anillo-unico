@@ -350,12 +350,19 @@ export default {
         grid-template-columns: minmax(0, 1fr);
     }
 
+    .category-link span {
+        white-space: normal;
+        overflow: visible;
+        text-overflow: clip;
+    }
+
     .tool-actions {
         flex-direction: column;
     }
 
     .tool-link {
         width: 100%;
+        white-space: normal;
     }
 }
 </style>

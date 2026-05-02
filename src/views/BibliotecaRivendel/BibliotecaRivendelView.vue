@@ -20,8 +20,8 @@
 
 <script>
 import SimpleLorePage from "@/components/SimpleLorePage.vue";
-import bannerBiblioteca from "@/assets/banners/banner-biblioteca.png";
-import logoBiblioteca from "@/assets/logos/biblioteca.png";
+import bannerBiblioteca from "@/assets/banners/banner-biblioteca.webp";
+import logoBiblioteca from "@/assets/logos/biblioteca.webp";
 
 export default {
     name: "BibliotecaRivendelPage",

@@ -20,8 +20,8 @@
 
 <script>
 import SimpleLorePage from "@/components/SimpleLorePage.vue";
-import bannerElrond from "@/assets/banners/banner-elrond.png";
-import logoElrond from "@/assets/logos/elrond.png";
+import bannerElrond from "@/assets/banners/banner-elrond.webp";
+import logoElrond from "@/assets/logos/elrond.webp";
 
 export default {
     name: "ElrondPage",

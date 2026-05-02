@@ -1,7 +1,7 @@
 <template>
     <div class="thorondor-page text-light">
         <section v-if="showBanner" class="hero-banner">
-            <img src="@/assets/banners/banner-thorondor.png" alt="El vuelo de Thorondor" />
+            <img src="@/assets/banners/banner-thorondor.webp" alt="El vuelo de Thorondor" />
         </section>
 
         <div class="container thorondor-content" :class="{ 'with-banner': showBanner }">

@@ -20,8 +20,8 @@
 
 <script>
 import SimpleLorePage from "@/components/SimpleLorePage.vue";
-import bannerPalantir from "@/assets/banners/banner-palantir.png";
-import logoPalantir from "@/assets/logos/palantir.png";
+import bannerPalantir from "@/assets/banners/banner-palantir.webp";
+import logoPalantir from "@/assets/logos/palantir.webp";
 
 export default {
     name: "PalantirPage",

@@ -3,6 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "humor:manifest": "node scripts/generate-humor-manifest.cjs",
+    "preserve": "node scripts/generate-humor-manifest.cjs",
+    "prebuild": "node scripts/generate-humor-manifest.cjs",
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build"
   },

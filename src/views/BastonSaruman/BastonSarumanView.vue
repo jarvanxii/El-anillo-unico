@@ -84,7 +84,7 @@
 </template>
 
 <script>
-import bannerSaruman from "@/assets/banners/banner-saruman.png";
+import bannerSaruman from "@/assets/banners/banner-saruman.webp";
 
 export default {
     name: "SarumanPage",

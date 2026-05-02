@@ -1,7 +1,7 @@
 <template>
     <div class="bilbo-page text-light">
         <section class="hero-banner">
-            <img src="@/assets/banners/banner-bilbo.png" alt="El antiguo mapa de Bilbo" />
+            <img src="@/assets/banners/banner-bilbo.webp" alt="El antiguo mapa de Bilbo" />
         </section>
 
         <div class="container py-5">

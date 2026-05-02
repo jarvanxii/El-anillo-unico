@@ -20,8 +20,8 @@
 
 <script>
 import SimpleLorePage from "@/components/SimpleLorePage.vue";
-import bannerNazgul from "@/assets/banners/banner-nazgul.png";
-import logoNazgul from "@/assets/logos/nazgul.png";
+import bannerNazgul from "@/assets/banners/banner-nazgul.webp";
+import logoNazgul from "@/assets/logos/nazgul.webp";
 
 export default {
     name: "NazgulPage",

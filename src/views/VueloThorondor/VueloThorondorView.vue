@@ -14,7 +14,7 @@
                 </div>
 
                 <div class="intro-emblem">
-                    <img src="@/assets/logos/thorondor.png" alt="Sello de Thorondor" />
+                    <img src="@/assets/logos/thorondor.webp" alt="Sello de Thorondor" />
                     <span>Monitorizacion desde el navegador</span>
                     <small>
                         Arquitectura pull sin backend: el navegador consulta directamente a cada agente por su IP

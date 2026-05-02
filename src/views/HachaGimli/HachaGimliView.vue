@@ -20,8 +20,8 @@
 
 <script>
 import SimpleLorePage from "@/components/SimpleLorePage.vue";
-import bannerGimli from "@/assets/banners/banner-gimli.png";
-import logoGimli from "@/assets/logos/gimli.png";
+import bannerGimli from "@/assets/banners/banner-gimli.webp";
+import logoGimli from "@/assets/logos/gimli.webp";
 
 export default {
     name: "GimliPage",

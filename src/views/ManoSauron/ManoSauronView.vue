@@ -20,8 +20,8 @@
 
 <script>
 import SimpleLorePage from "@/components/SimpleLorePage.vue";
-import bannerSauron from "@/assets/banners/banner-sauron.png";
-import logoSauron from "@/assets/logos/sauron.png";
+import bannerSauron from "@/assets/banners/banner-sauron.webp";
+import logoSauron from "@/assets/logos/sauron.webp";
 
 export default {
     name: "SauronPage",

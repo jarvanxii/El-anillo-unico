@@ -25,7 +25,7 @@
                     <div class="hero-stage-orbit orbit-two"></div>
                     <div class="ring-wrapper">
                         <div class="ring-glow"></div>
-                        <img src="@/assets/anillo.png" alt="Anillo Único" class="ring-img" />
+                        <img src="@/assets/anillo.webp" alt="Anillo Único" class="ring-img" />
                     </div>
                     <div class="hero-stage-caption">
                         <span class="hero-stage-line"></span>
@@ -41,7 +41,7 @@
                     <div class="corner-tl"></div>
                     <div class="corner-br"></div>
                     <div class="option-img-wrap">
-                        <img src="@/assets/logos/saruman.png" class="option-img" />
+                        <img src="@/assets/logos/saruman.webp" class="option-img" />
                     </div>
                     <h3>El bastón de Saruman</h3>
                     <span class="option-tag">Conceptos de Ciberseguridad</span>
@@ -54,7 +54,7 @@
                     <div class="corner-tl"></div>
                     <div class="corner-br"></div>
                     <div class="option-img-wrap">
-                        <img src="@/assets/logos/feanor.png" class="option-img" />
+                        <img src="@/assets/logos/feanor.webp" class="option-img" />
                     </div>
                     <h3>El códice de Fëanor</h3>
                     <span class="option-tag">Laboratorio Criptográfico</span>
@@ -67,7 +67,7 @@
                     <div class="corner-tl"></div>
                     <div class="corner-br"></div>
                     <div class="option-img-wrap">
-                        <img src="@/assets/logos/gimli.png" class="option-img" />
+                        <img src="@/assets/logos/gimli.webp" class="option-img" />
                     </div>
                     <h3>El hacha de Gimli</h3>
                     <span class="option-tag">Red Team</span>
@@ -80,7 +80,7 @@
                     <div class="corner-tl"></div>
                     <div class="corner-br"></div>
                     <div class="option-img-wrap">
-                        <img src="@/assets/logos/boromir.png" class="option-img" />
+                        <img src="@/assets/logos/boromir.webp" class="option-img" />
                     </div>
                     <h3>El escudo de Boromir</h3>
                     <span class="option-tag">Blue Team</span>
@@ -93,7 +93,7 @@
                     <div class="corner-tl"></div>
                     <div class="corner-br"></div>
                     <div class="option-img-wrap">
-                        <img src="@/assets/logos/gandalf.png" class="option-img" />
+                        <img src="@/assets/logos/gandalf.webp" class="option-img" />
                     </div>
                     <h3>La pipa de Gandalf</h3>
                     <span class="option-tag">Ocio</span>
@@ -108,7 +108,7 @@
                     <div class="corner-tl"></div>
                     <div class="corner-br"></div>
                     <div class="option-img-wrap">
-                        <img src="@/assets/logos/nazgul.png" class="option-img" />
+                        <img src="@/assets/logos/nazgul.webp" class="option-img" />
                     </div>
                     <h3>La capa de los Nazgûl</h3>
                     <span class="option-tag">Privacidad</span>
@@ -121,7 +121,7 @@
                     <div class="corner-tl"></div>
                     <div class="corner-br"></div>
                     <div class="option-img-wrap">
-                        <img src="@/assets/logos/faramir.png" class="option-img" />
+                        <img src="@/assets/logos/faramir.webp" class="option-img" />
                     </div>
                     <h3>La guardia de Faramir</h3>
                     <span class="option-tag">URLs seguras y malignas</span>
@@ -134,7 +134,7 @@
                     <div class="corner-tl"></div>
                     <div class="corner-br"></div>
                     <div class="option-img-wrap">
-                        <img src="@/assets/logos/palantir.png" class="option-img" />
+                        <img src="@/assets/logos/palantir.webp" class="option-img" />
                     </div>
                     <h3>La piedra Palantír</h3>
                     <span class="option-tag">Inteligencia Artificial</span>
@@ -147,7 +147,7 @@
                     <div class="corner-tl"></div>
                     <div class="corner-br"></div>
                     <div class="option-img-wrap">
-                        <img src="@/assets/logos/elrond.png" class="option-img" />
+                        <img src="@/assets/logos/elrond.webp" class="option-img" />
                     </div>
                     <h3>El concilio de Elrond</h3>
                     <span class="option-tag">Chat</span>
@@ -160,7 +160,7 @@
                     <div class="corner-tl"></div>
                     <div class="corner-br"></div>
                     <div class="option-img-wrap">
-                        <img src="@/assets/logos/radagast.png" class="option-img" />
+                        <img src="@/assets/logos/radagast.webp" class="option-img" />
                     </div>
                     <h3>Los champiñones de Radagast</h3>
                     <span class="option-tag">Rendimiento cognitivo</span>
@@ -174,7 +174,7 @@
                     <div class="corner-tl"></div>
                     <div class="corner-br"></div>
                     <div class="option-img-wrap">
-                        <img src="@/assets/logos/sauron.png" class="option-img" />
+                        <img src="@/assets/logos/sauron.webp" class="option-img" />
                     </div>
                     <h3>La mano de Sauron</h3>
                     <span class="option-tag">Darkweb</span>
@@ -187,7 +187,7 @@
                     <div class="corner-tl"></div>
                     <div class="corner-br"></div>
                     <div class="option-img-wrap">
-                        <img src="@/assets/logos/biblioteca.png" class="option-img" />
+                        <img src="@/assets/logos/biblioteca.webp" class="option-img" />
                     </div>
                     <h3>La biblioteca de Rivendel</h3>
                     <span class="option-tag">Certificaciones</span>
@@ -200,7 +200,7 @@
                     <div class="corner-tl"></div>
                     <div class="corner-br"></div>
                     <div class="option-img-wrap">
-                        <img src="@/assets/logos/galadriel.png" class="option-img" />
+                        <img src="@/assets/logos/galadriel.webp" class="option-img" />
                     </div>
                     <h3>El espejo de Galadriel</h3>
                     <span class="option-tag">Filtraciones</span>
@@ -213,7 +213,7 @@
                     <div class="corner-tl"></div>
                     <div class="corner-br"></div>
                     <div class="option-img-wrap">
-                        <img src="@/assets/logos/pippin.png" class="option-img" />
+                        <img src="@/assets/logos/pippin.webp" class="option-img" />
                     </div>
                     <h3>La jarra de Pippin</h3>
                     <span class="option-tag">Humor</span>
@@ -226,7 +226,7 @@
                     <div class="corner-tl"></div>
                     <div class="corner-br"></div>
                     <div class="option-img-wrap">
-                        <img src="@/assets/logos/celebrimbor.png" class="option-img" />
+                        <img src="@/assets/logos/celebrimbor.webp" class="option-img" />
                     </div>
                     <h3>La forja de Celebrimbor</h3>
                     <span class="option-tag">Herramientas</span>
@@ -239,7 +239,7 @@
                     <div class="corner-tl"></div>
                     <div class="corner-br"></div>
                     <div class="option-img-wrap">
-                        <img src="@/assets/logos/thorondor.png" class="option-img" />
+                        <img src="@/assets/logos/thorondor.webp" class="option-img" />
                     </div>
                     <h3>El vuelo de Thorondor</h3>
                     <span class="option-tag">Monitorización</span>
@@ -252,7 +252,7 @@
                     <div class="corner-tl"></div>
                     <div class="corner-br"></div>
                     <div class="option-img-wrap">
-                        <img src="@/assets/logos/gollum.png" class="option-img" />
+                        <img src="@/assets/logos/gollum.webp" class="option-img" />
                     </div>
                     <h3>La identidad de Golum</h3>
                     <span class="option-tag">WHOAMI</span>
@@ -265,7 +265,7 @@
                     <div class="corner-tl"></div>
                     <div class="corner-br"></div>
                     <div class="option-img-wrap">
-                        <img src="@/assets/logos/bilbo.png" class="option-img" />
+                        <img src="@/assets/logos/bilbo.webp" class="option-img" />
                     </div>
                     <h3>El antiguo mapa de Bilbo</h3>
                     <span class="option-tag">Tests</span>
@@ -278,7 +278,7 @@
                     <div class="corner-tl"></div>
                     <div class="corner-br"></div>
                     <div class="option-img-wrap">
-                        <img src="@/assets/logos/tombombadil.png" class="option-img" />
+                        <img src="@/assets/logos/tombombadil.webp" class="option-img" />
                     </div>
                     <h3>La canción de Tom Bombadil</h3>
                     <span class="option-tag">Música</span>
@@ -291,7 +291,7 @@
                     <div class="corner-tl"></div>
                     <div class="corner-br"></div>
                     <div class="option-img-wrap">
-                        <img src="@/assets/logos/librorojo.png" class="option-img" />
+                        <img src="@/assets/logos/librorojo.webp" class="option-img" />
                     </div>
                     <h3>El Libro Rojo de la Frontera del Oeste</h3>
                     <span class="option-tag">FAQ</span>

@@ -1,7 +1,7 @@
 <template>
     <div class="feanor-page text-light">
         <section class="hero-banner">
-            <img src="@/assets/banners/banner-feanor.png" alt="El Codice de Feanor" />
+            <img src="@/assets/banners/banner-feanor.webp" alt="El Codice de Feanor" />
         </section>
 
         <div class="container py-5">
@@ -17,7 +17,7 @@
                     </div>
 
                     <div class="intro-emblem">
-                        <img src="@/assets/logos/feanor.png" alt="Sello de Feanor" />
+                        <img src="@/assets/logos/feanor.webp" alt="Sello de Feanor" />
                         <span>19 modulos enlazados</span>
                         <small>Procesamiento en cliente.</small>
                     </div>

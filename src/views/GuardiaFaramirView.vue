@@ -1,7 +1,7 @@
 <template>
     <div class="faramir-page text-light">
         <section class="hero-banner">
-            <img src="@/assets/banners/banner-faramir.png" alt="La guardia de Faramir" />
+            <img src="@/assets/banners/banner-faramir.webp" alt="La guardia de Faramir" />
         </section>
 
         <div class="container py-5">
@@ -1093,55 +1093,6 @@ export default {
 .guide-card span {
     display: block;
     line-height: 1.6;
-}
-
-.loading-panel {
-    display: grid;
-    gap: 10px;
-}
-
-.loading-step {
-    display: grid;
-    grid-template-columns: auto minmax(0, 1fr);
-    gap: 10px;
-    align-items: center;
-    padding: 10px 12px;
-    border: 1px solid #1f2937;
-    border-radius: 8px;
-    background: #020617;
-}
-
-.loading-step-icon {
-    color: #94a3b8;
-    width: 22px;
-    text-align: center;
-}
-
-.loading-step.done .loading-step-icon {
-    color: #86efac;
-}
-
-.loading-step.error .loading-step-icon {
-    color: #fca5a5;
-}
-
-.loading-step.active .loading-step-icon {
-    color: #cbd5e1;
-}
-
-.loading-step-body {
-    display: grid;
-    gap: 2px;
-}
-
-.loading-step-body strong {
-    color: #e5e7eb;
-    font-size: 0.9rem;
-}
-
-.loading-step-body span {
-    color: #94a3b8;
-    font-size: 0.84rem;
 }
 
 .item {

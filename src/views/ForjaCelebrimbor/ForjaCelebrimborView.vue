@@ -1,7 +1,7 @@
 <template>
     <div class="celebrimbor-page text-light">
         <section class="hero-banner">
-            <img src="@/assets/banners/banner-celebrimbor.png" alt="La forja de Celebrimbor" />
+            <img src="@/assets/banners/banner-celebrimbor.webp" alt="La forja de Celebrimbor" />
         </section>
 
         <main class="container py-5">

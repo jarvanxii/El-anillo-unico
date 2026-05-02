@@ -1,7 +1,7 @@
 <template>
     <div class="mirror-page text-light">
         <section class="hero-banner">
-            <img src="@/assets/banners/banner-galadriel.png" alt="El espejo de Galadriel" />
+            <img src="@/assets/banners/banner-galadriel.webp" alt="El espejo de Galadriel" />
         </section>
 
         <div class="container py-5">
@@ -235,64 +235,12 @@
                 </template>
             </section>
 
-            <section v-if="globalScore !== null" class="section-box">
-                <div class="module-header">
-                    <span class="section-kicker">Resultado final</span>
-                    <h2 class="module-title">Juicio del espejo</h2>
-                    <p class="module-copy">
-                        Promedio de los modulos ejecutados. Resume exposicion del correo, controles del dominio de
-                        correo, presencia en filtraciones y fortaleza estimada de la contraseña.
-                    </p>
-                </div>
-
-                <div class="global-layout">
-                    <div class="gauge-shell">
-                        <svg viewBox="0 0 120 120" class="gauge-svg">
-                            <circle cx="60" cy="60" r="50" class="gauge-track" />
-                            <circle
-                                cx="60"
-                                cy="60"
-                                r="50"
-                                class="gauge-fill"
-                                :class="scoreClass(globalScore)"
-                                :style="{ strokeDashoffset: gaugeOffset }"
-                            />
-                        </svg>
-                        <div class="gauge-label">
-                            <span class="gauge-number">{{ globalScore }}</span>
-                            <span class="gauge-sub">/ 100</span>
-                        </div>
-                    </div>
-
-                    <div class="global-side">
-                        <div class="verdict-card compact" :class="verdictTone(globalScore)">
-                            <div class="verdict-icon">
-                                <span>OSINT</span>
-                            </div>
-                            <div class="verdict-body">
-                                <strong>{{ globalVerdict }}</strong>
-                                <p>{{ globalNarrative }}</p>
-                            </div>
-                        </div>
-
-                        <div class="recommendation-box">
-                            <h5>Recomendaciones agregadas</h5>
-                            <ul class="recommendation-list">
-                                <li v-for="item in globalRecommendations" :key="item">
-                                    <i class="bi bi-chevron-right"></i>
-                                    <span>{{ item }}</span>
-                                </li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-            </section>
         </div>
     </div>
 </template>
 
 <script setup>
-import { computed, ref } from 'vue'
+import { ref } from 'vue'
 import zxcvbn from 'zxcvbn'
 
 const emailInput = ref('')
@@ -305,50 +253,6 @@ const passwordLoading = ref(false)
 const passwordResult = ref(null)
 const passwordSteps = ref([])
 const showPassword = ref(false)
-
-const moduleScores = computed(() =>
-    [emailResult.value?.score, passwordResult.value?.score]
-        .filter(score => typeof score === 'number')
-)
-
-const globalScore = computed(() => {
-    if (!moduleScores.value.length) return null
-    const total = moduleScores.value.reduce((sum, score) => sum + score, 0)
-    return Math.round(total / moduleScores.value.length)
-})
-
-const gaugeOffset = computed(() => {
-    if (globalScore.value === null) return 314
-    return 314 - (globalScore.value / 100) * 314
-})
-
-const globalRecommendations = computed(() => {
-    const recommendations = uniqueList([
-        ...(emailResult.value?.recommendations || []),
-        ...(passwordResult.value?.recommendations || [])
-    ])
-    return recommendations.length
-        ? recommendations
-        : ['Mantener la higiene actual y repetir el analisis de forma periodica.']
-})
-
-const globalVerdict = computed(() => {
-    if (globalScore.value === null) return ''
-    if (globalScore.value >= 80) return 'Blindaje observable solido'
-    if (globalScore.value >= 55) return 'Postura mixta con puntos de mejora'
-    return 'Exposicion visible y controles incompletos'
-})
-
-const globalNarrative = computed(() => {
-    if (globalScore.value === null) return ''
-    if (globalScore.value >= 80) {
-        return 'La superficie visible muestra varios controles presentes y pocas senales de riesgo inmediato.'
-    }
-    if (globalScore.value >= 55) {
-        return 'Hay buenas practicas en algunas zonas, pero aun aparecen huecos que conviene cerrar cuanto antes.'
-    }
-    return 'La combinacion de senales observadas sugiere revisar configuracion, higiene operativa y protecciones basicas.'
-})
 
 function buildSteps(names) {
     return names.map(name => ({
@@ -753,17 +657,6 @@ async function analyzeEmail() {
                 ? 'Solo un control visible'
                 : 'Sin blindaje antisuplantacion'
 
-        const recommendations = uniqueList([
-            !validation.valid ? 'Corrige el formato del correo antes de usarlo en procesos criticos.' : '',
-            validation.disposable ? 'Evita cuentas temporales en servicios donde la recuperacion sea importante.' : '',
-            validation.role ? 'Los buzones de rol suelen recibir mas phishing y filtraciones.' : '',
-            !hasMx ? 'El dominio no publica MX visibles; revisa si el correo realmente es operativo.' : '',
-            !hasSpf ? 'Publica un registro SPF para limitar envios no autorizados.' : '',
-            !hasDmarc ? 'Activa DMARC para endurecer la proteccion frente a spoofing.' : '',
-            !hasMtaSts ? 'MTA-STS sigue ausente o no visible; el transporte SMTP puede endurecerse.' : '',
-            rdap.expires ? `Vigila la fecha de expiracion del dominio: ${formatDate(rdap.expires)}.` : ''
-        ])
-
         const verdictTitle = score >= 80
             ? 'Correo con infraestructura razonablemente sana'
             : score >= 55
@@ -923,8 +816,7 @@ async function analyzeEmail() {
                             : { error: rdap.error || 'Sin respuesta util.' }
                     )
                 }
-            ],
-            recommendations
+            ]
         }
     } finally {
         emailLoading.value = false
@@ -979,16 +871,6 @@ async function analyzePassword() {
             strength.crack_times_display?.offline_slow_hashing_1e4_per_second ||
             strength.crack_times_display?.offline_fast_hashing_1e10_per_second ||
             'No disponible'
-
-        const recommendations = uniqueList([
-            pwned.count > 0 ? 'La contraseña aparece en brechas reales: cambia esta clave y todas sus reutilizaciones.' : '',
-            passwordInput.value.length < 14 ? 'Sube la longitud a 14-16 caracteres o mas.' : '',
-            !/[A-Z]/.test(passwordInput.value) ? 'Anade mayusculas para elevar diversidad del alfabeto.' : '',
-            !/[0-9]/.test(passwordInput.value) ? 'Introduce numeros no triviales.' : '',
-            !/[^A-Za-z0-9]/.test(passwordInput.value) ? 'Incluye simbolos para ampliar combinaciones.' : '',
-            feedback[0] || '',
-            feedback[1] || ''
-        ])
 
         const verdictTitle = pwned.count > 0
             ? 'Contraseña comprometida en brechas reales'
@@ -1102,8 +984,7 @@ async function analyzePassword() {
                         error: pwned.error || null
                     })
                 }
-            ],
-            recommendations
+            ]
         }
     } finally {
         passwordLoading.value = false
@@ -1303,57 +1184,6 @@ function describeAlphabet(password) {
     color: #94a3b8;
 }
 
-.loading-panel {
-    display: grid;
-    gap: 10px;
-    margin-top: 16px;
-}
-
-.loading-step {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 12px 14px;
-    background: #020617;
-    border: 1px solid #1e293b;
-    border-radius: 8px;
-}
-
-.loading-step.active {
-    border-color: #475569;
-}
-
-.loading-step.done {
-    border-color: rgba(34, 197, 94, 0.35);
-}
-
-.loading-step.error {
-    border-color: rgba(248, 113, 113, 0.35);
-}
-
-.loading-step-icon {
-    width: 20px;
-    display: flex;
-    justify-content: center;
-    color: #cbd5e1;
-    flex-shrink: 0;
-}
-
-.loading-step-body {
-    display: grid;
-    gap: 2px;
-}
-
-.loading-step-body strong {
-    font-size: 0.92rem;
-    color: #f8fafc;
-}
-
-.loading-step-body span {
-    font-size: 0.82rem;
-    color: #94a3b8;
-}
-
 .metric-card,
 .signal-card {
     padding: 14px;
@@ -1441,10 +1271,6 @@ function describeAlphabet(password) {
     padding: 16px 18px;
     border: 1px solid rgba(148, 163, 184, 0.22);
     margin-bottom: 18px;
-}
-
-.verdict-card.compact {
-    margin-bottom: 0;
 }
 
 .verdict-icon {
@@ -1546,103 +1372,6 @@ function describeAlphabet(password) {
     padding: 6px 10px;
 }
 
-.global-layout {
-    display: flex;
-    gap: 26px;
-    align-items: center;
-    flex-wrap: wrap;
-}
-
-.gauge-shell {
-    position: relative;
-    width: 150px;
-    height: 150px;
-    flex-shrink: 0;
-}
-
-.gauge-svg {
-    width: 100%;
-    height: 100%;
-    transform: rotate(-90deg);
-}
-
-.gauge-track {
-    fill: none;
-    stroke: #1f2937;
-    stroke-width: 8;
-}
-
-.gauge-fill {
-    fill: none;
-    stroke-width: 8;
-    stroke-linecap: round;
-    stroke-dasharray: 314;
-    transition: stroke-dashoffset 0.4s ease;
-}
-
-.gauge-label {
-    position: absolute;
-    inset: 0;
-    display: grid;
-    place-content: center;
-    text-align: center;
-}
-
-.gauge-number {
-    color: #f8fafc;
-    font-size: 2.2rem;
-    font-weight: 700;
-    line-height: 1;
-}
-
-.gauge-sub {
-    color: #94a3b8;
-    font-size: 0.78rem;
-}
-
-.global-side {
-    flex: 1;
-    min-width: 260px;
-    display: grid;
-    gap: 16px;
-}
-
-.recommendation-box {
-    background: #020617;
-    border: 1px solid #1e293b;
-    border-radius: 8px;
-    padding: 16px;
-}
-
-.recommendation-box h5 {
-    margin: 0 0 12px;
-    color: #f8fafc;
-    font-size: 0.95rem;
-    font-weight: 700;
-}
-
-.recommendation-list {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    display: grid;
-    gap: 10px;
-}
-
-.recommendation-list li {
-    display: flex;
-    gap: 8px;
-    align-items: flex-start;
-    color: #dbe4ee;
-    line-height: 1.6;
-}
-
-.recommendation-list i {
-    color: #94a3b8;
-    margin-top: 3px;
-    flex-shrink: 0;
-}
-
 .tone-success {
     color: #86efac !important;
     stroke: #22c55e;
@@ -1691,13 +1420,5 @@ function describeAlphabet(password) {
         align-items: flex-start;
     }
 
-    .global-layout {
-        gap: 18px;
-    }
-
-    .gauge-shell {
-        width: 128px;
-        height: 128px;
-    }
 }
 </style>

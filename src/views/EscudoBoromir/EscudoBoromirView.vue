@@ -20,8 +20,8 @@
 
 <script>
 import SimpleLorePage from "@/components/SimpleLorePage.vue";
-import bannerBoromir from "@/assets/banners/banner-boromir.png";
-import logoBoromir from "@/assets/logos/boromir.png";
+import bannerBoromir from "@/assets/banners/banner-boromir.webp";
+import logoBoromir from "@/assets/logos/boromir.webp";
 
 export default {
     name: "BoromirPage",

@@ -85,7 +85,7 @@
 </template>
 
 <script>
-import bannerRadagast from "@/assets/banners/banner-radagast.png";
+import bannerRadagast from "@/assets/banners/banner-radagast.webp";
 
 export default {
     name: "RadagastPage",

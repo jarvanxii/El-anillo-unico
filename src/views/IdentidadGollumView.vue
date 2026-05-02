@@ -1,7 +1,7 @@
 <template>
     <div class="gollum-page text-light">
         <section class="hero-banner">
-            <img src="@/assets/banners/banner-gollum.png" alt="La identidad de Gollum" />
+            <img src="@/assets/banners/banner-gollum.webp" alt="La identidad de Gollum" />
         </section>
 
         <div class="container py-5">

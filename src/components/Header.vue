@@ -101,7 +101,7 @@ export default {
           subs: [
             { name: "Chat", route: "/el-concilio-de-elrond" },
             { name: "Películas, Series y Juegos", route: "http://192.168.0.254/#/" },
-            { name: "Memes", route: "/la-jarra-de-pippin" },
+            { name: "Humor", route: "/la-jarra-de-pippin" },
             { name: "Música", route: "https://www.youtube.com/@TomBombadil-SONGS" }
           ]
         },

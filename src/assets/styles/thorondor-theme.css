@@ -175,6 +175,7 @@
     color: #f8fafc;
     font-size: 1.02rem;
     font-weight: 700;
+    overflow-wrap: anywhere;
 }
 
 .thorondor-page .phase-badge-block {
@@ -442,6 +443,12 @@
     padding: 2px 6px;
 }
 
+.thorondor-page .endpoint-code,
+.thorondor-page .endpoint-text {
+    overflow-wrap: anywhere;
+    word-break: break-word;
+}
+
 .thorondor-page .table-wrap {
     overflow: auto;
     max-width: 100%;
@@ -508,6 +515,7 @@
 .thorondor-page .mini-stat span {
     color: #f8fafc;
     font-weight: 600;
+    overflow-wrap: anywhere;
 }
 
 .thorondor-page .clickable-card {

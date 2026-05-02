@@ -45,6 +45,36 @@ export const THORONDOR_WINDOWS_VERSION_OPTIONS = [
   "Windows Server 2016"
 ];
 
+export const THORONDOR_NETWORK_SCOPE_OPTIONS = [
+  {
+    value: "local",
+    label: "Localhost",
+    shortLabel: "Local",
+    copy: "El navegador consulta el agente en el mismo equipo, normalmente mediante http://127.0.0.1:<puerto>."
+  },
+  {
+    value: "lan",
+    label: "LAN / VPN",
+    shortLabel: "LAN",
+    copy: "El navegador llega al agente por IP privada, VPN o red de administracion. Es el modo recomendado para laboratorio y homelab."
+  },
+  {
+    value: "public",
+    label: "Remoto / IP publica / DNS",
+    shortLabel: "Remoto",
+    copy: "El navegador llega al agente mediante una IP publica o un dominio. Usa token, firewall restrictivo y, si la web va por HTTPS, endpoint HTTPS."
+  }
+];
+
+export function normalizeThorondorNetworkScope(value) {
+  return THORONDOR_NETWORK_SCOPE_OPTIONS.some((item) => item.value === value) ? value : "lan";
+}
+
+export function getThorondorNetworkScopeLabel(value) {
+  const scope = normalizeThorondorNetworkScope(value);
+  return THORONDOR_NETWORK_SCOPE_OPTIONS.find((item) => item.value === scope)?.shortLabel || "LAN";
+}
+
 export const THORONDOR_LOG_SOURCES = [
   { value: "all", label: "Todas" },
   { value: "syslog", label: "syslog" },
@@ -230,6 +260,9 @@ export function buildThorondorAgentDraft() {
     distro: "",
     osVersion: "",
     receiverUrl: "",
+    networkScope: "lan",
+    authToken: "",
+    corsOrigin: "*",
     port: "",
     intervalSeconds: 30,
     additionalLogPaths: THORONDOR_DEFAULT_ADDITIONAL_LOG_PATHS,

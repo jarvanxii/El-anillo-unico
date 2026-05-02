@@ -7,9 +7,10 @@
                     <h1 class="section-name">El vuelo de Thorondor</h1>
                     <p class="section-copy">
                         Thorondor es un SIEM personal sin backend: un agente Python autocontenido expone dos endpoints
-                        HTTP (<code>/health</code>, <code>/telemetry</code>) sobre la IP privada del host. El frontend
-                        ejecuta polling HTTP directo, persiste la telemetria en IndexedDB y aplica reglas de correlacion
-                        en JavaScript. Compatible con Linux (systemd, Debian/Ubuntu/RHEL/Arch) y Windows (Task Scheduler).
+                        HTTP (<code>/health</code>, <code>/telemetry</code>) sobre un endpoint alcanzable desde el
+                        navegador: localhost, LAN, VPN, IP publica o DNS. El frontend ejecuta polling HTTP directo,
+                        persiste la telemetria en IndexedDB y aplica reglas de correlacion en JavaScript. Compatible con
+                        Linux (systemd, Debian/Ubuntu/RHEL/Arch) y Windows (Task Scheduler).
                     </p>
                 </div>
 
@@ -17,8 +18,8 @@
                     <img src="@/assets/logos/thorondor.webp" alt="Sello de Thorondor" />
                     <span>Monitorizacion desde el navegador</span>
                     <small>
-                        Arquitectura pull sin backend: el navegador consulta directamente a cada agente por su IP
-                        privada y puerto TCP. Soporta Linux (systemd) y Windows (Task Scheduler). Sin relay, sin broker.
+                        Arquitectura pull sin backend: el navegador consulta directamente a cada agente por su URL base
+                        y puerto TCP. Soporta local, LAN, VPN y endpoints publicos con token. Sin relay, sin broker.
                     </small>
                 </div>
             </div>
@@ -40,7 +41,7 @@
                         Thorondor monitoriza hosts Linux y Windows desde el navegador sin infraestructura centralizada.
                         El agente Python expone telemetria via HTTP; el frontend la consume por polling, la persiste en
                         IndexedDB y aplica reglas de correlacion localmente. Orientado a laboratorios, homelab, servidores
-                        propios y entornos donde la telemetria no puede atravesar infraestructura de terceros.
+                        propios y entornos donde la telemetria no debe atravesar infraestructura de terceros.
                     </p>
                 </div>
                 <div class="phase-badge-block">
@@ -64,11 +65,12 @@
                     <span>Uso</span>
                 </div>
                 <div class="verdict-body">
-                    <strong>Datos locales, correlacion local, sin dependencia de red externa</strong>
+                    <strong>Datos en el navegador, correlacion local y endpoints directos</strong>
                     <p>
                         La telemetria de todos los hosts reside en IndexedDB del navegador. No existe canal de exfiltrado
                         ni servidor central: cada agente es un endpoint HTTP independiente y cada alerta se calcula en el
-                        frontend sobre los datos que el navegador ya ha recogido.
+                        frontend sobre los datos que el navegador ya ha recogido. Si el agente esta en Internet, la URL
+                        publica debe estar protegida con token y filtrado de red.
                     </p>
                 </div>
             </div>
@@ -83,7 +85,8 @@
                         El generador produce un agente Python parametrizado (host, puerto, modulos, usuario de servicio)
                         que se despliega en el sistema destino. El frontend realiza polling HTTP al agente, decodifica
                         el JSON de telemetria, lo persiste en IndexedDB y aplica las reglas de correlacion registradas.
-                        Sin dependencia de red externa salvo la conectividad LAN directa al host.
+                        Sin dependencia de backend externo: solo hace falta conectividad directa desde el navegador hasta
+                        la URL registrada del agente.
                     </p>
                 </div>
                 <div class="phase-badge-block">
@@ -205,7 +208,7 @@ export default {
         overviewCards() {
             return [
                 {
-                    label: "Agentes locales",
+                    label: "Agentes registrados",
                     value: String(this.dashboardCards.length),
                     tone: "tone-blue",
                     note: "Hosts dados de alta en esta instancia del navegador."
@@ -265,7 +268,7 @@ export default {
                 {
                     label: "1. Genera el agente",
                     badge: "Frontend",
-                    copy: "El generador parametriza el agente Python con hostname, puerto, IP de escucha, usuario de servicio, distro, modulos activos y rutas de log. Produce thorondor-agent.py y thorondor-agent.service (Linux) o una tarea PS1 (Windows)."
+                    copy: "El generador parametriza el agente Python con hostname, puerto, endpoint accesible, alcance de red, token opcional, usuario de servicio, distro, modulos activos y rutas de log. Produce thorondor-agent.py y thorondor-agent.service (Linux) o una tarea PS1 (Windows)."
                 },
                 {
                     label: "2. Despliega en el host",
@@ -288,9 +291,9 @@ export default {
                     copy: "El motor de reglas JavaScript evalua thresholds de CPU, RAM, heartbeat, frecuencia de fallos de autenticacion, sudo fuera de whitelist y cambios en el baseline de integridad de archivos."
                 },
                 {
-                    label: "6. Reglas y alertas",
-                    badge: "Rules",
-                    copy: "Las reglas locales correlacionan telemetria reciente por host: CPU, RAM, disco, heartbeat, fallos de autenticacion, sudo fuera de politica y cambios en baseline de integridad."
+                    label: "6. Exposicion remota",
+                    badge: "Network",
+                    copy: "Para remoto, registra una URL que el navegador pueda resolver. Si es publica, usa Authorization Bearer, firewall con origen restringido y HTTPS cuando el frontend se sirva por HTTPS."
                 }
             ];
         },
@@ -303,7 +306,7 @@ export default {
                 },
                 {
                     label: "Paso 2 — Generador de agentes",
-                    copy: "Rellena el formulario con el hostname, IP privada, puerto (ej. 8765), distro, usuario de servicio y modulos activos. Descarga el .py y el fichero de servicio generados para este host especifico."
+                    copy: "Rellena el formulario con hostname, URL accesible, IP o DNS del host, alcance de red, puerto (ej. 8765), token si procede, distro, usuario de servicio y modulos activos. Descarga el .py y el fichero de servicio generados."
                 },
                 {
                     label: "Paso 3 — Despliega y valida",

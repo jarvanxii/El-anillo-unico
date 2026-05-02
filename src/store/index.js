@@ -10,7 +10,8 @@ import {
   THORONDOR_SECURITY_LIMIT,
   THORONDOR_SWEEP_INTERVAL_MS,
   buildThorondorAgentDraft,
-  buildDefaultThorondorRuleSet
+  buildDefaultThorondorRuleSet,
+  normalizeThorondorNetworkScope
 } from '@/features/vueloThorondor/data/thorondorDefaults'
 import {
   STORE_NAMES,
@@ -24,6 +25,7 @@ import {
   sweepThorondorPersistence
 } from '@/features/vueloThorondor/services/thorondorIndexedDb'
 import {
+  buildThorondorAgentEndpoints,
   buildThorondorRequestRules,
   fetchThorondorHealth,
   fetchThorondorTelemetry
@@ -191,10 +193,25 @@ function hashCode(text) {
 }
 
 function normalizeAgentRecord(agent) {
+  const source = agent || {}
+  const hostIp = String(source.hostIp || '').trim()
+  const port = Number(source.port) || 8765
+  const receiverUrl = String(source.receiverUrl || '').trim() || (hostIp ? `http://${hostIp}:${port}` : '')
+  const record = {
+    ...source,
+    hostIp,
+    port,
+    receiverUrl,
+    targetOs: source.targetOs === 'windows' ? 'windows' : 'linux',
+    networkScope: normalizeThorondorNetworkScope(source.networkScope),
+    authToken: String(source.authToken || '').trim(),
+    corsOrigin: String(source.corsOrigin || '*').trim() || '*',
+    updatedAt: new Date().toISOString()
+  }
+
   return {
-    ...agent,
-    updatedAt: new Date().toISOString(),
-    requestRules: buildThorondorRequestRules(agent)
+    ...record,
+    requestRules: buildThorondorRequestRules(record)
   }
 }
 
@@ -524,11 +541,11 @@ export default createStore({
     },
 
     async registerThorondorAgent({ commit, dispatch }, agent) {
-      const record = {
+      const record = normalizeAgentRecord({
         ...agent,
         createdAt: agent.createdAt || new Date().toISOString(),
         updatedAt: new Date().toISOString()
-      }
+      })
 
       commit('registerThorondorAgent', record)
       await putOne(STORE_NAMES.agents, record)
@@ -559,10 +576,11 @@ export default createStore({
     },
 
     async pollThorondorAgents({ state, commit, dispatch }) {
-      const agents = state.thorondor.agents.filter((agent) => agent.receiverUrl || agent.hostIp)
+      const agents = state.thorondor.agents.filter((agent) => buildThorondorAgentEndpoints(agent).baseUrl)
 
       for (const agent of agents) {
         const timestamp = new Date().toISOString()
+        const endpoint = buildThorondorAgentEndpoints(agent).baseUrl
 
         try {
           await fetchThorondorHealth(agent)
@@ -572,7 +590,7 @@ export default createStore({
             agentId: agent.id,
             timestamp,
             kind: 'success',
-            endpoint: agent.receiverUrl || agent.hostIp
+            endpoint
           })
 
           const snapshots = state.thorondor.snapshotsByAgent[agent.id] || []
@@ -590,7 +608,7 @@ export default createStore({
             agentId: agent.id,
             timestamp,
             kind: 'error',
-            endpoint: agent.receiverUrl || agent.hostIp,
+            endpoint,
             error: error.message
           })
         }

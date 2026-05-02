@@ -6,7 +6,11 @@ import {
   formatPercent,
   formatRelativeTime
 } from "@/features/vueloThorondor/utils/formatters";
-import { THORONDOR_MODULE_KEYS } from "@/features/vueloThorondor/data/thorondorDefaults";
+import {
+  THORONDOR_MODULE_KEYS,
+  getThorondorNetworkScopeLabel
+} from "@/features/vueloThorondor/data/thorondorDefaults";
+import { buildThorondorAgentEndpoints } from "@/features/vueloThorondor/services/thorondorApi";
 
 export default {
   data() {
@@ -172,6 +176,14 @@ export default {
         .filter((item) => modules?.[item.key])
         .map((item) => item.label)
         .join(", ") || "Sin modulos";
+    },
+
+    agentEndpoint(agent) {
+      return buildThorondorAgentEndpoints(agent).baseUrl || "Sin endpoint";
+    },
+
+    networkScopeLabel(agent) {
+      return getThorondorNetworkScopeLabel(agent?.networkScope);
     },
 
     statusClass(color) {

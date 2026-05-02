@@ -7,9 +7,10 @@
                     <h1 class="section-name">Guia de instalacion</h1>
                     <p class="section-copy">
                         Thorondor instala un agente Python por host. El agente expone <code>/health</code> y
-                        <code>/telemetry</code> por HTTP en una IP privada; el navegador consulta esos endpoints por
-                        polling, guarda historico en IndexedDB y evalua reglas localmente. No hay backend intermedio,
-                        cola de mensajes ni canal saliente desde el host monitorizado.
+                        <code>/telemetry</code> por HTTP en una URL alcanzable desde el navegador: localhost, LAN, VPN,
+                        IP publica o DNS. El navegador consulta esos endpoints por polling, guarda historico en IndexedDB
+                        y evalua reglas localmente. No hay backend intermedio, cola de mensajes ni canal saliente desde
+                        el host monitorizado.
                     </p>
                 </div>
                 <div class="phase-badge-block">
@@ -22,6 +23,24 @@
                 <div class="guide-card" v-for="item in installationHighlights" :key="item.label">
                     <label>{{ item.label }}</label>
                     <span>{{ item.copy }}</span>
+                </div>
+            </div>
+        </section>
+
+        <section class="section-box connection-selector-section">
+            <div class="section-topline">
+                <div class="module-header">
+                    <span class="section-kicker">Tipo de conexion</span>
+                    <h2 class="module-title">Monitorizacion {{ deploymentScopeLabel }}</h2>
+                    <p class="module-copy">{{ deploymentScopeDescription }}</p>
+                </div>
+                <div class="deployment-selector-control">
+                    <label class="field-label" for="guide-network-scope">Conexion del agente</label>
+                    <select id="guide-network-scope" v-model="deploymentScope" class="form-select input-dark">
+                        <option v-for="scope in deploymentScopeOptions" :key="scope.value" :value="scope.value">
+                            {{ scope.shortLabel }}
+                        </option>
+                    </select>
                 </div>
             </div>
         </section>
@@ -54,16 +73,10 @@
             </div>
         </section>
 
-        <div class="phase-divider">
-            <div class="phase-divider-line"></div>
-            <div class="phase-divider-label">
-                <span class="phase-divider-letter">A</span>
-                <div class="phase-divider-text">
-                    <strong>Fase A</strong>
-                    <span>Instalacion del agente en el host</span>
-                </div>
-            </div>
-            <div class="phase-divider-line"></div>
+        <div class="guide-section-title">
+            <span>Instalacion</span>
+            <h2>Instalacion del agente</h2>
+            <p>Prepara el host, valida el endpoint y deja el servicio persistente segun el sistema operativo y el tipo de conexion elegido.</p>
         </div>
 
         <section class="section-box guide-phase-header">
@@ -189,16 +202,10 @@
             </div>
         </section>
 
-        <div class="phase-divider phase-divider--danger">
-            <div class="phase-divider-line"></div>
-            <div class="phase-divider-label">
-                <span class="phase-divider-letter">B</span>
-                <div class="phase-divider-text">
-                    <strong>Fase B</strong>
-                    <span>Desinstalacion y limpieza</span>
-                </div>
-            </div>
-            <div class="phase-divider-line"></div>
+        <div class="guide-section-title guide-section-title--danger">
+            <span>Desinstalacion</span>
+            <h2>Retirada y limpieza</h2>
+            <p>Deten el servicio, elimina artefactos y cierra cualquier exposicion de red asociada al agente.</p>
         </div>
 
         <section class="section-box guide-phase-header">
@@ -271,6 +278,10 @@
 
 <script>
 import ThorondorPageShell from "@/components/VueloThorondor/ThorondorPageShell.vue";
+import {
+    THORONDOR_NETWORK_SCOPE_OPTIONS,
+    normalizeThorondorNetworkScope
+} from "@/features/vueloThorondor/data/thorondorDefaults";
 
 const OS_LABELS = {
     ubuntu: "Ubuntu / Debian / Kali",
@@ -289,12 +300,47 @@ export default {
     data() {
         return {
             copiedKey: null,
+            deploymentScope: "lan",
             hostOs: "ubuntu",
             uninstallOs: "ubuntu"
         };
     },
 
     computed: {
+        normalizedDeploymentScope() {
+            return normalizeThorondorNetworkScope(this.deploymentScope);
+        },
+
+        isLocalDeployment() {
+            return this.normalizedDeploymentScope === "local";
+        },
+
+        isLanDeployment() {
+            return this.normalizedDeploymentScope === "lan";
+        },
+
+        isRemoteDeployment() {
+            return this.normalizedDeploymentScope === "public";
+        },
+
+        deploymentScopeOptions() {
+            return THORONDOR_NETWORK_SCOPE_OPTIONS;
+        },
+
+        deploymentScopeLabel() {
+            return this.deploymentScopeOptions.find((item) => item.value === this.normalizedDeploymentScope)?.shortLabel || "LAN";
+        },
+
+        deploymentScopeDescription() {
+            if (this.isLocalDeployment) {
+                return "El navegador y el agente viven en la misma maquina. El agente escucha en 127.0.0.1 y no necesitas abrir firewall ni exponer puertos a la red.";
+            }
+            if (this.isLanDeployment) {
+                return "El navegador consulta al agente por una IP privada, una VPN o una red de administracion. Debes permitir el puerto solo desde el cliente o la subred autorizada.";
+            }
+            return "El navegador consulta al agente por IP publica o DNS. Usa token Bearer, firewall con origen restringido y HTTPS si la aplicacion se sirve por HTTPS.";
+        },
+
         hostOsLabel() {
             return OS_LABELS[this.hostOs] || this.hostOs;
         },
@@ -307,11 +353,11 @@ export default {
             return [
                 {
                     label: "HTTP pull",
-                    copy: "El agente no inicia conexiones salientes. El navegador abre las peticiones hacia la IP privada y el puerto TCP configurado."
+                    copy: "El agente no inicia conexiones salientes. El navegador abre las peticiones hacia la URL base configurada."
                 },
                 {
-                    label: "Superficie minima",
-                    copy: "El host expone solo endpoints JSON. El servicio debe escucharse en LAN o VPN privada, nunca abierto a Internet sin controles adicionales."
+                    label: this.deploymentScopeLabel,
+                    copy: this.deploymentScopeDescription
                 },
                 {
                     label: "Permisos explicitos",
@@ -329,7 +375,7 @@ export default {
                 {
                     title: "1. Generar artefactos",
                     badge: "Build",
-                    copy: "Usa el generador para producir el agente, el instalador y la definicion de servicio con puerto, host, modulos y rutas de log ya embebidos."
+                    copy: `Usa el generador en modo ${this.deploymentScopeLabel} para producir el agente, el instalador y la definicion de servicio con puerto, host, modulos y rutas de log ya embebidos.`
                 },
                 {
                     title: "2. Preparar runtime",
@@ -339,7 +385,9 @@ export default {
                 {
                     title: "3. Smoke test",
                     badge: "HTTP",
-                    copy: "Ejecuta el agente en primer plano y valida /health y /telemetry desde localhost. Despues repite desde la maquina cliente."
+                    copy: this.isLocalDeployment
+                        ? "Ejecuta el agente en primer plano y valida /health y /telemetry contra 127.0.0.1. No abras firewall."
+                        : "Ejecuta el agente en primer plano, valida /health y /telemetry desde localhost y despues repite desde la maquina cliente usando la URL final."
                 },
                 {
                     title: "4. Servicio persistente",
@@ -349,7 +397,9 @@ export default {
                 {
                     title: "5. Dashboard",
                     badge: "UI",
-                    copy: "Registra el host en Thorondor con la URL accesible desde el navegador, no con una IP que solo exista dentro del propio host."
+                    copy: this.isLocalDeployment
+                        ? "Registra el host con http://127.0.0.1:<PUERTO>. Ese agente solo sera consultable desde la misma maquina."
+                        : "Registra el host en Thorondor con la URL accesible desde el navegador: IP privada, VPN, IP publica o dominio."
                 },
                 {
                     title: "6. Reglas",
@@ -374,19 +424,20 @@ export default {
         },
 
         linuxFirewallCommand() {
+            const source = this.isRemoteDeployment ? "<IP_PUBLICA_CLIENTE_O_CIDR>" : "<IP_CLIENTE_O_CIDR>";
             if (this.hostOs === "rhel") {
-                return "sudo firewall-cmd --permanent --add-port=<PUERTO>/tcp\nsudo firewall-cmd --reload\nsudo firewall-cmd --list-ports";
+                return `sudo firewall-cmd --permanent --add-rich-rule='rule family="ipv4" source address="${source}" port protocol="tcp" port="<PUERTO>" accept'\nsudo firewall-cmd --reload\nsudo firewall-cmd --list-rich-rules`;
             }
             if (this.hostOs === "arch") {
-                return "sudo ss -lntp | grep ':<PUERTO>'\n# Si usas ufw:\nsudo ufw allow from <IP_CLIENTE> to any port <PUERTO> proto tcp";
+                return `sudo ss -lntp | grep ':<PUERTO>'\n# Si usas ufw:\nsudo ufw allow from ${source} to any port <PUERTO> proto tcp`;
             }
-            return "sudo ufw allow from <IP_CLIENTE> to any port <PUERTO> proto tcp\nsudo ufw status numbered";
+            return `sudo ufw allow from ${source} to any port <PUERTO> proto tcp\nsudo ufw status numbered`;
         },
 
         linuxCommandSections() {
             return [
                 {
-                    kicker: "Fase 1",
+                    kicker: "Preparacion",
                     title: "Preparar usuario, directorio y runtime",
                     copy: "El agente debe ejecutarse con una cuenta dedicada. Los permisos de lectura se conceden de forma explicita mediante grupos del sistema.",
                     badge: "Linux",
@@ -419,9 +470,11 @@ export default {
                     ]
                 },
                 {
-                    kicker: "Fase 2",
-                    title: "Smoke test y servicio systemd",
-                    copy: "Primero prueba en foreground. Si el proceso arranca y devuelve JSON valido, habilita el servicio persistente.",
+                    kicker: "Servicio",
+                    title: this.isLocalDeployment ? "Smoke test local y servicio systemd" : "Smoke test, red y servicio systemd",
+                    copy: this.isLocalDeployment
+                        ? "Primero prueba en foreground contra 127.0.0.1. Si el proceso arranca y devuelve JSON valido, habilita el servicio persistente."
+                        : "Primero prueba en foreground. Si el proceso arranca y devuelve JSON valido, abre la ruta de red necesaria y habilita el servicio persistente.",
                     badge: "Service",
                     note: "Validar antes de enable",
                     commands: [
@@ -441,14 +494,16 @@ export default {
                             when: "NRestarts mayor que 0 indica bucle de fallo. Revisa journalctl antes de registrar el host en el dashboard.",
                             expected: "ActiveState=active, NRestarts=0 y ExecMainStatus=0."
                         },
-                        {
+                        ...(this.isLocalDeployment ? [] : [{
                             title: "Abrir firewall solo al cliente",
                             badge: "Firewall",
                             command: this.linuxFirewallCommand,
                             purpose: "Permite acceso TCP al puerto del agente desde la IP del navegador o desde la subred de administracion.",
-                            when: "No abras 0.0.0.0/0 salvo laboratorio aislado. El agente esta pensado para LAN/VPN.",
+                            when: this.isRemoteDeployment
+                                ? "Usa una allowlist real: tu IP fija, VPN, bastion o rango de administracion. Si necesitas 0.0.0.0/0, exige token y pon un reverse proxy TLS delante."
+                                : "No abras rangos amplios. Permite solo la IP del navegador, la subred de administracion o la VPN.",
                             expected: "El puerto aparece permitido y el cliente puede conectar a /health."
-                        }
+                        }])
                     ]
                 }
             ];
@@ -457,7 +512,7 @@ export default {
         windowsCommandSections() {
             return [
                 {
-                    kicker: "Fase 1",
+                    kicker: "Preparacion",
                     title: "Preparar runtime Windows",
                     copy: "En Windows el agente se instala en ProgramData y se ejecuta mediante Task Scheduler. PowerShell debe ejecutarse como Administrador.",
                     badge: "Windows",
@@ -490,9 +545,11 @@ export default {
                     ]
                 },
                 {
-                    kicker: "Fase 2",
-                    title: "Tarea programada y firewall",
-                    copy: "Valida el agente en foreground, crea la tarea persistente y abre el puerto TCP solo para la red necesaria.",
+                    kicker: "Servicio",
+                    title: this.isLocalDeployment ? "Tarea programada local" : "Tarea programada y red",
+                    copy: this.isLocalDeployment
+                        ? "Valida el agente en foreground y crea la tarea persistente. No necesitas abrir firewall si solo consultas desde la misma maquina."
+                        : "Valida el agente en foreground, crea la tarea persistente y abre el puerto TCP solo para la red necesaria.",
                     badge: "Task",
                     note: "Task Scheduler",
                     commands: [
@@ -512,44 +569,40 @@ export default {
                             when: "Si el entorno requiere credenciales concretas, configura el principal de la tarea segun la politica local.",
                             expected: "Get-ScheduledTask -TaskName ThorondorAgent muestra estado Ready o Running."
                         },
-                        {
+                        ...(this.isLocalDeployment ? [] : [{
                             title: "Abrir firewall",
                             badge: "Firewall",
-                            command: "New-NetFirewallRule -DisplayName 'Thorondor Agent' -Direction Inbound -Protocol TCP -LocalPort <PUERTO> -Action Allow -Profile Private",
-                            purpose: "Permite conexiones entrantes al puerto del agente en redes privadas.",
-                            when: "Limita el scope remoto si el host convive en redes compartidas.",
-                            expected: "Test-NetConnection -ComputerName <IP_HOST> -Port <PUERTO> funciona desde el cliente."
-                        }
+                            command: this.isRemoteDeployment
+                                ? "New-NetFirewallRule -DisplayName 'Thorondor Agent' -Direction Inbound -Protocol TCP -LocalPort <PUERTO> -Action Allow -Profile Any -RemoteAddress <IP_PUBLICA_CLIENTE_O_CIDR>"
+                                : "New-NetFirewallRule -DisplayName 'Thorondor Agent' -Direction Inbound -Protocol TCP -LocalPort <PUERTO> -Action Allow -Profile Private -RemoteAddress <IP_CLIENTE_O_CIDR>",
+                            purpose: "Permite conexiones entrantes al puerto del agente desde el cliente, VPN, bastion o rango de administracion.",
+                            when: this.isRemoteDeployment
+                                ? "Evita Any como RemoteAddress en Internet. Si expones IP publica, combina token, origen restringido y preferiblemente reverse proxy TLS."
+                                : "Usa Profile Private si es una LAN confiable y restringe RemoteAddress a cliente, VPN o subred de administracion.",
+                            expected: "Test-NetConnection -ComputerName <IP_O_DNS_HOST> -Port <PUERTO> funciona desde el cliente."
+                        }])
                     ]
                 }
             ];
         },
 
         validationChecks() {
-            return [
+            const checks = [
                 {
                     title: "Health local",
                     badge: "Local",
                     copy: "Comprueba que el proceso responde en el propio host.",
-                    command: "curl -s http://127.0.0.1:<PUERTO>/health",
-                    confirms: "El proceso esta vivo y escucha en el puerto configurado.",
+                    command: "# Sin token\ncurl -s http://127.0.0.1:<PUERTO>/health\n\n# Con token\ncurl -s -H \"Authorization: Bearer <TOKEN>\" http://127.0.0.1:<PUERTO>/health",
+                    confirms: "El proceso esta vivo, escucha en el puerto configurado y aplica autenticacion si fue generada.",
                     expected: "JSON con status ok, heartbeat y nombre del sistema."
                 },
                 {
                     title: "Telemetry local",
                     badge: "JSON",
                     copy: "Comprueba estructura de payload antes de abrirlo a la red.",
-                    command: "curl -s http://127.0.0.1:<PUERTO>/telemetry | python3 -m json.tool | grep -E '\"(system|metrics|security|logs|heartbeat)\"'",
+                    command: "curl -s -H \"Authorization: Bearer <TOKEN_SI_EXISTE>\" http://127.0.0.1:<PUERTO>/telemetry | python3 -m json.tool | grep -E '\"(system|metrics|security|logs|heartbeat)\"'",
                     confirms: "El payload contiene los bloques raiz que consume Vuex.",
                     expected: "Aparecen system, metrics, security, logs y heartbeat."
-                },
-                {
-                    title: "Conexion desde cliente",
-                    badge: "LAN",
-                    copy: "Ejecuta desde la maquina que abre Thorondor.",
-                    command: "curl -v --connect-timeout 5 http://<IP_PRIVADA>:<PUERTO>/health",
-                    confirms: "Ruta, firewall y bind address permiten acceso real desde el navegador.",
-                    expected: "Conexion TCP establecida y JSON de /health. Timeout significa red/firewall; refused significa puerto sin escucha."
                 },
                 {
                     title: "Estado del servicio",
@@ -560,6 +613,37 @@ export default {
                     expected: "active, 0 reinicios y ExecMainStatus=0."
                 }
             ];
+
+            if (this.isLanDeployment) {
+                checks.splice(2, 0, {
+                    title: "Conexion LAN o VPN",
+                    badge: "LAN",
+                    copy: "Ejecuta desde la maquina que abre Thorondor dentro de la red privada o VPN.",
+                    command: "curl -v --connect-timeout 5 -H \"Authorization: Bearer <TOKEN_SI_EXISTE>\" http://<IP_PRIVADA_O_VPN>:<PUERTO>/health",
+                    confirms: "Ruta, firewall, CORS y bind address permiten acceso real desde el navegador.",
+                    expected: "Conexion TCP establecida y JSON de /health. Timeout significa red/firewall; refused significa puerto sin escucha."
+                });
+            }
+
+            if (this.isRemoteDeployment) {
+                checks.splice(2, 0, {
+                    title: "Conexion remota",
+                    badge: "Remoto",
+                    copy: "Ejecuta desde una red externa a la del host.",
+                    command: "curl -v --connect-timeout 5 -H \"Authorization: Bearer <TOKEN>\" <URL_REMOTA_DEL_AGENTE>/health",
+                    confirms: "DNS/IP publica, NAT, firewall, token, CORS y bind address permiten acceso real desde fuera.",
+                    expected: "HTTP 200 con token valido. HTTP 401 sin token tambien confirma que el endpoint llega al agente."
+                }, {
+                    title: "HTTPS y navegador",
+                    badge: "TLS",
+                    copy: "Comprueba que el navegador no bloqueara la peticion por mixed content.",
+                    command: "curl -s -o /dev/null -w \"%{http_code}\\n\" <URL_REMOTA_DEL_AGENTE>/health\n# Si la aplicacion se sirve por HTTPS, usa https:// tambien para el agente.",
+                    confirms: "El endpoint remoto usa el esquema correcto para poder ser consultado desde la UI.",
+                    expected: "200 con token valido o 401 sin token. Si hay error TLS, corrige certificado o proxy antes de registrar."
+                });
+            }
+
+            return checks;
         },
 
         uninstallCommands() {
@@ -581,14 +665,14 @@ export default {
                         when: "Si algun fichero esta bloqueado, confirma que la tarea ya no existe.",
                         expected: "Test-Path 'C:\\ProgramData\\Thorondor-Agent' devuelve False."
                     },
-                    {
+                    ...(this.isLocalDeployment ? [] : [{
                         title: "Cerrar firewall",
                         badge: "Firewall",
                         command: "Remove-NetFirewallRule -DisplayName 'Thorondor Agent'",
                         purpose: "Elimina la regla TCP entrante del agente.",
                         when: "Si la regla no existe, el error no es critico.",
                         expected: "La regla deja de aparecer en Get-NetFirewallRule."
-                    }
+                    }])
                 ];
             }
 
@@ -617,14 +701,16 @@ export default {
                     when: "Omitir si reutilizaste un usuario existente.",
                     expected: "id thorondor devuelve no such user."
                 },
-                {
+                ...(this.isLocalDeployment ? [] : [{
                     title: "Cerrar puerto",
                     badge: "Firewall",
-                    command: "# UFW\nsudo ufw delete allow <PUERTO>/tcp\n\n# firewalld\nsudo firewall-cmd --permanent --remove-port=<PUERTO>/tcp\nsudo firewall-cmd --reload",
+                    command: this.isRemoteDeployment
+                        ? "# UFW\nsudo ufw delete allow from <IP_PUBLICA_CLIENTE_O_CIDR> to any port <PUERTO> proto tcp\nsudo ufw delete allow <PUERTO>/tcp\n\n# firewalld\nsudo firewall-cmd --permanent --remove-rich-rule='rule family=\"ipv4\" source address=\"<IP_PUBLICA_CLIENTE_O_CIDR>\" port protocol=\"tcp\" port=\"<PUERTO>\" accept'\nsudo firewall-cmd --permanent --remove-port=<PUERTO>/tcp\nsudo firewall-cmd --reload"
+                        : "# UFW\nsudo ufw delete allow from <IP_CLIENTE_O_CIDR> to any port <PUERTO> proto tcp\nsudo ufw delete allow <PUERTO>/tcp\n\n# firewalld\nsudo firewall-cmd --permanent --remove-rich-rule='rule family=\"ipv4\" source address=\"<IP_CLIENTE_O_CIDR>\" port protocol=\"tcp\" port=\"<PUERTO>\" accept'\nsudo firewall-cmd --permanent --remove-port=<PUERTO>/tcp\nsudo firewall-cmd --reload",
                     purpose: "Revierte la exposicion TCP del agente.",
                     when: "Ejecuta solo el bloque del firewall activo en el host.",
                     expected: "El puerto deja de responder desde el cliente."
-                }
+                }])
             ];
         }
     },
@@ -660,6 +746,51 @@ export default {
 
 .validation-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.connection-selector-section {
+    border-color: rgba(148, 163, 184, 0.42);
+    background: linear-gradient(180deg, rgba(23, 34, 47, 0.98), rgba(13, 21, 31, 0.98));
+}
+
+.deployment-selector-control {
+    display: grid;
+    gap: 0.45rem;
+    align-self: end;
+}
+
+.guide-section-title {
+    display: grid;
+    gap: 0.45rem;
+    margin: 2.35rem 0 1.1rem;
+    padding: 1.15rem 1.25rem;
+    border-left: 3px solid rgba(148, 163, 184, 0.72);
+    background: linear-gradient(90deg, rgba(20, 30, 42, 0.92), rgba(20, 30, 42, 0.22));
+}
+
+.guide-section-title--danger {
+    border-left-color: rgba(248, 113, 113, 0.68);
+}
+
+.guide-section-title span {
+    color: #a9bacb;
+    font-size: 0.78rem;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+.guide-section-title h2 {
+    margin: 0;
+    color: #f8fafc;
+    font-size: clamp(1.35rem, 2vw, 1.85rem);
+    font-weight: 800;
+}
+
+.guide-section-title p {
+    margin: 0;
+    color: rgba(203, 213, 225, 0.88);
+    line-height: 1.65;
 }
 
 .meta-line {
@@ -755,64 +886,6 @@ export default {
     border-color: rgba(185, 202, 219, 0.56);
     background: linear-gradient(180deg, rgba(48, 63, 80, 0.96), rgba(31, 43, 58, 0.98));
     color: #f4f8fb;
-}
-
-.phase-divider {
-    display: flex;
-    align-items: center;
-    gap: 1.5rem;
-    padding: 2.5rem 0 1.5rem;
-}
-
-.phase-divider-line {
-    flex: 1;
-    height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(148, 163, 184, 0.34), transparent);
-}
-
-.phase-divider--danger .phase-divider-line {
-    background: linear-gradient(90deg, transparent, rgba(190, 105, 85, 0.3), transparent);
-}
-
-.phase-divider-label {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    flex-shrink: 0;
-}
-
-.phase-divider-letter {
-    width: 2.8rem;
-    height: 2.8rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 50%;
-    border: 2px solid rgba(148, 163, 184, 0.42);
-    background: linear-gradient(135deg, rgba(41, 55, 72, 0.96), rgba(18, 27, 39, 0.98));
-    color: #c7d4df;
-    font-size: 1.15rem;
-    font-weight: 800;
-    letter-spacing: 0;
-}
-
-.phase-divider-text {
-    display: flex;
-    flex-direction: column;
-    gap: 0.18rem;
-}
-
-.phase-divider-text strong {
-    color: #e6edf5;
-    font-size: 0.9rem;
-    font-weight: 800;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-}
-
-.phase-divider-text span {
-    color: rgba(196, 210, 224, 0.64);
-    font-size: 0.8rem;
 }
 
 @media (max-width: 1199px) {

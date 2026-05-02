@@ -8,7 +8,7 @@
                     <p class="section-copy">
                         Esta vista crea el agente Python, el script de instalacion y, si lo activas, tambien la unidad
                         systemd a partir del formulario. Tambien deja preparadas las reglas JavaScript que el frontend
-                        utilizara para consultar ese host Linux desde tu navegador.
+                        utilizara para consultar ese host desde tu navegador, tanto en local como por LAN, VPN o URL publica.
                     </p>
                 </div>
                 <div class="phase-badge-block">
@@ -26,6 +26,22 @@
         </section>
 
         <section class="section-box">
+            <div class="deployment-selector-panel">
+                <div class="deployment-selector-copy">
+                    <span class="section-kicker">Tipo de monitorizacion</span>
+                    <h2 class="module-title">Selecciona la conexion del agente</h2>
+                    <p class="module-copy">{{ selectedNetworkScopeCopy }}</p>
+                </div>
+                <div class="deployment-selector-control">
+                    <label class="field-label" for="network-scope-select">Conexion</label>
+                    <select id="network-scope-select" v-model="agentDraft.networkScope" class="form-select input-dark" @change="handleNetworkScopeChange">
+                        <option v-for="scope in networkScopeOptions" :key="scope.value" :value="scope.value">
+                            {{ scope.shortLabel }}
+                        </option>
+                    </select>
+                </div>
+            </div>
+
             <div class="os-selector-row">
                 <label class="field-label mb-2">Sistema operativo objetivo</label>
                 <div class="os-toggle-group">
@@ -109,7 +125,7 @@
                 </div>
                 <div class="control-field">
                     <div class="field-heading">
-                        <label class="field-label" for="receiver-url">URL accesible del agente desde este navegador</label>
+                        <label class="field-label" for="receiver-url">{{ receiverUrlLabel }}</label>
                         <div class="context-help">
                             <button type="button" class="help-trigger" :class="{ 'is-pinned': pinnedHelpKey === 'receiverUrl' }" aria-label="Ayuda sobre la URL accesible del agente" @click.stop="togglePinnedHelp('receiverUrl')">
                                 ?
@@ -120,13 +136,13 @@
                             </button>
                         </div>
                     </div>
-                    <input id="receiver-url" v-model="agentDraft.receiverUrl" :placeholder="fieldGuides.receiverUrl.placeholder" class="form-control input-dark" />
+                    <input id="receiver-url" v-model="agentDraft.receiverUrl" :placeholder="receiverUrlPlaceholder" class="form-control input-dark" />
                 </div>
-                <div class="control-field">
+                <div v-if="!isLocalScope" class="control-field">
                     <div class="field-heading">
-                        <label class="field-label" for="host-ip">{{ isWindows ? 'IP privada del host Windows' : 'IP privada del host Linux' }}</label>
+                        <label class="field-label" for="host-ip">{{ hostAddressLabel }}</label>
                         <div class="context-help">
-                            <button type="button" class="help-trigger" :class="{ 'is-pinned': pinnedHelpKey === 'hostIp' }" aria-label="Ayuda sobre la IP privada del host" @click.stop="togglePinnedHelp('hostIp')">
+                            <button type="button" class="help-trigger" :class="{ 'is-pinned': pinnedHelpKey === 'hostIp' }" aria-label="Ayuda sobre la direccion del host" @click.stop="togglePinnedHelp('hostIp')">
                                 ?
                                 <span class="help-popover" @click.stop>
                                     <strong>{{ fieldGuides.hostIp.title }}</strong>
@@ -136,6 +152,24 @@
                         </div>
                     </div>
                     <input id="host-ip" v-model="agentDraft.hostIp" :placeholder="fieldGuides.hostIp.placeholder" class="form-control input-dark" />
+                </div>
+                <div v-if="!isLocalScope" class="control-field">
+                    <div class="field-heading">
+                        <label class="field-label" for="auth-token">Token de acceso del agente</label>
+                        <div class="context-help">
+                            <button type="button" class="help-trigger" :class="{ 'is-pinned': pinnedHelpKey === 'authToken' }" aria-label="Ayuda sobre el token de acceso" @click.stop="togglePinnedHelp('authToken')">
+                                ?
+                                <span class="help-popover" @click.stop>
+                                    <strong>{{ fieldGuides.authToken.title }}</strong>
+                                    {{ fieldGuides.authToken.copy }}
+                                </span>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="input-action-row">
+                        <input id="auth-token" v-model="agentDraft.authToken" :placeholder="fieldGuides.authToken.placeholder" class="form-control input-dark" autocomplete="off" />
+                        <button type="button" class="btn btn-subtle compact-action" @click="generateAuthToken">Generar</button>
+                    </div>
                 </div>
                 <div class="control-field">
                     <div class="field-heading">
@@ -313,7 +347,15 @@
                             </div>
                             <div class="summary-line">
                                 <label>Destino</label>
-                                <span>{{ generatedSnapshot.hostIp }}:{{ generatedSnapshot.port }}</span>
+                                <span>{{ generatedSnapshot.receiverUrl }}</span>
+                            </div>
+                            <div class="summary-line">
+                                <label>Alcance</label>
+                                <span>{{ networkScopeLabel(generatedSnapshot) }}</span>
+                            </div>
+                            <div class="summary-line">
+                                <label>Autenticacion</label>
+                                <span>{{ generatedSnapshot.authToken ? 'Bearer token' : 'Sin token' }}</span>
                             </div>
                             <div class="summary-line">
                                 <label>Servicio</label>
@@ -412,8 +454,10 @@ import {
     THORONDOR_DISTRO_OPTIONS,
     THORONDOR_WINDOWS_VERSION_OPTIONS,
     THORONDOR_MODULE_KEYS,
+    THORONDOR_NETWORK_SCOPE_OPTIONS,
     buildThorondorAgentDraft,
-    isLegacyThorondorAgentDraft
+    isLegacyThorondorAgentDraft,
+    normalizeThorondorNetworkScope
 } from "@/features/vueloThorondor/data/thorondorDefaults";
 import { buildThorondorAgentFiles, buildThorondorWindowsInstallScript } from "@/features/vueloThorondor/services/thorondorGenerator";
 import { buildThorondorRequestRules } from "@/features/vueloThorondor/services/thorondorApi";
@@ -444,13 +488,22 @@ const FIELD_GUIDES = {
     },
     receiverUrl: {
         title: "Por que registrar esta URL",
-        placeholder: "Ej. http://192.168.1.50:8765",
-        copy: "Es la direccion base que usara este navegador para consultar al agente. Guardarla aqui permite que dashboard, detalle, reglas y polling sepan a donde pedir /health y /telemetry."
+        placeholder: "Ej. http://127.0.0.1:8765, http://192.168.1.50:8765 o https://thorondor.midominio.com",
+        copy: "Es la direccion base que usara este navegador para consultar al agente. Cambia segun el modo: Local usa 127.0.0.1, LAN usa IP privada o VPN, Remoto usa IP publica o DNS."
+    },
+    networkScope: {
+        title: "Alcance de red",
+        copy: "Clasifica como se alcanza el agente: Local, LAN o Remoto. En Remoto usa token, firewall restrictivo y HTTPS si la aplicacion se sirve por HTTPS."
     },
     hostIp: {
-        title: "IP privada del Linux",
-        placeholder: "Ej. 192.168.1.50",
-        copy: "Sirve como referencia operativa del host y como respaldo para reconstruir la URL del agente si no escribes la direccion completa."
+        title: "Direccion operativa del host",
+        placeholder: "Ej. 192.168.1.50, 203.0.113.20 o thorondor.midominio.com",
+        copy: "Sirve como referencia del sistema y como respaldo para reconstruir la URL si no escribes la direccion completa. Puede ser IP privada, publica o FQDN."
+    },
+    authToken: {
+        title: "Bearer token",
+        placeholder: "Opcional en LAN, obligatorio en Remoto",
+        copy: "Si existe, el agente exigira Authorization: Bearer <token> en /health, /telemetry y /logs. Es imprescindible si el endpoint es remoto."
     },
     port: {
         title: "Puerto HTTP del agente",
@@ -502,7 +555,6 @@ const REQUIRED_GENERATION_FIELDS_LINUX = [
     { key: "distro", label: "Familia Linux", id: "distro" },
     { key: "osVersion", label: "Version aproximada", id: "os-version" },
     { key: "receiverUrl", label: "URL accesible del agente", id: "receiver-url" },
-    { key: "hostIp", label: "IP privada del host", id: "host-ip" },
     { key: "port", label: "Puerto HTTP del agente", id: "receiver-port" },
     { key: "installUser", label: "Usuario del servicio", id: "install-user" },
     { key: "serviceName", label: "Nombre tecnico del servicio", id: "service-name" }
@@ -513,7 +565,6 @@ const REQUIRED_GENERATION_FIELDS_WINDOWS = [
     { key: "systemName", label: "Identificador tecnico del sistema", id: "system-name" },
     { key: "osVersion", label: "Version de Windows", id: "os-version" },
     { key: "receiverUrl", label: "URL accesible del agente", id: "receiver-url" },
-    { key: "hostIp", label: "IP del host Windows", id: "host-ip" },
     { key: "port", label: "Puerto HTTP del agente", id: "receiver-port" }
 ];
 
@@ -561,6 +612,22 @@ export default {
             return this.agentDraft.targetOs === "windows";
         },
 
+        normalizedNetworkScope() {
+            return normalizeThorondorNetworkScope(this.agentDraft.networkScope);
+        },
+
+        isLocalScope() {
+            return this.normalizedNetworkScope === "local";
+        },
+
+        isLanScope() {
+            return this.normalizedNetworkScope === "lan";
+        },
+
+        isRemoteScope() {
+            return this.normalizedNetworkScope === "public";
+        },
+
         distroOptions() {
             return THORONDOR_DISTRO_OPTIONS;
         },
@@ -573,6 +640,31 @@ export default {
             return THORONDOR_MODULE_KEYS;
         },
 
+        networkScopeOptions() {
+            return THORONDOR_NETWORK_SCOPE_OPTIONS;
+        },
+
+        selectedNetworkScopeCopy() {
+            return this.networkScopeOptions.find((item) => item.value === this.normalizedNetworkScope)?.copy || "";
+        },
+
+        receiverUrlLabel() {
+            if (this.isLocalScope) return "URL local del agente";
+            if (this.isLanScope) return "URL LAN o VPN accesible desde este navegador";
+            return "URL remota publica o DNS del agente";
+        },
+
+        receiverUrlPlaceholder() {
+            if (this.isLocalScope) return "Ej. http://127.0.0.1:8765";
+            if (this.isLanScope) return "Ej. http://192.168.1.50:8765 o http://10.8.0.12:8765";
+            return "Ej. https://thorondor.midominio.com o http://203.0.113.20:8765";
+        },
+
+        hostAddressLabel() {
+            if (this.isLanScope) return this.isWindows ? "IP privada o VPN del host Windows" : "IP privada o VPN del host Linux";
+            return this.isWindows ? "IP publica o DNS del host Windows" : "IP publica o DNS del host Linux";
+        },
+
         fieldGuides() {
             return FIELD_GUIDES;
         },
@@ -582,7 +674,15 @@ export default {
         },
 
         requiredFields() {
-            return this.isWindows ? REQUIRED_GENERATION_FIELDS_WINDOWS : REQUIRED_GENERATION_FIELDS_LINUX;
+            const fields = [...(this.isWindows ? REQUIRED_GENERATION_FIELDS_WINDOWS : REQUIRED_GENERATION_FIELDS_LINUX)];
+            if (!this.isLocalScope) {
+                fields.push({ key: "hostIp", label: this.hostAddressLabel, id: "host-ip" });
+            }
+            if (this.isRemoteScope) {
+                fields.push({ key: "authToken", label: "Token de acceso", id: "auth-token" });
+            }
+
+            return fields;
         },
 
         missingRequiredFieldLabels() {
@@ -607,7 +707,11 @@ export default {
                 },
                 {
                     label: "Con CORS",
-                    copy: "El agente responde con Access-Control-Allow-Origin para que el navegador pueda consumirlo por HTTP."
+                    copy: "El agente permite peticiones CORS con Authorization para que el navegador pueda consultar endpoints locales, LAN o remotos."
+                },
+                {
+                    label: "Token opcional",
+                    copy: "Si configuras token, el agente exige Authorization: Bearer en /health, /telemetry y /logs."
                 },
                 {
                     label: "Con systemd",
@@ -631,7 +735,7 @@ export default {
                     label: "Hosts registrados",
                     value: String(this.dashboardCards.length),
                     tone: "tone-blue",
-                    note: "Agentes persistidos localmente en IndexedDB."
+                    note: "Agentes persistidos en IndexedDB de este navegador."
                 },
                 {
                     label: "Ultimo polling",
@@ -691,7 +795,17 @@ export default {
 
         getMissingRequiredFields(source = this.agentDraft) {
             const draft = this.normalizeDraftShape(source);
-            const fields = this.isWindows ? REQUIRED_GENERATION_FIELDS_WINDOWS : REQUIRED_GENERATION_FIELDS_LINUX;
+            const baseFields = draft.targetOs === "windows" ? REQUIRED_GENERATION_FIELDS_WINDOWS : REQUIRED_GENERATION_FIELDS_LINUX;
+            const scope = normalizeThorondorNetworkScope(draft.networkScope);
+            const fields = [...baseFields];
+
+            if (scope !== "local") {
+                fields.push({ key: "hostIp", label: scope === "lan" ? "IP privada o VPN del host" : "IP publica o DNS del host", id: "host-ip" });
+            }
+
+            if (scope === "public") {
+                fields.push({ key: "authToken", label: "Token de acceso", id: "auth-token" });
+            }
 
             return fields.filter(({ key }) => {
                 if (key === "receiverUrl") return !hasValidHttpUrl(draft.receiverUrl);
@@ -722,6 +836,9 @@ export default {
                 distro: String(draft.distro ?? base.distro),
                 osVersion: String(draft.osVersion ?? base.osVersion),
                 receiverUrl: String(draft.receiverUrl ?? base.receiverUrl),
+                networkScope: normalizeThorondorNetworkScope(draft.networkScope ?? base.networkScope),
+                authToken: String(draft.authToken ?? base.authToken),
+                corsOrigin: String(draft.corsOrigin ?? base.corsOrigin),
                 hostIp: String(draft.hostIp ?? base.hostIp),
                 installUser: String(draft.installUser ?? base.installUser),
                 serviceName: String(draft.serviceName ?? base.serviceName),
@@ -750,6 +867,9 @@ export default {
                 distro: draft.distro || "Otra",
                 osVersion: draft.osVersion.trim(),
                 receiverUrl: record.receiverUrl,
+                networkScope: record.networkScope,
+                authToken: record.authToken,
+                corsOrigin: record.corsOrigin,
                 hostIp: record.hostIp,
                 port: record.port,
                 intervalSeconds: record.intervalSeconds,
@@ -764,16 +884,23 @@ export default {
         buildAgentRecordFromDraft(source = this.agentDraft) {
             const normalizedSource = this.normalizeDraftShape(source);
             const systemName = normalizedSource.systemName.trim() || "thorondor-host";
-            const hostIp = normalizedSource.hostIp.trim() || "127.0.0.1";
             const port = Number(normalizedSource.port) || 8765;
+            const networkScope = normalizeThorondorNetworkScope(normalizedSource.networkScope);
+            const hostIp = networkScope === "local" ? "127.0.0.1" : (normalizedSource.hostIp.trim() || "127.0.0.1");
+            const receiverUrl = normalizedSource.receiverUrl.trim() || `http://${hostIp}:${port}`;
+            const authToken = networkScope === "local" ? "" : normalizedSource.authToken.trim();
 
             return {
                 id: `${systemName}-${hostIp}-${port}`.toLowerCase().replace(/[^a-z0-9-]+/g, "-"),
                 displayName: normalizedSource.displayName.trim() || systemName,
                 systemName,
+                targetOs: normalizedSource.targetOs === "windows" ? "windows" : "linux",
                 distro: normalizedSource.distro || "Otra",
                 osVersion: normalizedSource.osVersion.trim(),
-                receiverUrl: normalizedSource.receiverUrl.trim() || `http://${hostIp}:${port}`,
+                receiverUrl,
+                networkScope,
+                authToken,
+                corsOrigin: normalizedSource.corsOrigin.trim() || "*",
                 hostIp,
                 port,
                 intervalSeconds: Number(normalizedSource.intervalSeconds) || 30,
@@ -788,6 +915,11 @@ export default {
         },
 
         async registerCurrentDraft() {
+            if (this.getMissingRequiredFields().length) {
+                this.focusFirstMissingField();
+                return;
+            }
+
             const record = this.buildAgentRecordFromDraft(this.normalizeDraftForOutput());
             await this.$store.dispatch("registerThorondorAgent", record);
             this.$store.commit("setThorondorSelectedAgent", record.id);
@@ -819,6 +951,55 @@ export default {
         async clearFormData() {
             this.agentDraft = buildThorondorAgentDraft();
             await this.$store.dispatch("clearThorondorGeneratorDraft");
+        },
+
+        handleNetworkScopeChange() {
+            const scope = this.normalizedNetworkScope;
+            const port = Number(this.agentDraft.port) || 8765;
+
+            if (scope === "local") {
+                this.agentDraft.hostIp = "127.0.0.1";
+                this.agentDraft.authToken = "";
+                if (!this.agentDraft.receiverUrl || /^https?:\/\/(192\.168\.|10\.|172\.|203\.|thorondor\.)/i.test(this.agentDraft.receiverUrl)) {
+                    this.agentDraft.receiverUrl = `http://127.0.0.1:${port}`;
+                }
+                return;
+            }
+
+            if (scope === "lan") {
+                if (!this.agentDraft.receiverUrl || this.agentDraft.receiverUrl.includes("127.0.0.1")) {
+                    this.agentDraft.receiverUrl = `http://192.168.1.50:${port}`;
+                }
+                if (!this.agentDraft.hostIp || this.agentDraft.hostIp === "127.0.0.1") {
+                    this.agentDraft.hostIp = "192.168.1.50";
+                }
+                return;
+            }
+
+            if (!this.agentDraft.receiverUrl || this.agentDraft.receiverUrl.includes("127.0.0.1") || this.agentDraft.receiverUrl.includes("192.168.")) {
+                this.agentDraft.receiverUrl = `https://thorondor.midominio.com`;
+            }
+            if (!this.agentDraft.hostIp || this.agentDraft.hostIp === "127.0.0.1" || this.agentDraft.hostIp.startsWith("192.168.")) {
+                this.agentDraft.hostIp = "thorondor.midominio.com";
+            }
+            if (!this.agentDraft.authToken) {
+                this.generateAuthToken();
+            }
+        },
+
+        generateAuthToken() {
+            const bytes = new Uint8Array(32);
+            if (window.crypto?.getRandomValues) {
+                window.crypto.getRandomValues(bytes);
+            } else {
+                for (let index = 0; index < bytes.length; index += 1) {
+                    bytes[index] = Math.floor(Math.random() * 256);
+                }
+            }
+
+            this.agentDraft.authToken = Array.from(bytes)
+                .map((byte) => byte.toString(16).padStart(2, "0"))
+                .join("");
         },
 
         togglePinnedHelp(key) {
@@ -882,6 +1063,41 @@ export default {
 
 .control-grid {
     row-gap: 1.52rem;
+}
+
+.deployment-selector-panel {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(220px, 320px);
+    gap: 1.25rem;
+    align-items: end;
+    padding: 1.1rem;
+    border: 1px solid rgba(148, 163, 184, 0.24);
+    border-radius: 10px;
+    background: linear-gradient(180deg, rgba(17, 27, 39, 0.74), rgba(11, 18, 27, 0.86));
+}
+
+.deployment-selector-copy {
+    display: grid;
+    gap: 0.45rem;
+}
+
+.deployment-selector-control {
+    display: grid;
+    gap: 0.45rem;
+}
+
+.input-action-row {
+    display: flex;
+    gap: 0.55rem;
+    min-width: 0;
+}
+
+.input-action-row .form-control {
+    min-width: 0;
+}
+
+.compact-action {
+    flex: 0 0 auto;
 }
 
 .field-heading {
@@ -1079,6 +1295,14 @@ export default {
 
     .action-guide-grid {
         grid-template-columns: 1fr;
+    }
+
+    .deployment-selector-panel {
+        grid-template-columns: 1fr;
+    }
+
+    .input-action-row {
+        flex-direction: column;
     }
 }
 

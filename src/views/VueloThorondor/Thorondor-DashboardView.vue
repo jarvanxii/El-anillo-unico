@@ -82,8 +82,12 @@
                             <span>{{ card.alertCount }}</span>
                         </div>
                         <div class="mini-stat">
-                            <label>IP</label>
-                            <span>{{ card.hostIp || card.latestSnapshot?.localIp || "N/D" }}</span>
+                            <label>Alcance</label>
+                            <span>{{ networkScopeLabel(card) }}</span>
+                        </div>
+                        <div class="mini-stat endpoint-mini-stat">
+                            <label>Endpoint</label>
+                            <span class="endpoint-text">{{ agentEndpoint(card) }}</span>
                         </div>
                     </div>
                 </article>

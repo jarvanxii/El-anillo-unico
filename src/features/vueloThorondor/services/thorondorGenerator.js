@@ -8,6 +8,24 @@ function pythonList(list) {
   return `[${(list || []).map((item) => JSON.stringify(item)).join(", ")}]`;
 }
 
+function normalizeReceiverBaseUrl(config) {
+  const raw = String(config.receiverUrl || "").trim().replace(/\/+$/, "");
+  if (raw) return raw;
+
+  const host = String(config.hostIp || "127.0.0.1").trim();
+  const port = Number(config.port) || 8765;
+  return `http://${host}:${port}`;
+}
+
+function buildCurlAuthFragment(config) {
+  const token = String(config.authToken || "").trim();
+  return token ? ` -H "Authorization: Bearer ${token}"` : "";
+}
+
+function resolveListenHost(config) {
+  return config.networkScope === "local" ? "127.0.0.1" : "0.0.0.0";
+}
+
 export function buildThorondorAgentFiles(draft) {
   const logPaths = String(draft.additionalLogPaths || "")
     .split("\n")
@@ -40,6 +58,7 @@ export function buildThorondorPythonAgent(config) {
 
   return `#!/usr/bin/env python3
 import json
+import hmac
 import os
 import platform
 import re
@@ -63,10 +82,13 @@ HOST_LABEL = ${JSON.stringify(config.displayName)}
 SYSTEM_NAME = ${JSON.stringify(config.systemName)}
 DISTRO = ${JSON.stringify(config.distro)}
 OS_VERSION = ${JSON.stringify(config.osVersion)}
-LISTEN_HOST = "0.0.0.0"
+LISTEN_HOST = ${JSON.stringify(resolveListenHost(config))}
 LISTEN_PORT = ${Number(config.port) || 8765}
 POLL_INTERVAL_SECONDS = ${Number(config.intervalSeconds) || 30}
 INSTALL_USER = ${JSON.stringify(config.installUser || "thorondor")}
+NETWORK_SCOPE = ${JSON.stringify(config.networkScope || "lan")}
+AUTH_TOKEN = ${JSON.stringify(String(config.authToken || "").trim())}
+CORS_ORIGIN = ${JSON.stringify(String(config.corsOrigin || "*").trim() || "*")}
 IS_WINDOWS = platform.system() == "Windows"
 MODULES = {
     "systemMetrics": ${serializeBoolean(moduleFlags.systemMetrics)},
@@ -95,9 +117,11 @@ CRITICAL_FILES = (
 BASELINE_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".thorondor-baseline.json")
 MAX_LOG_LINES = 60
 HEADERS = {
-    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Origin": CORS_ORIGIN,
     "Access-Control-Allow-Methods": "GET, OPTIONS",
-    "Access-Control-Allow-Headers": "Content-Type",
+    "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Thorondor-Token",
+    "Access-Control-Max-Age": "600",
+    "Cache-Control": "no-store",
     "Content-Type": "application/json; charset=utf-8"
 }
 
@@ -119,6 +143,22 @@ def run_command(command):
         return completed.stdout.strip() or completed.stderr.strip()
     except Exception as exc:
         return f"ERROR: {exc}"
+
+
+def is_authorized(headers):
+    if not AUTH_TOKEN:
+        return True
+
+    auth_header = headers.get("Authorization", "")
+    token_header = headers.get("X-Thorondor-Token", "")
+    candidate = ""
+
+    if auth_header.lower().startswith("bearer "):
+        candidate = auth_header[7:].strip()
+    elif token_header:
+        candidate = token_header.strip()
+
+    return hmac.compare_digest(candidate, AUTH_TOKEN)
 
 
 def find_local_ip():
@@ -751,6 +791,8 @@ def collect_payload():
             "targetOs": "windows" if IS_WINDOWS else "linux",
             "installUser": INSTALL_USER,
             "listenPort": LISTEN_PORT,
+            "networkScope": NETWORK_SCOPE,
+            "authRequired": bool(AUTH_TOKEN),
             "modules": MODULES,
             "generatedAt": now_iso()
         },
@@ -830,12 +872,21 @@ class ThorondorHandler(BaseHTTPRequestHandler):
 
     def do_GET(self):
         parsed = urlparse(self.path)
+        if parsed.path in ["/health", "/telemetry", "/logs"] and not is_authorized(self.headers):
+            self._write_json(401, {
+                "error": "unauthorized",
+                "detail": "missing or invalid Thorondor bearer token"
+            })
+            return
+
         if parsed.path == "/health":
             self._write_json(200, {
                 "status": "ok",
                 "service": SYSTEM_NAME,
                 "heartbeat": now_iso(),
-                "port": LISTEN_PORT
+                "port": LISTEN_PORT,
+                "networkScope": NETWORK_SCOPE,
+                "authRequired": bool(AUTH_TOKEN)
             })
             return
 
@@ -860,7 +911,7 @@ class ThorondorHTTPServer(ThreadingHTTPServer):
 
 
 def main():
-    print(f"[thorondor] iniciando agente {SYSTEM_NAME} en 0.0.0.0:{LISTEN_PORT}")
+    print(f"[thorondor] iniciando agente {SYSTEM_NAME} en {LISTEN_HOST}:{LISTEN_PORT}")
     server = ThorondorHTTPServer((LISTEN_HOST, LISTEN_PORT), ThorondorHandler)
     server.serve_forever()
 
@@ -953,6 +1004,8 @@ ${completionMessage}
 
 export function buildThorondorInstallInstructions(config) {
   const installUser = config.installUser || "thorondor";
+  const baseUrl = normalizeReceiverBaseUrl(config);
+  const curlAuth = buildCurlAuthFragment(config);
   const systemdBlock = config.generateSystemd
     ? `\n5. Crear el servicio systemd:\n\`\`\`bash\nsudo cp thorondor-agent.service /etc/systemd/system/thorondor-agent.service\nsudo systemctl daemon-reload\nsudo systemctl enable --now thorondor-agent.service\nsudo systemctl status thorondor-agent.service\n\`\`\`\n`
     : "";
@@ -983,17 +1036,21 @@ python3 thorondor-agent.py
 ${systemdBlock}
 6. Validar respuesta HTTP:
 \`\`\`bash
-curl http://${config.hostIp || "127.0.0.1"}:${Number(config.port) || 8765}/health
-curl http://${config.hostIp || "127.0.0.1"}:${Number(config.port) || 8765}/telemetry
+curl${curlAuth} ${baseUrl}/health
+curl${curlAuth} ${baseUrl}/telemetry
 \`\`\`
 
-7. Registrar este host en el dashboard y comprobar que aparece con heartbeat.
+7. Registrar este host en el dashboard con la misma URL base: \`${baseUrl}\`.
 `;
 }
 
 export function buildThorondorWindowsInstallScript(config) {
   const port = Number(config.port) || 8765;
   const installDir = "C:\\ProgramData\\Thorondor-Agent";
+  const token = String(config.authToken || "").trim();
+  const verifyCommand = token
+    ? `Invoke-RestMethod -Headers @{ Authorization = 'Bearer ${token}' } http://127.0.0.1:$PORT/health | ConvertTo-Json -Depth 3`
+    : `Invoke-RestMethod http://127.0.0.1:$PORT/health | ConvertTo-Json -Depth 3`;
 
   return `#Requires -RunAsAdministrator
 <#
@@ -1070,7 +1127,7 @@ Write-Host "    Estado de la tarea: $state" -ForegroundColor $(if ($state -eq "R
 Write-Host ""
 Write-Host "=== Instalacion completada ===" -ForegroundColor Green
 Write-Host "Verifica el agente con:"
-Write-Host "  Invoke-RestMethod http://127.0.0.1:$PORT/health | ConvertTo-Json -Depth 3"
+Write-Host "  ${verifyCommand}"
 Write-Host ""
 Write-Host "Logs del proceso:"
 Write-Host "  Get-EventLog -LogName Application -Source 'ThorondorAgent' -Newest 20"

@@ -4,7 +4,7 @@ function normalizeBaseUrl(agent) {
   const port = String(agent?.port || "").trim();
 
   if (raw.startsWith("http://") || raw.startsWith("https://")) {
-    return raw.replace(/\/$/, "");
+    return raw.replace(/\/+$/, "");
   }
 
   if (host && port) {
@@ -16,6 +16,19 @@ function normalizeBaseUrl(agent) {
   }
 
   return "";
+}
+
+function buildJsonHeaders(agent) {
+  const headers = {
+    Accept: "application/json"
+  };
+  const authToken = String(agent?.authToken || "").trim();
+
+  if (authToken) {
+    headers.Authorization = `Bearer ${authToken}`;
+  }
+
+  return headers;
 }
 
 export function buildThorondorAgentEndpoints(agent) {
@@ -31,12 +44,15 @@ export function buildThorondorAgentEndpoints(agent) {
 
 export async function fetchThorondorHealth(agent) {
   const endpoints = buildThorondorAgentEndpoints(agent);
+  if (!endpoints.baseUrl) {
+    throw new Error("Endpoint del agente no configurado");
+  }
+
   const response = await fetch(endpoints.healthUrl, {
     method: "GET",
     mode: "cors",
-    headers: {
-      Accept: "application/json"
-    }
+    cache: "no-store",
+    headers: buildJsonHeaders(agent)
   });
 
   if (!response.ok) {
@@ -48,12 +64,15 @@ export async function fetchThorondorHealth(agent) {
 
 export async function fetchThorondorTelemetry(agent) {
   const endpoints = buildThorondorAgentEndpoints(agent);
+  if (!endpoints.baseUrl) {
+    throw new Error("Endpoint del agente no configurado");
+  }
+
   const response = await fetch(endpoints.telemetryUrl, {
     method: "GET",
     mode: "cors",
-    headers: {
-      Accept: "application/json"
-    }
+    cache: "no-store",
+    headers: buildJsonHeaders(agent)
   });
 
   if (!response.ok) {
@@ -74,9 +93,7 @@ export function buildThorondorRequestRules(agent) {
       intervalSeconds: Math.max(15, Number(agent.intervalSeconds) || 30),
       method: "GET",
       url: endpoints.healthUrl,
-      headers: {
-        Accept: "application/json"
-      }
+      headers: buildJsonHeaders(agent)
     },
     {
       id: `${agent.id}-telemetry`,
@@ -85,9 +102,7 @@ export function buildThorondorRequestRules(agent) {
       intervalSeconds: Math.max(15, Number(agent.intervalSeconds) || 30),
       method: "GET",
       url: endpoints.telemetryUrl,
-      headers: {
-        Accept: "application/json"
-      }
+      headers: buildJsonHeaders(agent)
     }
   ];
 }

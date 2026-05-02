@@ -3,11 +3,11 @@
         <section class="section-box intro-box">
             <div class="section-topline">
                 <div class="module-header">
-                    <span class="section-kicker">Inventario local</span>
+                    <span class="section-kicker">Inventario de agentes</span>
                     <h1 class="section-name">Agentes</h1>
                     <p class="section-copy">
-                        Aqui tienes el censo de agentes registrados en tu navegador: distribucion, heartbeat,
-                        modulos activos, historial de conexiones y accesos rapidos para revisar o retirar un host.
+                        Aqui tienes el censo de agentes registrados en tu navegador: alcance de red, endpoint,
+                        heartbeat, modulos activos, historial de conexiones y accesos rapidos para revisar o retirar un host.
                     </p>
                 </div>
                 <div class="phase-badge-block">
@@ -34,6 +34,7 @@
                             <th>Registro</th>
                             <th>Ultimo heartbeat</th>
                             <th>Estado</th>
+                            <th>Alcance</th>
                             <th>Endpoint</th>
                             <th>Modulos</th>
                             <th>Acciones</th>
@@ -46,7 +47,8 @@
                             <td>{{ formatDateTime(agent.createdAt) }}</td>
                             <td>{{ formatRelativeTime(agent.lastHeartbeatAt) }}</td>
                             <td><span class="state-chip" :class="statusClass(agent.status.color)">{{ agent.status.label }}</span></td>
-                            <td><code class="inline-code">{{ agent.hostIp }}:{{ agent.port }}</code></td>
+                            <td><span class="mini-badge">{{ networkScopeLabel(agent) }}</span></td>
+                            <td><code class="inline-code endpoint-code">{{ agentEndpoint(agent) }}</code></td>
                             <td>{{ summarizeModules(agent.modules) }}</td>
                             <td>
                                 <div class="table-actions">
@@ -109,7 +111,7 @@ export default {
             return [
                 {
                     label: "Inventario local",
-                    copy: "Cada agente queda asociado a esta instancia del navegador y puede seguir disponible entre sesiones."
+                    copy: "Cada agente queda asociado a esta instancia del navegador y puede apuntar a localhost, LAN, VPN o endpoint publico."
                 },
                 {
                     label: "Estado operativo",

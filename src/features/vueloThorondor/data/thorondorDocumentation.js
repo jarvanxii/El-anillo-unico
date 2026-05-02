@@ -1,13 +1,13 @@
 export const thorondorDocumentation = `
 # Thorondor como SIEM personal
 
-Thorondor es una consola local de observabilidad y seguridad para hosts propios. El modelo es deliberadamente simple:
+Thorondor es una consola de observabilidad y seguridad para hosts propios. El modelo es deliberadamente simple:
 cada host ejecuta un agente Python, el navegador consulta a esos agentes por HTTP y la aplicacion conserva historico en
 IndexedDB. No hay backend, broker, cola de mensajes ni almacenamiento remoto.
 
 ## Componentes
 
-- **Agente Python**: proceso HTTP ligero instalado en Linux o Windows. Expone \`/health\` y \`/telemetry\`.
+- **Agente Python**: proceso HTTP ligero instalado en Linux o Windows. Expone \`/health\`, \`/telemetry\` y \`/logs\`.
 - **Frontend Vue**: registra agentes, ejecuta polling, normaliza la telemetria y pinta dashboard, detalle y alertas.
 - **IndexedDB**: base local del navegador para snapshots, eventos, logs, reglas, alertas y estado de conexion.
 - **Motor de reglas**: evaluacion JavaScript de umbrales, heartbeat, autenticacion, sudo e integridad de ficheros.
@@ -24,9 +24,10 @@ El payload de \`/telemetry\` se organiza en bloques estables:
 
 ## Comunicacion
 
-El navegador hace peticiones HTTP al agente usando la IP privada y el puerto configurado. El host no llama al frontend.
-Eso reduce dependencias, pero exige conectividad directa desde el navegador al puerto del agente. Si hay firewall local,
-la regla debe permitir el origen real del cliente.
+El navegador hace peticiones HTTP al endpoint registrado del agente. Ese endpoint puede ser \`127.0.0.1\`, una IP privada,
+una IP de VPN, una IP publica o un FQDN. El host no llama al frontend: el flujo siempre es pull desde el navegador.
+Eso reduce dependencias, pero exige conectividad directa desde el navegador al puerto o reverse proxy del agente. Si el
+endpoint es publico, usa token Bearer, allowlist de origen en firewall y TLS cuando la aplicacion se sirva por HTTPS.
 
 ## Persistencia y retencion
 
@@ -38,7 +39,7 @@ alertas y conexiones. La purga automatica elimina historico antiguo para evitar 
 - No sustituye a un SIEM empresarial multiusuario.
 - No hace respuesta automatica tipo EDR.
 - No centraliza datos fuera del navegador.
-- No debe exponerse a Internet sin autenticacion, TLS y controles de red adicionales.
+- No expongas un agente en Internet sin token, TLS cuando corresponda y controles de red adicionales.
 
 ## Uso recomendado
 

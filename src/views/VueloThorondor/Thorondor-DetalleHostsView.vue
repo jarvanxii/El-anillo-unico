@@ -717,6 +717,7 @@ export default {
 
             const cards = [
                 { label: "Hostname", value: this.selectedLatestSnapshot.hostname, tone: "tone-neutral", note: this.selectedLatestSnapshot.localIp },
+                { label: "Endpoint", value: this.agentEndpoint(this.selectedAgent), tone: "tone-blue", note: this.networkScopeLabel(this.selectedAgent) },
                 { label: "Estado", value: status.label, tone: status.color === "success" ? "tone-success" : (status.color === "warning" ? "tone-warning" : "tone-danger"), note: status.note },
                 { label: "Kernel", value: this.selectedLatestSnapshot.kernel, tone: "tone-blue", note: this.selectedAgent.distro },
                 { label: "Uptime", value: this.formatDurationSeconds(this.selectedLatestSnapshot.uptimeSeconds), tone: "tone-neutral", note: `${this.selectedLatestSnapshot.connectedUsers?.length || 0} usuarios conectados` },

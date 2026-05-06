@@ -19,7 +19,7 @@
 
                     <div class="intro-emblem">
                         <img src="@/assets/logos/feanor.webp" alt="Sello de Feanor" />
-                        <span>33 modulos enlazados</span>
+                        <span>32 modulos enlazados</span>
                         <small>Procesamiento en cliente.</small>
                     </div>
                 </div>
@@ -185,70 +185,14 @@
                 <FeanorResultPanel v-if="atbashResult" :result="atbashResult" icon="ATB" @copy="copyText" />
             </section>
 
-            <section v-if="isModuleVisible('xor')" class="section-box xor-module">
-                <div class="module-header">
-                    <span class="section-kicker">Modulo 03</span>
-                    <h2 class="module-title">Laboratorio XOR</h2>
-                    <p class="module-copy">
-                        Aplica OR exclusivo bit a bit sobre binario, Hex, texto UTF-8 o bytes decimales. Sirve para ver
-                        por que <code class="inline-code">P XOR K XOR K = P</code> en cifrado simetrico sencillo.
-                    </p>
-                </div>
-
-                <div class="control-grid">
-                    <div class="control-field">
-                        <label class="field-label" for="xor-mode">Formato</label>
-                        <select id="xor-mode" v-model="xorInputMode" class="form-select input-dark">
-                            <option v-for="item in xorInputModes" :key="item.value" :value="item.value">
-                                {{ item.label }}
-                            </option>
-                        </select>
-                    </div>
-                    <div class="control-field">
-                        <label class="field-label" for="xor-repeat">Clave corta</label>
-                        <select id="xor-repeat" v-model="xorRepeatKey" class="form-select input-dark">
-                            <option :value="false">Exigir misma longitud</option>
-                            <option :value="true">Repetir B como clave</option>
-                        </select>
-                    </div>
-                    <div class="control-field full-span">
-                        <label class="field-label" for="xor-left">A / Texto plano</label>
-                        <textarea
-                            id="xor-left"
-                            v-model="xorLeft"
-                            class="form-control input-dark textarea-dark"
-                            rows="4"
-                            placeholder="Ejemplo binario: 1010"
-                        ></textarea>
-                    </div>
-                    <div class="control-field full-span">
-                        <label class="field-label" for="xor-right">B / Clave</label>
-                        <textarea
-                            id="xor-right"
-                            v-model="xorRight"
-                            class="form-control input-dark textarea-dark"
-                            rows="4"
-                            placeholder="Ejemplo binario: 1100"
-                        ></textarea>
-                    </div>
-                </div>
-
-                <div class="inline-actions">
-                    <button class="btn btn-main" @click="runXorLab">Calcular XOR</button>
-                    <button class="btn btn-subtle" @click="useXorOutputAsInput">Pasar resultado a A</button>
-                    <button class="btn btn-subtle" @click="fillXorExample">Cargar ejemplo</button>
-                </div>
-
-                <FeanorResultPanel v-if="xorResult" :result="xorResult" icon="XOR" @copy="copyText" />
-            </section>
-
             <section v-if="isModuleVisible('booleanOps')" class="section-box boolean-ops-module">
                 <div class="module-header">
-                    <span class="section-kicker">Modulo 04</span>
-                    <h2 class="module-title">NOR y puertas logicas</h2>
+                    <span class="section-kicker">Modulo 03</span>
+                    <h2 class="module-title">XOR, NOR y puertas logicas</h2>
                     <p class="module-copy">
-                        Compara XOR con AND, OR, NAND, NOR, XNOR y NOT sobre binario, Hex, texto UTF-8 o bytes
-                        decimales. NOR solo devuelve 1 cuando las dos entradas son 0.
+                        Integra el antiguo laboratorio XOR con AND, OR, NAND, NOR, XNOR y NOT sobre binario, Hex, texto
+                        UTF-8/UTF-16 o bytes decimales. XOR conserva la lectura reversible
+                        <code class="inline-code">P XOR K XOR K = P</code>; NOR muestra la puerta universal no reversible.
                     </p>
                 </div>
 
@@ -301,6 +245,7 @@
                 <div class="inline-actions">
                     <button class="btn btn-main" @click="runBooleanLab">Calcular</button>
                     <button class="btn btn-subtle" @click="useBooleanOutputAsInput">Pasar resultado a A</button>
+                    <button class="btn btn-subtle" @click="fillBooleanXorExample">Cargar ejemplo XOR</button>
                     <button class="btn btn-subtle" @click="fillBooleanExample">Cargar ejemplo NOR</button>
                 </div>
 
@@ -309,7 +254,7 @@
 
             <section v-if="isModuleVisible('vigenere')" class="section-box vigenere-module">
                 <div class="module-header">
-                    <span class="section-kicker">Modulo 05</span>
+                    <span class="section-kicker">Modulo 04</span>
                     <h2 class="module-title">Cifrado Vigenere</h2>
                     <p class="module-copy">
                         Usa una clave alfabetica repetida para aplicar un desplazamiento distinto a cada letra. Es un
@@ -361,7 +306,7 @@
 
             <section v-if="isModuleVisible('affine')" class="section-box affine-module">
                 <div class="module-header">
-                    <span class="section-kicker">Modulo 06</span>
+                    <span class="section-kicker">Modulo 05</span>
                     <h2 class="module-title">Cifrado Afin</h2>
                     <p class="module-copy">
                         Sustitucion matematica sobre posiciones de alfabeto: cifrar usa <code class="inline-code">E(x) =
@@ -418,7 +363,7 @@
 
             <section v-if="isModuleVisible('railFence')" class="section-box rail-fence-module">
                 <div class="module-header">
-                    <span class="section-kicker">Modulo 07</span>
+                    <span class="section-kicker">Modulo 06</span>
                     <h2 class="module-title">Cifrado Rail Fence</h2>
                     <p class="module-copy">
                         Transposicion en zigzag: el texto baja y sube por varios railes, y el cifrado se lee por filas.
@@ -462,7 +407,7 @@
 
             <section v-if="isModuleVisible('modular')" class="section-box modular-module">
                 <div class="module-header">
-                    <span class="section-kicker">Modulo 08</span>
+                    <span class="section-kicker">Modulo 07</span>
                     <h2 class="module-title">Operacion modular</h2>
                     <p class="module-copy">
                         Calcula restos con enteros grandes y, si quieres, potencia modular. Es la aritmetica circular
@@ -503,7 +448,7 @@
 
             <section v-if="isHashToolVisible" class="section-box hash-module">
                 <div class="module-header">
-                    <span class="section-kicker">Modulo 21</span>
+                    <span class="section-kicker">Modulo 20</span>
                     <h2 class="module-title">{{ activeHashToolConfig.title }}</h2>
                     <p class="module-copy">{{ activeHashToolConfig.copy }}</p>
                 </div>
@@ -532,6 +477,21 @@
                         </select>
                     </div>
                     <div class="control-field">
+                        <label class="field-label" for="hash-input-kind">Entrada</label>
+                        <select id="hash-input-kind" v-model="hashInputKind" class="form-select input-dark">
+                            <option value="text">Texto</option>
+                            <option value="file">Fichero</option>
+                        </select>
+                    </div>
+                    <div class="control-field">
+                        <label class="field-label" for="hash-text-encoding">Codificacion entrada</label>
+                        <select id="hash-text-encoding" v-model="hashTextEncoding" class="form-select input-dark">
+                            <option v-for="item in textEncodingOptions" :key="item.value" :value="item.value">
+                                {{ item.label }}
+                            </option>
+                        </select>
+                    </div>
+                    <div class="control-field">
                         <label class="field-label" for="hash-expected">Comparar con</label>
                         <input
                             id="hash-expected"
@@ -540,7 +500,17 @@
                             placeholder="Valor esperado opcional"
                         />
                     </div>
-                    <div class="control-field full-span">
+                    <div v-if="hashInputKind === 'file'" class="control-field full-span">
+                        <label class="field-label" for="hash-file">Fichero</label>
+                        <input
+                            id="hash-file"
+                            class="form-control input-dark"
+                            type="file"
+                            accept="*/*"
+                            @change="handleHashFile"
+                        />
+                    </div>
+                    <div v-else class="control-field full-span">
                         <label class="field-label" for="hash-input">Mensaje o material base</label>
                         <textarea
                             id="hash-input"
@@ -558,6 +528,14 @@
                             class="form-control input-dark"
                             placeholder="Clave para el HMAC"
                         />
+                    </div>
+                    <div v-if="hashMode === 'hmac'" class="control-field">
+                        <label class="field-label" for="hash-secret-encoding">Codificacion clave</label>
+                        <select id="hash-secret-encoding" v-model="hashSecretEncoding" class="form-select input-dark">
+                            <option v-for="item in textEncodingOptions" :key="item.value" :value="item.value">
+                                {{ item.label }}
+                            </option>
+                        </select>
                     </div>
                     <template v-if="hashMode === 'pbkdf2'">
                         <div class="control-field">
@@ -616,7 +594,7 @@
 
             <section v-if="isModuleVisible('symmetric')" class="section-box symmetric-module">
                 <div class="module-header">
-                    <span class="section-kicker">Modulo 25</span>
+                    <span class="section-kicker">Modulo 24</span>
                     <h2 class="module-title">Cifrado y descifrado simetrico</h2>
                     <p class="module-copy">
                         Prueba cifrados soportados por <code class="inline-code">crypto-js</code>, genera claves de
@@ -674,7 +652,7 @@
 
             <section v-if="isModuleVisible('asymmetric')" class="section-box asymmetric-module">
                 <div class="module-header">
-                    <span class="section-kicker">Modulo 29</span>
+                    <span class="section-kicker">Modulo 28</span>
                     <div class="module-title-line">
                         <h2 class="module-title">Cifrado y descifrado asimetrico</h2>
                         <div class="info-hover">
@@ -880,7 +858,7 @@
 
             <section v-if="isModuleVisible('signature')" class="section-box signature-module">
                 <div class="module-header">
-                    <span class="section-kicker">Modulo 30</span>
+                    <span class="section-kicker">Modulo 29</span>
                     <h2 class="module-title">Firma digital y verificacion</h2>
                     <p class="module-copy">
                         Genera claves, firma un mensaje con clave privada y verifica la firma con clave publica. La
@@ -906,6 +884,14 @@
                             max="64"
                             class="form-control input-dark"
                         />
+                    </div>
+                    <div class="control-field">
+                        <label class="field-label" for="signature-text-encoding">Codificacion mensaje</label>
+                        <select id="signature-text-encoding" v-model="signatureTextEncoding" class="form-select input-dark">
+                            <option v-for="item in textEncodingOptions" :key="item.value" :value="item.value">
+                                {{ item.label }}
+                            </option>
+                        </select>
                     </div>
                     <div class="control-field full-span">
                         <label class="field-label" for="signature-message">Mensaje</label>
@@ -966,7 +952,7 @@
 
             <section v-if="isModuleVisible('aead')" class="section-box aead-module">
                 <div class="module-header">
-                    <span class="section-kicker">Modulo 26</span>
+                    <span class="section-kicker">Modulo 25</span>
                     <h2 class="module-title">Laboratorio AEAD con AES-GCM</h2>
                     <p class="module-copy">
                         Cifra con autenticacion. AES-GCM produce ciphertext y tag; si cambian el texto cifrado, el IV,
@@ -989,6 +975,14 @@
                             <option :value="128">128 bits</option>
                             <option :value="96">96 bits</option>
                             <option :value="64">64 bits</option>
+                        </select>
+                    </div>
+                    <div class="control-field">
+                        <label class="field-label" for="aead-text-encoding">Codificacion texto/AAD</label>
+                        <select id="aead-text-encoding" v-model="aeadTextEncoding" class="form-select input-dark">
+                            <option v-for="item in textEncodingOptions" :key="item.value" :value="item.value">
+                                {{ item.label }}
+                            </option>
                         </select>
                     </div>
                     <div class="control-field full-span">
@@ -1053,7 +1047,7 @@
 
             <section v-if="isModuleVisible('ecdh')" class="section-box ecdh-module">
                 <div class="module-header">
-                    <span class="section-kicker">Modulo 31</span>
+                    <span class="section-kicker">Modulo 30</span>
                     <h2 class="module-title">Intercambio ECDH</h2>
                     <p class="module-copy">
                         Dos partes generan claves de curva eliptica, intercambian claves publicas y derivan el mismo
@@ -1126,7 +1120,7 @@
 
             <section v-if="isKdfToolVisible" class="section-box kdf-module">
                 <div class="module-header">
-                    <span class="section-kicker">Modulo 22</span>
+                    <span class="section-kicker">Modulo 21</span>
                     <h2 class="module-title">{{ activeKdfToolConfig.title }}</h2>
                     <p class="module-copy">{{ activeKdfToolConfig.copy }}</p>
                 </div>
@@ -1150,6 +1144,14 @@
                     <div class="control-field">
                         <label class="field-label" for="kdf-length">Bytes salida</label>
                         <input id="kdf-length" v-model.number="kdfLength" type="number" min="16" max="128" class="form-control input-dark" />
+                    </div>
+                    <div class="control-field">
+                        <label class="field-label" for="kdf-text-encoding">Codificacion material</label>
+                        <select id="kdf-text-encoding" v-model="kdfTextEncoding" class="form-select input-dark">
+                            <option v-for="item in textEncodingOptions" :key="item.value" :value="item.value">
+                                {{ item.label }}
+                            </option>
+                        </select>
                     </div>
                     <div v-if="kdfMode === 'PBKDF2'" class="control-field">
                         <label class="field-label" for="kdf-iterations">Iteraciones PBKDF2</label>
@@ -1180,7 +1182,7 @@
 
             <section v-if="isModuleVisible('certificate')" class="section-box certificate-module">
                 <div class="module-header">
-                    <span class="section-kicker">Modulo 33</span>
+                    <span class="section-kicker">Modulo 32</span>
                     <h2 class="module-title">Inspector X.509</h2>
                     <p class="module-copy">
                         Analiza certificados PEM: sujeto, emisor, validez, huella SHA-256, SAN y relacion basica entre
@@ -1211,7 +1213,7 @@
 
             <section v-if="isModuleVisible('keyConverter')" class="section-box key-converter-module">
                 <div class="module-header">
-                    <span class="section-kicker">Modulo 32</span>
+                    <span class="section-kicker">Modulo 31</span>
                     <h2 class="module-title">Conversor PEM, DER y JWK</h2>
                     <p class="module-copy">
                         Convierte claves RSA o EC entre PEM y JWK cuando WebCrypto puede importarlas. Tambien extrae y
@@ -1261,7 +1263,7 @@
 
             <section v-if="isModuleVisible('jwt')" class="section-box jwt-module">
                 <div class="module-header">
-                    <span class="section-kicker">Modulo 28</span>
+                    <span class="section-kicker">Modulo 27</span>
                     <h2 class="module-title">Inspector y validador de JWT</h2>
                     <p class="module-copy">
                         Decodifica cabecera y payload, revisa tiempos, algoritmos, audiencias, emisor y cabeceras
@@ -1323,7 +1325,7 @@
 
             <section v-if="isTransformToolVisible" class="section-box transform-module">
                 <div class="module-header">
-                    <span class="section-kicker">Modulo 09</span>
+                    <span class="section-kicker">Modulo 08</span>
                     <h2 class="module-title">{{ activeTransformToolConfig.title }}</h2>
                     <p class="module-copy">{{ activeTransformToolConfig.copy }}</p>
                 </div>
@@ -1364,6 +1366,14 @@
                         <label class="field-label" for="transform-format">Formato</label>
                         <select id="transform-format" v-model="transformFormat" class="form-select input-dark">
                             <option v-for="item in currentTransformCategory.formats" :key="item.value" :value="item.value">
+                                {{ item.label }}
+                            </option>
+                        </select>
+                    </div>
+                    <div v-if="isTransformEncodingControlVisible" class="control-field">
+                        <label class="field-label" for="transform-text-encoding">Codificacion texto</label>
+                        <select id="transform-text-encoding" v-model="transformTextEncoding" class="form-select input-dark">
+                            <option v-for="item in textEncodingOptions" :key="item.value" :value="item.value">
                                 {{ item.label }}
                             </option>
                         </select>
@@ -1443,10 +1453,10 @@
 
             <section v-if="isModuleVisible('byte')" class="section-box byte-inspector-module">
                 <div class="module-header">
-                    <span class="section-kicker">Modulo 10</span>
+                    <span class="section-kicker">Modulo 09</span>
                     <h2 class="module-title">Inspector de bytes y encoding</h2>
                     <p class="module-copy">
-                        Descompone texto o bytes en UTF-8, Hex, Base64, Base64URL, binario y decimal. Sirve para ver
+                        Descompone texto o bytes en UTF-8, UTF-16, ASCII, Latin-1, Windows-1252, Hex, Base64, Base64URL, binario y decimal. Sirve para ver
                         exactamente que bytes existen antes de hashear, firmar, cifrar o parsear.
                     </p>
                 </div>
@@ -1456,6 +1466,11 @@
                         <label class="field-label" for="byte-input-mode">Entrada</label>
                         <select id="byte-input-mode" v-model="byteInputMode" class="form-select input-dark">
                             <option value="text">Texto UTF-8</option>
+                            <option value="text-utf16le">Texto UTF-16LE</option>
+                            <option value="text-utf16be">Texto UTF-16BE</option>
+                            <option value="text-ascii">Texto ASCII</option>
+                            <option value="text-latin1">Texto Latin-1</option>
+                            <option value="text-windows1252">Texto Windows-1252</option>
                             <option value="hex">Hex</option>
                             <option value="base64">Base64</option>
                             <option value="base64url">Base64URL</option>
@@ -1484,7 +1499,7 @@
 
             <section v-if="isModuleVisible('json')" class="section-box json-module">
                 <div class="module-header">
-                    <span class="section-kicker">Modulo 12</span>
+                    <span class="section-kicker">Modulo 11</span>
                     <h2 class="module-title">Laboratorio JSON y diff canonico</h2>
                     <p class="module-copy">
                         Formatea, minifica, valida y compara dos documentos JSON ignorando el orden de las claves para
@@ -1537,7 +1552,7 @@
 
             <section v-if="isModuleVisible('stegoAnalyze')" class="section-box stego-analyze-module">
                 <div class="module-header">
-                    <span class="section-kicker">Modulo 13</span>
+                    <span class="section-kicker">Modulo 12</span>
                     <h2 class="module-title">Analizador de esteganografia y metadatos</h2>
                     <p class="module-copy">
                         Inspecciona ficheros en cliente para detectar tipo real, magic bytes, entropia, cadenas
@@ -1573,7 +1588,7 @@
 
             <section v-if="isModuleVisible('exif')" class="section-box exif-module">
                 <div class="module-header">
-                    <span class="section-kicker">Modulo 14</span>
+                    <span class="section-kicker">Modulo 13</span>
                     <h2 class="module-title">Analizador EXIF y metadatos de imagen</h2>
                     <p class="module-copy">
                         Extrae metadatos EXIF, XMP, IPTC, GPS e ICC de imagenes locales y los organiza por contexto:
@@ -1655,7 +1670,7 @@
 
             <section v-if="isModuleVisible('metadataEditor')" class="section-box metadata-editor-module">
                 <div class="module-header">
-                    <span class="section-kicker">Modulo 15</span>
+                    <span class="section-kicker">Modulo 14</span>
                     <h2 class="module-title">Editor de metadatos por fichero</h2>
                     <p class="module-copy">
                         Sube un fichero, elige su contenedor y escribe metadatos de laboratorio. MP3, WAV, PNG, JPEG y
@@ -1774,52 +1789,104 @@
 
             <section v-if="isModuleVisible('stegoEmbed')" class="section-box stego-embed-module">
                 <div class="module-header">
-                    <span class="section-kicker">Modulo 16</span>
-                    <h2 class="module-title">Incrustar datos en imagen</h2>
+                    <span class="section-kicker">Modulo 15</span>
+                    <h2 class="module-title">Incrustar datos en ficheros</h2>
                     <p class="module-copy">
-                        Oculta texto UTF-8 en los bits menos significativos de los canales RGB. La salida se guarda como
-                        PNG para conservar los bits escritos por la herramienta.
+                        Oculta texto, JSON, Base64 o ficheros completos dentro de portadores de imagen, audio,
+                        documentos, archivos o binarios. Elige LSB, PNG iTXt, footer universal o paquete ZIP segun el
+                        tipo de prueba que quieras hacer.
                     </p>
                 </div>
 
                 <div class="control-grid">
+                    <div class="control-field">
+                        <label class="field-label" for="stego-embed-carrier-kind">Tipo portador</label>
+                        <select id="stego-embed-carrier-kind" v-model="stegoEmbedCarrierHint" class="form-select input-dark">
+                            <option v-for="item in stegoCarrierHints" :key="item.value" :value="item.value">
+                                {{ item.label }}
+                            </option>
+                        </select>
+                    </div>
+                    <div class="control-field">
+                        <label class="field-label" for="stego-embed-mode">Metodo</label>
+                        <select id="stego-embed-mode" v-model="stegoEmbedMode" class="form-select input-dark">
+                            <option v-for="item in stegoEmbedModes" :key="item.value" :value="item.value">
+                                {{ item.label }}
+                            </option>
+                        </select>
+                    </div>
                     <div class="control-field full-span">
-                        <label class="field-label" for="stego-embed-file">Imagen portadora</label>
+                        <label class="field-label" for="stego-embed-file">Fichero portador</label>
                         <input
                             id="stego-embed-file"
                             class="form-control input-dark"
                             type="file"
-                            accept="image/png,image/jpeg,image/webp,image/bmp"
+                            accept="*/*"
                             @change="handleStegoEmbedFile"
+                        />
+                    </div>
+                    <div class="control-field">
+                        <label class="field-label" for="stego-payload-source">Tipo de datos incrustados</label>
+                        <select id="stego-payload-source" v-model="stegoEmbedPayloadSource" class="form-select input-dark">
+                            <option v-for="item in stegoPayloadSources" :key="item.value" :value="item.value">
+                                {{ item.label }}
+                            </option>
+                        </select>
+                    </div>
+                    <div v-if="['text', 'json'].includes(stegoEmbedPayloadSource)" class="control-field">
+                        <label class="field-label" for="stego-payload-encoding">Codificacion texto</label>
+                        <select id="stego-payload-encoding" v-model="stegoEmbedTextEncoding" class="form-select input-dark">
+                            <option v-for="item in textEncodingOptions" :key="item.value" :value="item.value">
+                                {{ item.label }}
+                            </option>
+                        </select>
+                    </div>
+                    <div v-if="stegoEmbedPayloadSource === 'file'" class="control-field full-span">
+                        <label class="field-label" for="stego-payload-file">Fichero a ocultar</label>
+                        <input
+                            id="stego-payload-file"
+                            class="form-control input-dark"
+                            type="file"
+                            accept="*/*"
+                            @change="handleStegoPayloadFile"
                         />
                     </div>
                     <div class="control-field full-span">
                         <label class="field-label" for="stego-embed-payload">Datos a ocultar</label>
                         <textarea
+                            v-if="stegoEmbedPayloadSource !== 'file'"
                             id="stego-embed-payload"
                             v-model="stegoEmbedPayload"
                             class="form-control input-dark textarea-dark"
                             rows="5"
-                            placeholder="Mensaje, JSON, token de laboratorio o cualquier texto corto"
+                            :placeholder="stegoPayloadPlaceholder"
                         ></textarea>
+                        <input
+                            v-else
+                            id="stego-embed-payload-name"
+                            v-model="stegoEmbedPayloadName"
+                            class="form-control input-dark"
+                            placeholder="Nombre interno opcional, por ejemplo secreto.bin"
+                        />
                     </div>
                 </div>
 
                 <div class="inline-actions">
                     <button class="btn btn-main" @click="embedStegoPayload">Incrustar datos</button>
                     <button class="btn btn-subtle" @click="fillStegoPayloadExample">Cargar ejemplo</button>
+                    <button class="btn btn-subtle" @click="clearStegoEmbed">Limpiar incrustacion</button>
                     <a
                         v-if="stegoEmbedDownloadUrl"
                         class="btn btn-main"
                         :href="stegoEmbedDownloadUrl"
                         :download="stegoEmbedDownloadName"
                     >
-                        Descargar PNG
+                        Descargar resultado
                     </a>
                 </div>
                 <p class="helper-copy">
-                    Esto no cifra el contenido: si el texto es sensible, cifralo antes con otro modulo y oculta el
-                    resultado.
+                    Auto usa LSB en imagenes cuando el navegador puede dibujarlas, LSB directo en BMP/WAV/AU, iTXt en
+                    PNG si lo eliges y footer/ZIP para cualquier otro fichero. Esto oculta, no cifra.
                 </p>
 
                 <FeanorResultPanel v-if="stegoEmbedResult" :result="stegoEmbedResult" icon="LSB+" @copy="copyText" />
@@ -1827,22 +1894,22 @@
 
             <section v-if="isModuleVisible('stegoExtract')" class="section-box stego-extract-module">
                 <div class="module-header">
-                    <span class="section-kicker">Modulo 17</span>
-                    <h2 class="module-title">Extraer datos ocultos</h2>
+                    <span class="section-kicker">Modulo 16</span>
+                    <h2 class="module-title">Extraer datos ocultos de ficheros</h2>
                     <p class="module-copy">
-                        Lee imagenes procesadas por el incrustador LSB de Feanor y recupera el payload si la cabecera
-                        interna sigue intacta.
+                        Recupera paquetes Feanor desde footer universal, PNG iTXt, LSB de imagenes, BMP/WAV/AU directos
+                        y bundles ZIP generados por el laboratorio.
                     </p>
                 </div>
 
                 <div class="control-grid">
                     <div class="control-field full-span">
-                        <label class="field-label" for="stego-extract-file">Imagen a extraer</label>
+                        <label class="field-label" for="stego-extract-file">Fichero a extraer</label>
                         <input
                             id="stego-extract-file"
                             class="form-control input-dark"
                             type="file"
-                            accept="image/png,image/*"
+                            accept="*/*"
                             @change="handleStegoExtractFile"
                         />
                     </div>
@@ -1851,9 +1918,18 @@
                 <div class="inline-actions">
                     <button class="btn btn-main" @click="extractStegoPayload">Extraer datos</button>
                     <button class="btn btn-subtle" @click="clearStegoExtract">Limpiar extraccion</button>
+                    <a
+                        v-if="stegoExtractDownloadUrl"
+                        class="btn btn-main"
+                        :href="stegoExtractDownloadUrl"
+                        :download="stegoExtractDownloadName"
+                    >
+                        Descargar payload
+                    </a>
                 </div>
                 <p class="helper-copy">
-                    Si la imagen fue recomprimida como JPEG o redimensionada, los bits LSB pueden haberse perdido.
+                    Si una imagen fue recomprimida como JPEG o redimensionada, los bits LSB pueden haberse perdido. Los
+                    footer universales sobreviven peor ante herramientas que reescriben el contenedor.
                 </p>
 
                 <FeanorResultPanel v-if="stegoExtractResult" :result="stegoExtractResult" icon="LSB-" @copy="copyText" />
@@ -1861,7 +1937,7 @@
 
             <section v-if="isModuleVisible('steghideSuite')" class="section-box steghide-suite-module">
                 <div class="module-header">
-                    <span class="section-kicker">Modulo 18</span>
+                    <span class="section-kicker">Modulo 17</span>
                     <h2 class="module-title">Steghide y StegSeek frontend</h2>
                     <p class="module-copy">
                         Laboratorio inspirado en <code class="inline-code">steghide</code> y
@@ -2014,7 +2090,7 @@
 
             <section v-if="isModuleVisible('jsonSign')" class="section-box json-sign-module">
                 <div class="module-header">
-                    <span class="section-kicker">Modulo 24</span>
+                    <span class="section-kicker">Modulo 23</span>
                     <h2 class="module-title">Canonicalizacion y firma de JSON</h2>
                     <p class="module-copy">
                         Ordena claves de forma determinista y calcula firma HMAC sobre los bytes canonicos. Es el paso
@@ -2073,7 +2149,7 @@
 
             <section v-if="isModuleVisible('secret')" class="section-box secret-module">
                 <div class="module-header">
-                    <span class="section-kicker">Modulo 19</span>
+                    <span class="section-kicker">Modulo 18</span>
                     <h2 class="module-title">Generador de secretos</h2>
                     <p class="module-copy">
                         Genera contrasenas, tokens, cadenas hexadecimales y UUIDs locales para pruebas tecnicas. El
@@ -2133,7 +2209,7 @@
 
             <section v-if="isModuleVisible('entropy')" class="section-box entropy-module">
                 <div class="module-header">
-                    <span class="section-kicker">Modulo 20</span>
+                    <span class="section-kicker">Modulo 19</span>
                     <h2 class="module-title">Analizador de entropia</h2>
                     <p class="module-copy">
                         Evalua passwords, tokens o claves: longitud, charset, entropia estimada, puntuacion zxcvbn,
@@ -2165,7 +2241,7 @@
 
             <section v-if="isModuleVisible('otp')" class="section-box otp-module">
                 <div class="module-header">
-                    <span class="section-kicker">Modulo 27</span>
+                    <span class="section-kicker">Modulo 26</span>
                     <h2 class="module-title">TOTP y HOTP</h2>
                     <p class="module-copy">
                         Genera secretos Base32, calcula codigos HOTP/TOTP y verifica codigos de un solo uso usando
@@ -2223,7 +2299,7 @@
 
             <section v-if="isModuleVisible('timing')" class="section-box timing-module">
                 <div class="module-header">
-                    <span class="section-kicker">Modulo 23</span>
+                    <span class="section-kicker">Modulo 22</span>
                     <h2 class="module-title">Comparador constante</h2>
                     <p class="module-copy">
                         Compara dos valores byte a byte con una rutina de tiempo constante. La practica muestra por que
@@ -2257,7 +2333,7 @@
 
             <section v-if="isModuleVisible('regex')" class="section-box regex-module">
                 <div class="module-header">
-                    <span class="section-kicker">Modulo 11</span>
+                    <span class="section-kicker">Modulo 10</span>
                     <h2 class="module-title">Banco regex</h2>
                     <p class="module-copy">
                         Prueba expresiones regulares contra texto real, activa flags y revisa coincidencias, indices y
@@ -2403,14 +2479,23 @@ const transformOperations = [
     { label: "Hex decodificar", value: "hex-decode" }
 ];
 
+const textEncodingOptions = [
+    { label: "UTF-8", value: "utf8", mime: "utf-8", note: "1 a 4 bytes por caracter Unicode" },
+    { label: "UTF-16LE", value: "utf16le", mime: "utf-16le", note: "2 bytes por unidad de codigo, little-endian" },
+    { label: "UTF-16BE", value: "utf16be", mime: "utf-16be", note: "2 bytes por unidad de codigo, big-endian" },
+    { label: "ASCII estricto", value: "ascii", mime: "us-ascii", note: "Solo 0x00-0x7F; falla si hay caracteres extendidos" },
+    { label: "ISO-8859-1 / Latin-1", value: "latin1", mime: "iso-8859-1", note: "Un byte por caracter occidental 0x00-0xFF" },
+    { label: "Windows-1252", value: "windows1252", mime: "windows-1252", note: "Latin-1 practico con comillas curvas, euro y signos tipograficos" }
+];
+
 const transformCategories = [
     {
         value: "base64-text",
         label: "Texto Base64",
         badge: "TXT",
-        description: "Texto UTF-8 plano",
+        description: "Texto multi-encoding",
         kind: "text",
-        formats: [{ value: "text/plain", label: "Texto UTF-8 (.txt)", extension: "txt", mime: "text/plain" }]
+        formats: [{ value: "text/plain", label: "Texto (.txt)", extension: "txt", mime: "text/plain" }]
     },
     {
         value: "base64url-text",
@@ -2418,7 +2503,7 @@ const transformCategories = [
         badge: "URL64",
         description: "JWT y rutas URL-safe",
         kind: "text",
-        formats: [{ value: "text/plain", label: "Texto UTF-8 URL-safe", extension: "txt", mime: "text/plain" }]
+        formats: [{ value: "text/plain", label: "Texto URL-safe", extension: "txt", mime: "text/plain" }]
     },
     {
         value: "url-text",
@@ -2522,7 +2607,7 @@ const transformToolConfigs = {
     },
     base64url: {
         title: "Laboratorio Base64URL",
-        copy: "Convierte texto UTF-8 a Base64URL y recupera texto desde el alfabeto URL-safe usado en JWT, rutas y parametros.",
+        copy: "Convierte texto con encoding configurable a Base64URL y recupera texto desde el alfabeto URL-safe usado en JWT, rutas y parametros.",
         categories: ["base64url-text"],
         defaultCategory: "base64url-text"
     },
@@ -2534,7 +2619,7 @@ const transformToolConfigs = {
     },
     hex: {
         title: "Hexadecimal",
-        copy: "Representa texto UTF-8 como Hex o recupera texto desde bytes hexadecimales de longitud par.",
+        copy: "Representa texto con encoding configurable como Hex y recupera texto desde bytes hexadecimales de longitud par.",
         categories: ["hex-text"],
         defaultCategory: "hex-text"
     }
@@ -2544,6 +2629,11 @@ const xorInputModes = [
     { label: "Binario bit a bit", value: "binary" },
     { label: "Hex bytes", value: "hex" },
     { label: "Texto UTF-8", value: "text" },
+    { label: "Texto UTF-16LE", value: "text-utf16le" },
+    { label: "Texto UTF-16BE", value: "text-utf16be" },
+    { label: "Texto ASCII", value: "text-ascii" },
+    { label: "Texto Latin-1", value: "text-latin1" },
+    { label: "Texto Windows-1252", value: "text-windows1252" },
     { label: "Decimal bytes", value: "decimal" }
 ];
 
@@ -2585,6 +2675,56 @@ const exifDetailModes = [
     { label: "Resumen ordenado", value: "grouped" },
     { label: "Riesgos de privacidad", value: "risks" },
     { label: "Crudo / auditoria", value: "raw" }
+];
+
+const stegoCarrierHints = [
+    { label: "Auto por firma real", value: "auto" },
+    { label: "Imagen", value: "image" },
+    { label: "Audio", value: "audio" },
+    { label: "Video", value: "video" },
+    { label: "Documento", value: "document" },
+    { label: "Archivo / ZIP", value: "archive" },
+    { label: "Binario generico", value: "binary" }
+];
+
+const stegoEmbedModes = [
+    {
+        label: "Auto seguro",
+        value: "auto",
+        note: "Elige la tecnica mas estable para el portador."
+    },
+    {
+        label: "Imagen LSB -> PNG",
+        value: "image-lsb",
+        note: "Oculta bytes en pixeles RGB y exporta PNG sin perdida."
+    },
+    {
+        label: "BMP/WAV/AU LSB directo",
+        value: "byte-lsb",
+        note: "Usa bits menos significativos de muestras o pixeles sin canvas."
+    },
+    {
+        label: "PNG iTXt textual",
+        value: "png-itxt",
+        note: "Inserta un chunk iTXt antes de IEND."
+    },
+    {
+        label: "Footer universal",
+        value: "append",
+        note: "Anade un paquete al final del fichero; funciona con casi cualquier binario."
+    },
+    {
+        label: "ZIP bundle",
+        value: "zip-bundle",
+        note: "Empaqueta portador, payload y manifiesto en un ZIP portable."
+    }
+];
+
+const stegoPayloadSources = [
+    { label: "Texto libre", value: "text" },
+    { label: "JSON estructurado", value: "json" },
+    { label: "Base64 / data URI", value: "base64" },
+    { label: "Fichero completo", value: "file" }
 ];
 
 const steghideOperations = [
@@ -2797,6 +2937,10 @@ const secretKinds = [
 const hashMode = ref("digest");
 const hashAlgorithm = ref("SHA256");
 const hashEncoding = ref("hex");
+const hashInputKind = ref("text");
+const hashFile = ref(null);
+const hashTextEncoding = ref("utf8");
+const hashSecretEncoding = ref("utf8");
 const hashInput = ref("");
 const hashSecret = ref("");
 const hashSalt = ref(randomHex(16));
@@ -2825,6 +2969,7 @@ const showAsymmetricGuide = ref(false);
 
 const signatureAlgorithm = ref("RSA-PSS");
 const signatureSaltLength = ref(32);
+const signatureTextEncoding = ref("utf8");
 const signatureMessage = ref("");
 const signaturePublicKeyPem = ref("");
 const signaturePrivateKeyPem = ref("");
@@ -2833,6 +2978,7 @@ const signatureResult = ref(null);
 
 const aeadKeySize = ref(256);
 const aeadTagLength = ref(128);
+const aeadTextEncoding = ref("utf8");
 const aeadKey = ref("");
 const aeadIv = ref("");
 const aeadAad = ref("");
@@ -2852,6 +2998,7 @@ const kdfMode = ref("PBKDF2");
 const kdfHash = ref("SHA-256");
 const kdfLength = ref(32);
 const kdfIterations = ref(180000);
+const kdfTextEncoding = ref("utf8");
 const kdfInput = ref("");
 const kdfSalt = ref("");
 const kdfInfo = ref("");
@@ -2874,6 +3021,7 @@ const transformDirection = ref("encode");
 const transformCategory = ref("base64-text");
 const transformFormat = ref("text/plain");
 const transformOperation = ref("base64-encode");
+const transformTextEncoding = ref("utf8");
 const transformInput = ref("");
 const transformFile = ref(null);
 const transformDecodedFileName = ref("");
@@ -2891,12 +3039,6 @@ const caesarResult = ref(null);
 const atbashAlphabet = ref("spanish");
 const atbashInput = ref("");
 const atbashResult = ref(null);
-
-const xorInputMode = ref("binary");
-const xorRepeatKey = ref(false);
-const xorLeft = ref("");
-const xorRight = ref("");
-const xorResult = ref(null);
 
 const booleanInputMode = ref("binary");
 const booleanOperation = ref("nor");
@@ -2963,11 +3105,19 @@ const metadataEditorDownloadUrl = ref("");
 const metadataEditorDownloadName = ref("feanor-metadata.bin");
 const metadataEditorResult = ref(null);
 const stegoEmbedFile = ref(null);
+const stegoEmbedCarrierHint = ref("auto");
+const stegoEmbedMode = ref("auto");
+const stegoEmbedPayloadSource = ref("text");
+const stegoEmbedTextEncoding = ref("utf8");
+const stegoEmbedPayloadFile = ref(null);
+const stegoEmbedPayloadName = ref("");
 const stegoEmbedPayload = ref("");
 const stegoEmbedDownloadUrl = ref("");
-const stegoEmbedDownloadName = ref("feanor-stego.png");
+const stegoEmbedDownloadName = ref("feanor-stego.bin");
 const stegoEmbedResult = ref(null);
 const stegoExtractFile = ref(null);
+const stegoExtractDownloadUrl = ref("");
+const stegoExtractDownloadName = ref("feanor-payload.bin");
 const stegoExtractResult = ref(null);
 const steghideOperation = ref("info");
 const steghideFile = ref(null);
@@ -3093,6 +3243,14 @@ const selectedMetadataEditorType = computed(() =>
     metadataEditorTypes.find(item => item.value === metadataEditorType.value) || metadataEditorTypes[0]
 );
 
+const selectedStegoEmbedMode = computed(() =>
+    stegoEmbedModes.find(item => item.value === stegoEmbedMode.value) || stegoEmbedModes[0]
+);
+
+const selectedStegoPayloadSource = computed(() =>
+    stegoPayloadSources.find(item => item.value === stegoEmbedPayloadSource.value) || stegoPayloadSources[0]
+);
+
 const selectedExifProfile = computed(() =>
     exifProfiles.find(item => item.value === exifProfile.value) || exifProfiles[0]
 );
@@ -3103,12 +3261,22 @@ const selectedSteghideOperation = computed(() =>
 
 const metadataEditorAccept = computed(() => selectedMetadataEditorType.value.accept || "*/*");
 
+const stegoPayloadPlaceholder = computed(() => {
+    if (stegoEmbedPayloadSource.value === "json") return '{\n  "mensaje": "oculto",\n  "nivel": "lab"\n}';
+    if (stegoEmbedPayloadSource.value === "base64") return "Base64 puro o data URI: data:application/octet-stream;base64,...";
+    return "Mensaje, token, clave de laboratorio o texto que quieras ocultar";
+});
+
 const currentTransformFormat = computed(() =>
     currentTransformCategory.value.formats.find(format => format.value === transformFormat.value)
         || currentTransformCategory.value.formats[0]
 );
 
 const isTransformFileCategory = computed(() => !["base64-text", "base64url-text", "url-text", "hex-text"].includes(transformCategory.value));
+
+const isTransformEncodingControlVisible = computed(() =>
+    ["base64-text", "base64url-text", "hex-text"].includes(transformCategory.value)
+);
 
 const isTransformTextInputVisible = computed(() =>
     !isTransformFileCategory.value || transformDirection.value === "decode"
@@ -3120,10 +3288,10 @@ const currentTransformAccept = computed(() =>
 
 const transformPlaceholder = computed(() => {
     if (transformDirection.value === "encode") {
-        if (transformCategory.value === "base64-text") return "Texto UTF-8 que quieres convertir a Base64";
-        if (transformCategory.value === "base64url-text") return "Texto UTF-8 que quieres convertir a Base64URL";
+        if (transformCategory.value === "base64-text") return "Texto que quieres convertir a Base64";
+        if (transformCategory.value === "base64url-text") return "Texto que quieres convertir a Base64URL";
         if (transformCategory.value === "url-text") return "Texto que quieres preparar para una URL";
-        if (transformCategory.value === "hex-text") return "Texto UTF-8 que quieres representar en Hex";
+        if (transformCategory.value === "hex-text") return "Texto que quieres representar en Hex";
         return "Selecciona un fichero para codificarlo como Base64";
     }
 
@@ -3144,6 +3312,11 @@ const STEGO_MAGIC_TEXT = "FEANOR_STEGO_V1";
 const STEGO_MAGIC_BYTES = new TextEncoder().encode(STEGO_MAGIC_TEXT);
 const STEGO_LENGTH_BYTES = 4;
 const STEGO_HEADER_BYTES = STEGO_MAGIC_BYTES.length + STEGO_LENGTH_BYTES;
+const STEGO_PACKET_MAGIC_TEXT = "FEANOR_STEGO_PACKET_V2";
+const STEGO_PACKET_MAGIC_BYTES = new TextEncoder().encode(STEGO_PACKET_MAGIC_TEXT);
+const STEGO_PACKET_HEADER_BYTES = STEGO_PACKET_MAGIC_BYTES.length + 4;
+const STEGO_PACKET_B64_MARKER = "FEANOR_STEGO_PACKET_B64:";
+const STEGO_DIRECT_LSB_SEED = 0x4645414e;
 const STEGHIDE_MAGIC_TEXT = "FEANOR_STEGHIDE_V1";
 const STEGHIDE_MAGIC_BYTES = new TextEncoder().encode(STEGHIDE_MAGIC_TEXT);
 const STEGHIDE_LENGTH_BYTES = 4;
@@ -3219,6 +3392,138 @@ function textToBytes(value) {
 
 function bytesToUtf8(value) {
     return new TextDecoder().decode(value);
+}
+
+function getTextEncoding(value) {
+    return textEncodingOptions.find(item => item.value === value) || textEncodingOptions[0];
+}
+
+const windows1252DecodeMap = {
+    0x80: 0x20ac,
+    0x82: 0x201a,
+    0x83: 0x0192,
+    0x84: 0x201e,
+    0x85: 0x2026,
+    0x86: 0x2020,
+    0x87: 0x2021,
+    0x88: 0x02c6,
+    0x89: 0x2030,
+    0x8a: 0x0160,
+    0x8b: 0x2039,
+    0x8c: 0x0152,
+    0x8e: 0x017d,
+    0x91: 0x2018,
+    0x92: 0x2019,
+    0x93: 0x201c,
+    0x94: 0x201d,
+    0x95: 0x2022,
+    0x96: 0x2013,
+    0x97: 0x2014,
+    0x98: 0x02dc,
+    0x99: 0x2122,
+    0x9a: 0x0161,
+    0x9b: 0x203a,
+    0x9c: 0x0153,
+    0x9e: 0x017e,
+    0x9f: 0x0178
+};
+
+const windows1252EncodeMap = Object.fromEntries(
+    Object.entries(windows1252DecodeMap).map(([byte, code]) => [code, Number(byte)])
+);
+
+function encodeSingleByteText(text, encoding) {
+    const output = [];
+    for (const char of Array.from(text)) {
+        const codePoint = char.codePointAt(0);
+        if (encoding === "ascii") {
+            if (codePoint > 0x7f) throw new Error(`ASCII no puede representar "${char}".`);
+            output.push(codePoint);
+            continue;
+        }
+        if (encoding === "latin1") {
+            if (codePoint > 0xff) throw new Error(`Latin-1 no puede representar "${char}".`);
+            output.push(codePoint);
+            continue;
+        }
+        if (codePoint <= 0x7f || (codePoint >= 0xa0 && codePoint <= 0xff)) {
+            output.push(codePoint);
+            continue;
+        }
+        const mapped = windows1252EncodeMap[codePoint];
+        if (mapped === undefined) throw new Error(`Windows-1252 no puede representar "${char}".`);
+        output.push(mapped);
+    }
+    return new Uint8Array(output);
+}
+
+function decodeSingleByteText(bytes, encoding) {
+    return Array.from(bytes).map(byte => {
+        if (encoding === "ascii" && byte > 0x7f) return "\ufffd";
+        if (encoding === "windows1252" && windows1252DecodeMap[byte]) {
+            return String.fromCodePoint(windows1252DecodeMap[byte]);
+        }
+        return String.fromCharCode(byte);
+    }).join("");
+}
+
+function textToEncodedBytes(value, encoding = "utf8") {
+    const text = String(value ?? "");
+    if (encoding === "utf8") return textToBytes(text);
+    if (["ascii", "latin1", "windows1252"].includes(encoding)) {
+        return encodeSingleByteText(text, encoding);
+    }
+
+    const output = new Uint8Array(text.length * 2);
+    for (let index = 0; index < text.length; index += 1) {
+        const code = text.charCodeAt(index);
+        if (encoding === "utf16be") {
+            output[index * 2] = (code >>> 8) & 0xff;
+            output[index * 2 + 1] = code & 0xff;
+        } else {
+            output[index * 2] = code & 0xff;
+            output[index * 2 + 1] = (code >>> 8) & 0xff;
+        }
+    }
+    return output;
+}
+
+function bytesToEncodedText(value, encoding = "utf8") {
+    const bytes = value instanceof Uint8Array ? value : new Uint8Array(value);
+    if (encoding === "utf8") return bytesToUtf8(bytes);
+    if (["ascii", "latin1", "windows1252"].includes(encoding)) {
+        return decodeSingleByteText(bytes, encoding);
+    }
+    if (bytes.length % 2 !== 0) {
+        throw new Error("UTF-16 necesita una cantidad par de bytes.");
+    }
+    const chunks = [];
+    const chunkSize = 0x8000;
+    for (let index = 0; index < bytes.length; index += 2 * chunkSize) {
+        const codes = [];
+        for (let offset = index; offset < Math.min(bytes.length, index + 2 * chunkSize); offset += 2) {
+            const code = encoding === "utf16be"
+                ? ((bytes[offset] << 8) | bytes[offset + 1])
+                : (bytes[offset] | (bytes[offset + 1] << 8));
+            codes.push(code);
+        }
+        chunks.push(String.fromCharCode(...codes));
+    }
+    return chunks.join("");
+}
+
+function encodingDisplayLabel(encoding = "utf8") {
+    return getTextEncoding(encoding).label;
+}
+
+function encodingFromTextMode(mode) {
+    if (mode === "text") return "utf8";
+    if (String(mode || "").startsWith("text-")) return String(mode).slice(5);
+    return "utf8";
+}
+
+function encodedTextWordArray(value, encoding = "utf8") {
+    return bytesToWordArray(textToEncodedBytes(value, encoding));
 }
 
 function bytesToHex(value) {
@@ -3374,12 +3679,75 @@ function detectFileType(bytes, file) {
         const officeMap = { docx: "DOCX", xlsx: "XLSX", pptx: "PPTX", epub: "EPUB" };
         return { label: officeMap[extension] || "ZIP", family: "archive", extension };
     }
+    if (startsWithBytes(bytes, [0x50, 0x4b, 0x05, 0x06]) || startsWithBytes(bytes, [0x50, 0x4b, 0x07, 0x08])) return { label: "ZIP", family: "archive", extension };
+    if (startsWithBytes(bytes, [0x52, 0x61, 0x72, 0x21, 0x1a, 0x07])) return { label: "RAR", family: "archive", extension };
+    if (startsWithBytes(bytes, [0x37, 0x7a, 0xbc, 0xaf, 0x27, 0x1c])) return { label: "7Z", family: "archive", extension };
+    if (startsWithBytes(bytes, [0x1f, 0x8b, 0x08])) return { label: "GZIP", family: "archive", extension };
+    if (first16.startsWith("BZh")) return { label: "BZIP2", family: "archive", extension };
+    if (startsWithBytes(bytes, [0xfd, 0x37, 0x7a, 0x58, 0x5a, 0x00])) return { label: "XZ", family: "archive", extension };
+    if (asciiSlice(bytes, 257, 262) === "ustar") return { label: "TAR", family: "archive", extension };
+    if (first16.startsWith("SQLite format 3")) return { label: "SQLITE", family: "database", extension };
+    if (startsWithBytes(bytes, [0x00, 0x61, 0x73, 0x6d])) return { label: "WASM", family: "binary", extension };
+    if (startsWithBytes(bytes, [0x7f, 0x45, 0x4c, 0x46])) return { label: "ELF", family: "executable", extension };
+    if (first16.startsWith("MZ")) return { label: "PE/EXE", family: "executable", extension };
+    if (startsWithBytes(bytes, [0xca, 0xfe, 0xba, 0xbe])) return { label: "JAVA CLASS", family: "executable", extension };
+    if (
+        startsWithBytes(bytes, [0xfe, 0xed, 0xfa, 0xce])
+        || startsWithBytes(bytes, [0xfe, 0xed, 0xfa, 0xcf])
+        || startsWithBytes(bytes, [0xce, 0xfa, 0xed, 0xfe])
+        || startsWithBytes(bytes, [0xcf, 0xfa, 0xed, 0xfe])
+    ) return { label: "MACH-O", family: "executable", extension };
+    if (startsWithBytes(bytes, [0x0a, 0x0d, 0x0d, 0x0a])) return { label: "PCAPNG", family: "capture", extension };
+    if (
+        startsWithBytes(bytes, [0xd4, 0xc3, 0xb2, 0xa1])
+        || startsWithBytes(bytes, [0xa1, 0xb2, 0xc3, 0xd4])
+        || startsWithBytes(bytes, [0x4d, 0x3c, 0xb2, 0xa1])
+        || startsWithBytes(bytes, [0xa1, 0xb2, 0x3c, 0x4d])
+    ) return { label: "PCAP", family: "capture", extension };
+    if (bytes.length > 132 && asciiSlice(bytes, 128, 132) === "DICM") return { label: "DICOM", family: "medical", extension };
+    if (["eml", "msg"].includes(extension) || /^from:|^subject:|^mime-version:/im.test(asciiSlice(bytes, 0, Math.min(bytes.length, 2048)))) return { label: "EMAIL", family: "message", extension };
 
     const headText = asciiSlice(bytes, 0, Math.min(bytes.length, 512)).trimStart().toLowerCase();
     if (headText.startsWith("<svg")) return { label: "SVG", family: "image", extension };
     if (headText.startsWith("{") || headText.startsWith("[")) return { label: "JSON/TEXTO", family: "text", extension };
     if (headText.startsWith("<")) return { label: "XML/HTML", family: "text", extension };
+    if (extension === "csv" || headText.includes(",") && headText.includes("\n")) return { label: "CSV/TEXTO", family: "text", extension };
     return { label: extension ? extension.toUpperCase() : "BINARIO", family: "binary", extension };
+}
+
+function analyzeEncodingSignals(bytes) {
+    const lines = [];
+    const sample = bytes.slice(0, Math.min(bytes.length, 4096));
+    if (!sample.length) return ["Fichero vacio."];
+
+    const bomChecks = [
+        { name: "UTF-8 BOM", bytes: [0xef, 0xbb, 0xbf] },
+        { name: "UTF-16LE BOM", bytes: [0xff, 0xfe] },
+        { name: "UTF-16BE BOM", bytes: [0xfe, 0xff] },
+        { name: "UTF-32LE BOM", bytes: [0xff, 0xfe, 0x00, 0x00] },
+        { name: "UTF-32BE BOM", bytes: [0x00, 0x00, 0xfe, 0xff] }
+    ];
+    const bom = bomChecks.find(item => startsWithBytes(bytes, item.bytes));
+    lines.push(`BOM: ${bom ? bom.name : "No detectado"}.`);
+
+    const nulCount = Array.from(sample).filter(byte => byte === 0).length;
+    const asciiPrintable = Array.from(sample).filter(byte => byte === 9 || byte === 10 || byte === 13 || (byte >= 32 && byte <= 126)).length;
+    const highBytes = Array.from(sample).filter(byte => byte >= 0x80).length;
+    const cp1252Markers = Array.from(sample).filter(byte => windows1252DecodeMap[byte]).length;
+    const evenNuls = Array.from(sample).filter((byte, index) => index % 2 === 0 && byte === 0).length;
+    const oddNuls = Array.from(sample).filter((byte, index) => index % 2 === 1 && byte === 0).length;
+    const crlf = findBytes(sample, [0x0d, 0x0a]) >= 0;
+    const lf = sample.includes(0x0a);
+
+    lines.push(`ASCII imprimible en muestra: ${((asciiPrintable / sample.length) * 100).toFixed(1)}%.`);
+    lines.push(`Bytes altos >=0x80: ${highBytes} de ${sample.length}.`);
+    lines.push(`NUL bytes: ${nulCount} de ${sample.length}.`);
+    if (oddNuls > sample.length * 0.2) lines.push("Patron compatible con UTF-16LE: muchos 0x00 en posiciones impares.");
+    if (evenNuls > sample.length * 0.2) lines.push("Patron compatible con UTF-16BE: muchos 0x00 en posiciones pares.");
+    if (cp1252Markers) lines.push(`Marcadores Windows-1252 en rango 0x80-0x9F: ${cp1252Markers}.`);
+    lines.push(`Saltos de linea: ${crlf ? "CRLF" : lf ? "LF" : "No visibles en muestra"}.`);
+    lines.push(`Primeros 16 bytes: ${bytesToHex(bytes.slice(0, 16))}.`);
+    return lines;
 }
 
 function wordArrayToBytes(wordArray) {
@@ -3750,6 +4118,11 @@ function useSecretAsHashSecret() {
     hashSecret.value = secretResult.value.generated;
 }
 
+function handleHashFile(event) {
+    hashFile.value = event.target.files?.[0] || null;
+    hashResult.value = null;
+}
+
 function generateHashSalt() {
     hashSalt.value = randomHex(16);
 }
@@ -3758,6 +4131,10 @@ function fillHashExample() {
     hashMode.value = "pbkdf2";
     hashAlgorithm.value = "SHA256";
     hashEncoding.value = "hex";
+    hashInputKind.value = "text";
+    hashFile.value = null;
+    hashTextEncoding.value = "utf8";
+    hashSecretEncoding.value = "utf8";
     hashInput.value = "Mithril-Forge-2026";
     hashSalt.value = randomHex(16);
     hashIterations.value = 180000;
@@ -3765,9 +4142,31 @@ function fillHashExample() {
     hashExpected.value = "";
 }
 
-function runHashLab() {
-    if (!hashInput.value.trim()) {
+async function getHashInputBytes() {
+    if (hashInputKind.value === "file") {
+        if (!hashFile.value) throw new Error("Selecciona un fichero para calcular la salida.");
+        return {
+            bytes: new Uint8Array(await hashFile.value.arrayBuffer()),
+            label: hashFile.value.name || "fichero",
+            kind: "file",
+            note: `${formatBytesSize(hashFile.value.size)} / ${hashFile.value.type || "application/octet-stream"}`
+        };
+    }
+    return {
+        bytes: textToEncodedBytes(hashInput.value, hashTextEncoding.value),
+        label: "texto",
+        kind: "text",
+        note: `${hashInput.value.length} chars / ${encodingDisplayLabel(hashTextEncoding.value)}`
+    };
+}
+
+async function runHashLab() {
+    if (hashInputKind.value === "text" && !hashInput.value.trim()) {
         hashResult.value = buildErrorResult("INPUT_EMPTY", "Falta material base", "Introduce texto o material para calcular la salida.");
+        return;
+    }
+    if (hashInputKind.value === "file" && !hashFile.value) {
+        hashResult.value = buildErrorResult("HASH_FILE_EMPTY", "Falta fichero", "Selecciona un fichero para calcular la salida.");
         return;
     }
     if (hashMode.value === "hmac" && !hashSecret.value.trim()) {
@@ -3791,6 +4190,10 @@ function runHashLab() {
         let outputWordArray;
         const mode = hashMode.value;
         const algorithm = hashAlgorithm.value;
+        const input = await getHashInputBytes();
+        const inputBytes = input.bytes;
+        const inputWordArray = bytesToWordArray(inputBytes);
+        const inputEncodingLabel = input.kind === "file" ? "bytes de fichero" : encodingDisplayLabel(hashTextEncoding.value);
         const notes = [];
         let comparisonNote = "Sin referencia";
         let comparisonTone = "tone-neutral";
@@ -3799,8 +4202,8 @@ function runHashLab() {
         let verdictBody = "La operacion se completo y la salida queda lista para contrastar o reutilizar.";
 
         if (mode === "digest") {
-            outputWordArray = digestMap[algorithm](hashInput.value);
-            notes.push(`Digest ${algorithm} calculado solo sobre el texto de entrada.`);
+            outputWordArray = digestMap[algorithm](inputWordArray);
+            notes.push(`Digest ${algorithm} calculado sobre ${inputBytes.length} bytes de ${input.label}.`);
             if (["MD5", "SHA1"].includes(algorithm)) {
                 notes.push("Este algoritmo solo deberia mantenerse por compatibilidad o huellas heredadas.");
             }
@@ -3808,8 +4211,10 @@ function runHashLab() {
             if (!hashSecret.value) {
                 throw new Error("Necesitas indicar una clave secreta para HMAC.");
             }
-            outputWordArray = hmacMap[algorithm](hashInput.value, hashSecret.value);
-            notes.push(`HMAC ${algorithm} calculado con una clave de ${hashSecret.value.length} caracteres.`);
+            const secretBytes = textToEncodedBytes(hashSecret.value, hashSecretEncoding.value);
+            outputWordArray = hmacMap[algorithm](inputWordArray, bytesToWordArray(secretBytes));
+            notes.push(`HMAC ${algorithm} calculado con ${input.label} y clave ${encodingDisplayLabel(hashSecretEncoding.value)}.`);
+            notes.push(`Clave efectiva: ${secretBytes.length} bytes.`);
             notes.push("Si compartes el mensaje sin la clave, la salida por si sola no permite recalcular el HMAC.");
         } else {
             if (!hashSalt.value) {
@@ -3817,12 +4222,16 @@ function runHashLab() {
             }
             const iterations = Math.max(1000, Number(hashIterations.value) || 1000);
             const keyBytes = Math.max(16, Number(hashKeySize.value) || 32);
-            outputWordArray = CryptoJS.PBKDF2(hashInput.value, hashSalt.value, {
+            const normalizedSalt = normalizeValue(hashSalt.value);
+            const saltWordArray = normalizedSalt && normalizedSalt.length % 2 === 0 && !/[^0-9a-f]/i.test(normalizedSalt)
+                ? CryptoJS.enc.Hex.parse(normalizedSalt)
+                : encodedTextWordArray(hashSalt.value, hashTextEncoding.value);
+            outputWordArray = CryptoJS.PBKDF2(inputWordArray, saltWordArray, {
                 keySize: keyBytes / 4,
                 iterations,
                 hasher: CryptoJS.algo[algorithm]
             });
-            notes.push(`PBKDF2 usando ${algorithm}, ${iterations.toLocaleString("es-ES")} iteraciones y ${keyBytes} bytes derivados.`);
+            notes.push(`PBKDF2 usando ${algorithm}, ${iterations.toLocaleString("es-ES")} iteraciones, entrada ${input.label} (${inputEncodingLabel}) y ${keyBytes} bytes derivados.`);
             notes.push(iterations < 100000
                 ? "La derivacion funciona, pero subir iteraciones suele endurecer ataques offline."
                 : "El numero de iteraciones ya entra en un rango razonable para pruebas actuales.");
@@ -3861,7 +4270,7 @@ function runHashLab() {
                 { label: "Comparacion", value: comparisonNote, tone: comparisonTone, note: hasComparison ? "Se uso referencia" : "Sin valor esperado" }
             ],
             signalCards: [
-                { label: "Entrada", value: `${hashInput.value.length} chars`, tone: "tone-neutral", note: `${countUniqueCharacters(hashInput.value)} caracteres unicos` },
+                { label: "Entrada", value: `${inputBytes.length} bytes`, tone: "tone-neutral", note: input.note },
                 { label: "Formato", value: hashEncoding.value.toUpperCase(), tone: "tone-success", note: output.length + " caracteres de salida" },
                 { label: mode === "pbkdf2" ? "Iteraciones" : "Secreto", value: mode === "pbkdf2" ? `${Number(hashIterations.value).toLocaleString("es-ES")}` : (hashSecret.value ? `${hashSecret.value.length} chars` : "N/D"), tone: mode === "pbkdf2" ? toneFromBoolean(Number(hashIterations.value) >= 100000) : toneFromBoolean(Boolean(hashSecret.value)), note: mode === "pbkdf2" ? "Coste de derivacion" : "Clave del HMAC" },
                 { label: "Salt", value: mode === "pbkdf2" ? `${hashSalt.value.length / 2} bytes` : "No aplica", tone: mode === "pbkdf2" ? "tone-success" : "tone-neutral", note: mode === "pbkdf2" ? hashSalt.value.slice(0, 24) + "..." : "Solo en derivacion" }
@@ -3886,6 +4295,10 @@ function runHashLab() {
                         mode,
                         algorithm,
                         encoding: hashEncoding.value,
+                        inputKind: hashInputKind.value,
+                        inputName: input.label,
+                        inputEncoding: hashTextEncoding.value,
+                        secretEncoding: mode === "hmac" ? hashSecretEncoding.value : null,
                         salt: mode === "pbkdf2" ? hashSalt.value : null,
                         iterations: mode === "pbkdf2" ? Number(hashIterations.value) : null,
                         keyBytes: mode === "pbkdf2" ? Number(hashKeySize.value) : null,
@@ -3895,6 +4308,10 @@ function runHashLab() {
                         mode,
                         algorithm,
                         encoding: hashEncoding.value,
+                        inputKind: hashInputKind.value,
+                        inputName: input.label,
+                        inputEncoding: hashTextEncoding.value,
+                        secretEncoding: mode === "hmac" ? hashSecretEncoding.value : null,
                         salt: mode === "pbkdf2" ? hashSalt.value : null,
                         iterations: mode === "pbkdf2" ? Number(hashIterations.value) : null,
                         keyBytes: mode === "pbkdf2" ? Number(hashKeySize.value) : null
@@ -4742,7 +5159,8 @@ async function signMessage() {
         const subtle = getSubtleCrypto();
         const algorithm = getSignatureKeyAlgorithm();
         const privateKey = await importSignaturePrivateKey();
-        const signature = await subtle.sign(algorithm.sign, privateKey, textToBytes(signatureMessage.value));
+        const messageBytes = textToEncodedBytes(signatureMessage.value, signatureTextEncoding.value);
+        const signature = await subtle.sign(algorithm.sign, privateKey, messageBytes);
         signatureValue.value = bytesToBase64(signature);
 
         signatureResult.value = {
@@ -4751,7 +5169,7 @@ async function signMessage() {
             verdictBody: "La firma depende del mensaje, la clave privada, el algoritmo y el hash configurado.",
             summaryCards: [
                 { label: "Algoritmo", value: algorithm.label, tone: "tone-success", note: "Firma digital" },
-                { label: "Mensaje", value: `${textToBytes(signatureMessage.value).byteLength} bytes`, tone: "tone-neutral", note: "UTF-8" },
+                { label: "Mensaje", value: `${messageBytes.byteLength} bytes`, tone: "tone-neutral", note: encodingDisplayLabel(signatureTextEncoding.value) },
                 { label: "Firma", value: `${base64ToBytes(signatureValue.value).byteLength} bytes`, tone: "tone-success", note: "Base64" },
                 { label: "Clave", value: "Privada", tone: "tone-warning", note: "Material sensible" }
             ],
@@ -4763,7 +5181,8 @@ async function signMessage() {
             ],
             panels: [
                 { title: "Firma Base64", badge: "signature", content: signatureValue.value, copyValue: signatureValue.value },
-                { title: "Mensaje firmado", badge: "payload", content: signatureMessage.value, copyValue: signatureMessage.value }
+                { title: "Mensaje firmado", badge: "payload", content: signatureMessage.value, copyValue: signatureMessage.value },
+                { title: "Bytes firmados", badge: "hex", content: bytesToHex(messageBytes), copyValue: bytesToHex(messageBytes) }
             ]
         };
     } catch (error) {
@@ -4789,11 +5208,12 @@ async function verifySignature() {
         const subtle = getSubtleCrypto();
         const algorithm = getSignatureKeyAlgorithm();
         const publicKey = await importSignaturePublicKey();
+        const messageBytes = textToEncodedBytes(signatureMessage.value, signatureTextEncoding.value);
         const valid = await subtle.verify(
             algorithm.sign,
             publicKey,
             base64ToBytes(signatureValue.value),
-            textToBytes(signatureMessage.value)
+            messageBytes
         );
 
         signatureResult.value = {
@@ -4805,7 +5225,7 @@ async function verifySignature() {
             summaryCards: [
                 { label: "Resultado", value: valid ? "Valida" : "Invalida", tone: valid ? "tone-success" : "tone-danger", note: "Verificacion criptografica" },
                 { label: "Algoritmo", value: algorithm.label, tone: "tone-neutral", note: "Configuracion activa" },
-                { label: "Mensaje", value: `${textToBytes(signatureMessage.value).byteLength} bytes`, tone: "tone-neutral", note: "Entrada verificada" },
+                { label: "Mensaje", value: `${messageBytes.byteLength} bytes`, tone: "tone-neutral", note: encodingDisplayLabel(signatureTextEncoding.value) },
                 { label: "Firma", value: `${base64ToBytes(signatureValue.value).byteLength} bytes`, tone: "tone-neutral", note: "Base64 decodificado" }
             ],
             signalCards: [
@@ -4827,6 +5247,7 @@ async function verifySignature() {
 async function fillSignatureExample() {
     signatureAlgorithm.value = "RSA-PSS";
     signatureSaltLength.value = 32;
+    signatureTextEncoding.value = "utf8";
     signatureMessage.value = "Orden firmada: permitir despliegue del bastion norte.";
     await generateSignatureKeyPair();
     await signMessage();
@@ -4878,7 +5299,7 @@ function getAeadParams(iv) {
         tagLength: Number(aeadTagLength.value) || 128
     };
     if (aeadAad.value) {
-        params.additionalData = textToBytes(aeadAad.value);
+        params.additionalData = textToEncodedBytes(aeadAad.value, aeadTextEncoding.value);
     }
     return params;
 }
@@ -4897,14 +5318,15 @@ async function encryptAead() {
         const subtle = getSubtleCrypto();
         const key = await importAeadKey();
         const iv = base64ToBytes(aeadIv.value);
-        const ciphertext = await subtle.encrypt(getAeadParams(iv), key, textToBytes(aeadPlaintext.value));
+        const plaintextBytes = textToEncodedBytes(aeadPlaintext.value, aeadTextEncoding.value);
+        const ciphertext = await subtle.encrypt(getAeadParams(iv), key, plaintextBytes);
         aeadCiphertext.value = bytesToBase64(ciphertext);
         aeadResult.value = {
             verdictTone: "verdict-success",
             verdictTitle: "AES-GCM cifrado",
             verdictBody: "La salida incluye ciphertext y tag de autenticacion. El AAD queda autenticado aunque no cifrado.",
             summaryCards: [
-                { label: "Plaintext", value: `${textToBytes(aeadPlaintext.value).byteLength} bytes`, tone: "tone-neutral", note: "UTF-8" },
+                { label: "Plaintext", value: `${plaintextBytes.byteLength} bytes`, tone: "tone-neutral", note: encodingDisplayLabel(aeadTextEncoding.value) },
                 { label: "Ciphertext", value: `${new Uint8Array(ciphertext).byteLength} bytes`, tone: "tone-success", note: "Incluye tag" },
                 { label: "IV", value: `${iv.byteLength} bytes`, tone: iv.byteLength === 12 ? "tone-success" : "tone-warning", note: "Nonce GCM" },
                 { label: "AAD", value: aeadAad.value ? "Si" : "No", tone: aeadAad.value ? "tone-success" : "tone-neutral", note: "Autenticado" }
@@ -4917,7 +5339,7 @@ async function encryptAead() {
             ],
             panels: [
                 { title: "Ciphertext + tag", badge: "base64", content: aeadCiphertext.value, copyValue: aeadCiphertext.value },
-                { title: "Parametros", badge: "json", content: safeJson({ algorithm: "AES-GCM", keyBits: aeadKeySize.value, iv: aeadIv.value, tagLength: aeadTagLength.value, aad: aeadAad.value }), copyValue: safeJson({ algorithm: "AES-GCM", keyBits: aeadKeySize.value, iv: aeadIv.value, tagLength: aeadTagLength.value, aad: aeadAad.value }) }
+                { title: "Parametros", badge: "json", content: safeJson({ algorithm: "AES-GCM", keyBits: aeadKeySize.value, iv: aeadIv.value, tagLength: aeadTagLength.value, aad: aeadAad.value, textEncoding: aeadTextEncoding.value }), copyValue: safeJson({ algorithm: "AES-GCM", keyBits: aeadKeySize.value, iv: aeadIv.value, tagLength: aeadTagLength.value, aad: aeadAad.value, textEncoding: aeadTextEncoding.value }) }
             ]
         };
     } catch (error) {
@@ -4939,7 +5361,7 @@ async function decryptAead() {
         const subtle = getSubtleCrypto();
         const key = await importAeadKey();
         const decrypted = await subtle.decrypt(getAeadParams(base64ToBytes(aeadIv.value)), key, base64ToBytes(aeadCiphertext.value));
-        const plaintext = bytesToUtf8(new Uint8Array(decrypted));
+        const plaintext = bytesToEncodedText(new Uint8Array(decrypted), aeadTextEncoding.value);
         aeadPlaintext.value = plaintext;
         aeadResult.value = {
             verdictTone: "verdict-success",
@@ -4947,7 +5369,7 @@ async function decryptAead() {
             verdictBody: "El tag ha sido validado. Si el ciphertext, AAD, IV o clave hubieran cambiado, WebCrypto habria rechazado la operacion.",
             summaryCards: [
                 { label: "Resultado", value: "Valido", tone: "tone-success", note: "Tag verificado" },
-                { label: "Plaintext", value: `${new Uint8Array(decrypted).byteLength} bytes`, tone: "tone-neutral", note: "UTF-8" },
+                { label: "Plaintext", value: `${new Uint8Array(decrypted).byteLength} bytes`, tone: "tone-neutral", note: encodingDisplayLabel(aeadTextEncoding.value) },
                 { label: "AAD", value: aeadAad.value ? "Coincide" : "Vacio", tone: "tone-success", note: "Datos autenticados" },
                 { label: "Tag", value: `${aeadTagLength.value} bits`, tone: "tone-success", note: "Autenticacion" }
             ],
@@ -4955,7 +5377,7 @@ async function decryptAead() {
                 { label: "Integridad", value: "OK", tone: "tone-success", note: "GCM acepto tag" },
                 { label: "Confidencialidad", value: "Recuperada", tone: "tone-success", note: "Texto plano visible" },
                 { label: "Errores", value: "No", tone: "tone-success", note: "Parametros coherentes" },
-                { label: "Salida", value: "Texto", tone: "tone-neutral", note: "Decodificado UTF-8" }
+                { label: "Salida", value: "Texto", tone: "tone-neutral", note: `Decodificado ${encodingDisplayLabel(aeadTextEncoding.value)}` }
             ],
             panels: [
                 { title: "Texto descifrado", badge: "plain", content: plaintext, copyValue: plaintext },
@@ -5002,6 +5424,7 @@ function tamperAeadCiphertext() {
 async function fillAeadExample() {
     aeadKeySize.value = 256;
     aeadTagLength.value = 128;
+    aeadTextEncoding.value = "utf8";
     aeadAad.value = "method=POST;path=/api/tesoro";
     aeadPlaintext.value = "Transferencia autorizada: 7 fragmentos de mithril.";
     await generateAeadMaterial();
@@ -5110,12 +5533,14 @@ async function deriveKdfMaterial() {
         const subtle = getSubtleCrypto();
         const lengthBits = Math.max(16, Number(kdfLength.value) || 32) * 8;
         const salt = base64ToBytes(kdfSalt.value);
+        const inputBytes = textToEncodedBytes(kdfInput.value, kdfTextEncoding.value);
+        const infoBytes = textToEncodedBytes(kdfInfo.value, kdfTextEncoding.value);
         let derived;
         if (kdfMode.value === "PBKDF2") {
             if (Number(kdfIterations.value) < 1000) {
                 throw new Error("PBKDF2 necesita al menos 1000 iteraciones.");
             }
-            const baseKey = await subtle.importKey("raw", textToBytes(kdfInput.value), "PBKDF2", false, ["deriveBits"]);
+            const baseKey = await subtle.importKey("raw", inputBytes, "PBKDF2", false, ["deriveBits"]);
             derived = new Uint8Array(await subtle.deriveBits({
                 name: "PBKDF2",
                 salt,
@@ -5123,11 +5548,11 @@ async function deriveKdfMaterial() {
                 hash: kdfHash.value
             }, baseKey, lengthBits));
         } else {
-            const baseKey = await subtle.importKey("raw", textToBytes(kdfInput.value), "HKDF", false, ["deriveBits"]);
+            const baseKey = await subtle.importKey("raw", inputBytes, "HKDF", false, ["deriveBits"]);
             derived = new Uint8Array(await subtle.deriveBits({
                 name: "HKDF",
                 salt,
-                info: textToBytes(kdfInfo.value),
+                info: infoBytes,
                 hash: kdfHash.value
             }, baseKey, lengthBits));
         }
@@ -5144,11 +5569,12 @@ async function deriveKdfMaterial() {
                 { label: "Modo", value: kdfMode.value, tone: "tone-success", note: "WebCrypto" },
                 { label: "Hash", value: kdfHash.value, tone: "tone-success", note: "PRF" },
                 { label: "Salida", value: `${derived.byteLength} bytes`, tone: "tone-neutral", note: `${lengthBits} bits` },
-                { label: "Salt", value: `${salt.byteLength} bytes`, tone: "tone-success", note: "Base64" }
+                { label: "Entrada", value: `${inputBytes.length} bytes`, tone: "tone-neutral", note: encodingDisplayLabel(kdfTextEncoding.value) }
             ],
             signalCards: [
                 { label: "Iteraciones", value: kdfMode.value === "PBKDF2" ? Number(kdfIterations.value).toLocaleString("es-ES") : "No aplica", tone: kdfMode.value === "PBKDF2" ? toneFromBoolean(Number(kdfIterations.value) >= 100000) : "tone-neutral", note: "Coste PBKDF2" },
-                { label: "Info", value: kdfMode.value === "HKDF" ? (kdfInfo.value || "Vacia") : "No aplica", tone: kdfMode.value === "HKDF" ? "tone-success" : "tone-neutral", note: "Contexto HKDF" },
+                { label: "Salt", value: `${salt.byteLength} bytes`, tone: "tone-success", note: "Base64" },
+                { label: "Info", value: kdfMode.value === "HKDF" ? `${infoBytes.length} bytes` : "No aplica", tone: kdfMode.value === "HKDF" ? "tone-success" : "tone-neutral", note: "Contexto HKDF" },
                 { label: "Hex", value: `${outputHex.length} chars`, tone: "tone-neutral", note: "Representacion" },
                 { label: "Base64", value: `${outputBase64.length} chars`, tone: "tone-neutral", note: "Representacion" }
             ],
@@ -5167,6 +5593,7 @@ function fillKdfExample() {
     kdfHash.value = "SHA-256";
     kdfLength.value = 32;
     kdfIterations.value = 180000;
+    kdfTextEncoding.value = "utf8";
     kdfInput.value = "password de laboratorio con sal";
     kdfInfo.value = "feanor/aes-gcm/content";
     generateKdfSalt();
@@ -5978,6 +6405,7 @@ function fillTransformExample() {
     transformDirection.value = "decode";
     transformCategory.value = "base64url-text";
     transformFormat.value = "text/plain";
+    transformTextEncoding.value = "utf8";
     updateTransformOperation();
     transformInput.value = base64ToBase64Url(utf8ToBase64('{"scope":"read:reports","active":true}'));
     transformDecodedFileName.value = "";
@@ -5990,23 +6418,25 @@ function runTextTransform() {
 
     let output = "";
     let note = "";
+    const encoding = transformCategory.value === "url-text" ? "utf8" : transformTextEncoding.value;
+    const encodingLabel = encodingDisplayLabel(encoding);
 
     switch (transformOperation.value) {
     case "base64-encode":
-        output = utf8ToBase64(transformInput.value);
-        note = "Texto UTF-8 convertido a Base64 clasico.";
+        output = bytesToBase64(textToEncodedBytes(transformInput.value, encoding));
+        note = `Texto ${encodingLabel} convertido a Base64 clasico.`;
         break;
     case "base64-decode":
-        output = base64ToUtf8(parseBase64Payload(transformInput.value).base64);
-        note = "Cadena Base64 convertida a texto UTF-8.";
+        output = bytesToEncodedText(base64ToBytes(parseBase64Payload(transformInput.value).base64), encoding);
+        note = `Cadena Base64 convertida a texto ${encodingLabel}.`;
         break;
     case "base64url-encode":
-        output = base64ToBase64Url(utf8ToBase64(transformInput.value));
-        note = "Texto convertido al alfabeto URL-safe.";
+        output = bytesToBase64Url(textToEncodedBytes(transformInput.value, encoding));
+        note = `Texto ${encodingLabel} convertido al alfabeto URL-safe.`;
         break;
     case "base64url-decode":
-        output = base64ToUtf8(base64UrlToBase64(transformInput.value.trim()));
-        note = "Cadena Base64URL devuelta a texto plano.";
+        output = bytesToEncodedText(base64UrlToBytes(transformInput.value.trim()), encoding);
+        note = `Cadena Base64URL devuelta a texto ${encodingLabel}.`;
         break;
     case "url-encode":
         output = encodeURIComponent(transformInput.value);
@@ -6017,12 +6447,12 @@ function runTextTransform() {
         note = "La cadena se ha decodificado desde percent-encoding.";
         break;
     case "hex-encode":
-        output = utf8ToHex(transformInput.value);
-        note = "Texto convertido a representacion hexadecimal.";
+        output = bytesToHex(textToEncodedBytes(transformInput.value, encoding));
+        note = `Texto ${encodingLabel} convertido a representacion hexadecimal.`;
         break;
     case "hex-decode":
-        output = hexToUtf8(transformInput.value);
-        note = "Cadena hexadecimal decodificada a UTF-8.";
+        output = bytesToEncodedText(hexToBytes(transformInput.value), encoding);
+        note = `Cadena hexadecimal decodificada a ${encodingLabel}.`;
         break;
     default:
         throw new Error("Operacion de texto no soportada.");
@@ -6042,7 +6472,7 @@ function runTextTransform() {
             {
                 title: "Lectura tecnica",
                 badge: "notas",
-                content: buildTextList("Observaciones", [note, jsonHint]),
+                content: buildTextList("Observaciones", [note, transformCategory.value === "url-text" ? "" : `Codificacion seleccionada: ${encodingLabel}.`, jsonHint]),
                 copyValue: `${note}\n${jsonHint}`
             }
         ],
@@ -6437,12 +6867,6 @@ function parseDecimalBytes(value) {
     }));
 }
 
-function parseXorBytes(value) {
-    if (xorInputMode.value === "hex") return hexToBytes(value);
-    if (xorInputMode.value === "decimal") return parseDecimalBytes(value);
-    return textToBytes(value);
-}
-
 function repeatStringToLength(value, length) {
     if (!value.length) {
         throw new Error("B no puede estar vacio si se usa como clave.");
@@ -6470,157 +6894,10 @@ function byteBits(bytes) {
     return Array.from(bytes).map(byte => byte.toString(2).padStart(8, "0")).join(" ");
 }
 
-function buildXorBitTable(leftBits, rightBits, resultBits) {
-    const maxRows = Math.min(leftBits.length, 64);
-    const rows = ["i  A  B  A XOR B"];
-    for (let index = 0; index < maxRows; index += 1) {
-        rows.push(`${String(index).padStart(2, "0")}  ${leftBits[index]}  ${rightBits[index]}     ${resultBits[index]}`);
-    }
-    if (leftBits.length > maxRows) rows.push(`... ${leftBits.length - maxRows} bits mas`);
-    return rows.join("\n");
-}
-
-function fillXorExample() {
-    xorInputMode.value = "binary";
-    xorRepeatKey.value = false;
-    xorLeft.value = "1010";
-    xorRight.value = "1100";
-}
-
-function useXorOutputAsInput() {
-    if (!xorResult.value?.primaryValue) {
-        xorResult.value = buildErrorResult("XOR_OUTPUT_EMPTY", "No hay salida XOR", "Calcula primero la operacion para pasar el resultado a A.");
-        return;
-    }
-
-    xorLeft.value = xorResult.value.primaryValue;
-    if (xorResult.value.outputMode) {
-        xorInputMode.value = xorResult.value.outputMode;
-    }
-}
-
-function runXorLab() {
-    if (!xorLeft.value.trim() || !xorRight.value.trim()) {
-        xorResult.value = buildErrorResult("XOR_EMPTY", "Faltan operandos", "Introduce A y B antes de calcular XOR.");
-        return;
-    }
-
-    try {
-        let primaryValue = "";
-        let outputMode = xorInputMode.value;
-        let resultContent = "";
-        let table = "";
-        let leftLength = 0;
-        let rightLength = 0;
-        let resultBytes = null;
-
-        if (xorInputMode.value === "binary") {
-            const leftBits = normalizeBitString(xorLeft.value);
-            const rightBaseBits = normalizeBitString(xorRight.value);
-            const rightBits = xorRepeatKey.value ? repeatStringToLength(rightBaseBits, leftBits.length) : rightBaseBits;
-            if (leftBits.length !== rightBits.length) {
-                throw new Error("A y B deben tener la misma longitud de bits, o activa repetir B como clave.");
-            }
-            const resultBits = Array.from(leftBits)
-                .map((bit, index) => bit === rightBits[index] ? "0" : "1")
-                .join("");
-            resultBytes = bitsToBytes(resultBits);
-            primaryValue = resultBits;
-            table = buildXorBitTable(leftBits, rightBits, resultBits);
-            leftLength = leftBits.length;
-            rightLength = rightBits.length;
-            resultContent = buildTextList("Salida XOR", [
-                `Binario: ${resultBits}`,
-                resultBytes ? `Hex: ${bytesToHex(resultBytes)}` : "",
-                resultBytes ? `Decimal: ${Array.from(resultBytes).join(", ")}` : ""
-            ]);
-        } else {
-            const leftBytes = parseXorBytes(xorLeft.value);
-            const rightBaseBytes = parseXorBytes(xorRight.value);
-            const rightBytes = xorRepeatKey.value ? repeatBytesToLength(rightBaseBytes, leftBytes.length) : rightBaseBytes;
-            if (leftBytes.length !== rightBytes.length) {
-                throw new Error("A y B deben tener la misma longitud en bytes, o activa repetir B como clave.");
-            }
-            resultBytes = new Uint8Array(leftBytes.map((byte, index) => byte ^ rightBytes[index]));
-            const resultHex = bytesToHex(resultBytes);
-            const resultBase64 = bytesToBase64(resultBytes);
-            let resultText = "";
-            try {
-                resultText = bytesToUtf8(resultBytes);
-            } catch {
-                resultText = "No decodificable como UTF-8.";
-            }
-            const leftBits = byteBits(leftBytes).replace(/\s/g, "");
-            const rightBits = byteBits(rightBytes).replace(/\s/g, "");
-            const resultBits = byteBits(resultBytes).replace(/\s/g, "");
-            primaryValue = resultHex;
-            outputMode = "hex";
-            table = buildXorBitTable(leftBits, rightBits, resultBits);
-            leftLength = leftBytes.length;
-            rightLength = rightBytes.length;
-            resultContent = buildTextList("Salida XOR", [
-                `Hex: ${resultHex}`,
-                `Base64: ${resultBase64}`,
-                `Binario: ${byteBits(resultBytes)}`,
-                `UTF-8: ${resultText}`
-            ]);
-        }
-
-        xorResult.value = {
-            primaryValue,
-            outputMode,
-            verdictTone: "verdict-success",
-            verdictTitle: "XOR calculado",
-            verdictBody: xorRepeatKey.value
-                ? "B se ha repetido como clave hasta cubrir A. Aplicar de nuevo XOR con la misma clave recupera A."
-                : "A y B se han combinado bit a bit. Si vuelves a aplicar XOR con B, recuperas A.",
-            summaryCards: [
-                { label: "Formato", value: xorInputMode.value.toUpperCase(), tone: "tone-neutral", note: "Entrada" },
-                { label: "A", value: String(leftLength), tone: "tone-neutral", note: xorInputMode.value === "binary" ? "bits" : "bytes" },
-                { label: "B usado", value: String(rightLength), tone: "tone-neutral", note: xorRepeatKey.value ? "Repetido" : "Directo" },
-                { label: "Reversible", value: "Si", tone: "tone-success", note: "C XOR K = P" }
-            ],
-            signalCards: [
-                { label: "A XOR A", value: "0", tone: "tone-success", note: "Misma entrada se anula" },
-                { label: "A XOR 0", value: "A", tone: "tone-success", note: "Identidad" },
-                { label: "Conmutativa", value: "Si", tone: "tone-success", note: "A XOR B = B XOR A" },
-                { label: "Uso cripto", value: "Base", tone: "tone-neutral", note: "Flujos y one-time pad" }
-            ],
-            panels: [
-                {
-                    title: "Resultado",
-                    badge: "xor",
-                    content: resultContent,
-                    copyValue: primaryValue
-                },
-                {
-                    title: "Tabla bit a bit",
-                    badge: "bits",
-                    content: table,
-                    copyValue: table
-                },
-                {
-                    title: "Lectura tecnica",
-                    badge: "notas",
-                    content: buildTextList("Propiedades usadas", [
-                        "Si dos bits son iguales, el resultado es 0; si son distintos, el resultado es 1.",
-                        "A XOR A = 0 y A XOR 0 = A.",
-                        "Para cifrado simetrico simple: C = P XOR K y P = C XOR K.",
-                        "En practica, reutilizar una clave corta filtra patrones; una clave de un solo uso debe ser tan larga como el mensaje."
-                    ]),
-                    copyValue: "A XOR A = 0\nA XOR 0 = A\nC = P XOR K\nP = C XOR K"
-                }
-            ]
-        };
-    } catch (error) {
-        xorResult.value = buildErrorResult("XOR_FAILED", "No se pudo calcular XOR", error.message);
-    }
-}
-
 function parseLogicBytes(value, mode) {
     if (mode === "hex") return hexToBytes(value);
     if (mode === "decimal") return parseDecimalBytes(value);
-    return textToBytes(value);
+    return textToEncodedBytes(value, encodingFromTextMode(mode));
 }
 
 function booleanOperationLabel(operation = booleanOperation.value) {
@@ -6675,6 +6952,14 @@ function booleanTruthTable(operation) {
 function fillBooleanExample() {
     booleanInputMode.value = "binary";
     booleanOperation.value = "nor";
+    booleanRepeatKey.value = false;
+    booleanLeft.value = "1010";
+    booleanRight.value = "1100";
+}
+
+function fillBooleanXorExample() {
+    booleanInputMode.value = "binary";
+    booleanOperation.value = "xor";
     booleanRepeatKey.value = false;
     booleanLeft.value = "1010";
     booleanRight.value = "1100";
@@ -6742,6 +7027,14 @@ function runBooleanLab() {
             resultBytes = new Uint8Array(leftBytes.map((byte, index) => applyBooleanByte(byte, rightBytes[index], booleanOperation.value)));
             primaryValue = bytesToHex(resultBytes);
             outputMode = "hex";
+            let resultText = "";
+            const selectedTextEncoding = encodingFromTextMode(booleanInputMode.value);
+            const selectedTextEncodingLabel = encodingDisplayLabel(selectedTextEncoding);
+            try {
+                resultText = bytesToEncodedText(resultBytes, selectedTextEncoding);
+            } catch {
+                resultText = `No decodificable como ${selectedTextEncodingLabel}.`;
+            }
             const leftBits = byteBits(leftBytes).replace(/\s/g, "");
             const rightBits = booleanOperation.value === "not" ? "" : byteBits(rightBytes).replace(/\s/g, "");
             const resultBits = byteBits(resultBytes).replace(/\s/g, "");
@@ -6751,17 +7044,42 @@ function runBooleanLab() {
             resultContent = buildTextList("Salida booleana", [
                 `Hex: ${primaryValue}`,
                 `Base64: ${bytesToBase64(resultBytes)}`,
-                `Binario: ${byteBits(resultBytes)}`
+                `Binario: ${byteBits(resultBytes)}`,
+                booleanOperation.value === "xor" ? `${selectedTextEncodingLabel}: ${resultText}` : ""
             ]);
         }
 
         const reversible = ["xor", "xnor", "not"].includes(booleanOperation.value);
+        const isXor = booleanOperation.value === "xor";
+        const operationPanels = [
+            { title: "Resultado", badge: booleanOperation.value, content: resultContent, copyValue: primaryValue },
+            { title: "Tabla bit a bit", badge: "bits", content: table, copyValue: table },
+            { title: "Tabla de verdad", badge: "truth", content: booleanTruthTable(booleanOperation.value), copyValue: booleanTruthTable(booleanOperation.value) }
+        ];
+        if (isXor) {
+            operationPanels.push({
+                title: "Lectura XOR",
+                badge: "xor",
+                content: buildTextList("Propiedades usadas", [
+                    "Si dos bits son iguales, el resultado es 0; si son distintos, el resultado es 1.",
+                    "A XOR A = 0 y A XOR 0 = A.",
+                    "Para cifrado simetrico simple: C = P XOR K y P = C XOR K.",
+                    "Si B se repite como clave corta, sirve para experimentar, pero reutilizar claves cortas filtra patrones."
+                ]),
+                copyValue: "A XOR A = 0\nA XOR 0 = A\nC = P XOR K\nP = C XOR K"
+            });
+        }
+
         booleanResult.value = {
             primaryValue,
             outputMode,
             verdictTone: "verdict-success",
             verdictTitle: `${booleanOperation.value.toUpperCase()} calculado`,
-            verdictBody: booleanOperation.value === "nor"
+            verdictBody: isXor
+                ? (booleanRepeatKey.value
+                    ? "B se ha repetido como clave hasta cubrir A. Aplicar de nuevo XOR con la misma clave recupera A."
+                    : "A y B se han combinado bit a bit. Si vuelves a aplicar XOR con B, recuperas A.")
+                : booleanOperation.value === "nor"
                 ? "NOR equivale a negar OR: solo produce 1 cuando A y B son 0. Como puerta logica es universal, pero no es reversible como cifrado."
                 : `${booleanOperationLabel()} aplicado bit a bit sobre el material de entrada.`,
             summaryCards: [
@@ -6771,16 +7089,12 @@ function runBooleanLab() {
                 { label: "Reversible", value: reversible ? "Si" : "No", tone: reversible ? "tone-success" : "tone-warning", note: reversible ? "Con misma mascara" : "Pierde informacion" }
             ],
             signalCards: [
-                { label: "Tabla verdad", value: "Incluida", tone: "tone-success", note: "4 casos" },
+                { label: isXor ? "A XOR A" : "Tabla verdad", value: isXor ? "0" : "Incluida", tone: "tone-success", note: isXor ? "Misma entrada se anula" : "4 casos" },
                 { label: "B usado", value: booleanOperation.value === "not" ? "N/D" : String(rightLength), tone: "tone-neutral", note: booleanRepeatKey.value ? "Repetido" : "Directo" },
-                { label: "NOR universal", value: booleanOperation.value === "nor" ? "Si" : "N/D", tone: booleanOperation.value === "nor" ? "tone-success" : "tone-neutral", note: "Construye otras puertas" },
+                { label: isXor ? "A XOR 0" : "NOR universal", value: isXor ? "A" : (booleanOperation.value === "nor" ? "Si" : "N/D"), tone: isXor || booleanOperation.value === "nor" ? "tone-success" : "tone-neutral", note: isXor ? "Identidad" : "Construye otras puertas" },
                 { label: "Cripto", value: reversible ? "Util" : "Mascara", tone: reversible ? "tone-success" : "tone-warning", note: reversible ? "Puede descifrar" : "No descifra solo" }
             ],
-            panels: [
-                { title: "Resultado", badge: booleanOperation.value, content: resultContent, copyValue: primaryValue },
-                { title: "Tabla bit a bit", badge: "bits", content: table, copyValue: table },
-                { title: "Tabla de verdad", badge: "truth", content: booleanTruthTable(booleanOperation.value), copyValue: booleanTruthTable(booleanOperation.value) }
-            ]
+            panels: operationPanels
         };
     } catch (error) {
         booleanResult.value = buildErrorResult("BOOLEAN_FAILED", "No se pudo calcular la operacion", error.message);
@@ -7262,7 +7576,7 @@ function parseByteInput() {
     if (byteInputMode.value === "hex") return hexToBytes(byteInput.value);
     if (byteInputMode.value === "base64") return base64ToBytes(byteInput.value);
     if (byteInputMode.value === "base64url") return base64UrlToBytes(byteInput.value);
-    return textToBytes(byteInput.value);
+    return textToEncodedBytes(byteInput.value, encodingFromTextMode(byteInputMode.value));
 }
 
 function inspectBytes() {
@@ -7273,6 +7587,7 @@ function inspectBytes() {
         const base64url = bytesToBase64Url(bytes);
         const binary = Array.from(bytes).map(byte => byte.toString(2).padStart(8, "0")).join(" ");
         const decimal = Array.from(bytes).join(", ");
+        const encodingSignals = analyzeEncodingSignals(bytes);
         const table = Array.from(bytes.slice(0, 96)).map((byte, index) => {
             const char = byte >= 32 && byte <= 126 ? String.fromCharCode(byte) : ".";
             return `${String(index).padStart(3, "0")}  dec=${String(byte).padStart(3, " ")}  hex=${byte.toString(16).padStart(2, "0")}  bin=${byte.toString(2).padStart(8, "0")}  char=${char}`;
@@ -7283,6 +7598,24 @@ function inspectBytes() {
         } catch {
             utf8 = "No decodificable como UTF-8 valido.";
         }
+        let utf16le = "";
+        let utf16be = "";
+        let ascii = "";
+        let latin1 = "";
+        let windows1252 = "";
+        try {
+            utf16le = bytesToEncodedText(bytes, "utf16le");
+        } catch {
+            utf16le = "No decodificable como UTF-16LE valido.";
+        }
+        try {
+            utf16be = bytesToEncodedText(bytes, "utf16be");
+        } catch {
+            utf16be = "No decodificable como UTF-16BE valido.";
+        }
+        ascii = bytesToEncodedText(bytes, "ascii");
+        latin1 = bytesToEncodedText(bytes, "latin1");
+        windows1252 = bytesToEncodedText(bytes, "windows1252");
 
         byteResult.value = {
             verdictTone: "verdict-success",
@@ -7298,12 +7631,18 @@ function inspectBytes() {
                 { label: "ASCII imprimible", value: `${Array.from(bytes).filter(byte => byte >= 32 && byte <= 126).length}`, tone: "tone-neutral", note: "Bytes visibles" },
                 { label: "Nulos", value: `${Array.from(bytes).filter(byte => byte === 0).length}`, tone: "tone-neutral", note: "0x00" },
                 { label: "Unicos", value: `${new Set(Array.from(bytes)).size}`, tone: "tone-neutral", note: "Valores byte" },
-                { label: "UTF-8", value: utf8 ? "Disponible" : "Vacio", tone: utf8 ? "tone-success" : "tone-neutral", note: "Decodificacion" }
+                { label: "UTF", value: utf8 ? "UTF-8" : "Vacio", tone: utf8 ? "tone-success" : "tone-neutral", note: "UTF-16 incluido" }
             ],
             panels: [
                 { title: "Tabla de bytes", badge: "bytes", content: table || "Sin bytes", copyValue: table },
+                { title: "Perfil de codificacion", badge: "prof", content: buildTextList("Senales", encodingSignals), copyValue: encodingSignals.join("\n") },
                 { title: "Representaciones", badge: "enc", content: buildTextList("Formatos", [
                     `UTF-8: ${utf8}`,
+                    `UTF-16LE: ${utf16le}`,
+                    `UTF-16BE: ${utf16be}`,
+                    `ASCII: ${ascii}`,
+                    `Latin-1: ${latin1}`,
+                    `Windows-1252: ${windows1252}`,
                     `Hex: ${hex}`,
                     `Base64: ${base64}`,
                     `Base64URL: ${base64url}`,
@@ -7528,9 +7867,18 @@ function handleStegoEmbedFile(event) {
     clearStegoDownload();
 }
 
+function handleStegoPayloadFile(event) {
+    const file = event.target.files?.[0] || null;
+    stegoEmbedPayloadFile.value = file;
+    stegoEmbedPayloadName.value = file?.name || "";
+    stegoEmbedResult.value = null;
+    clearStegoDownload();
+}
+
 function handleStegoExtractFile(event) {
     stegoExtractFile.value = event.target.files?.[0] || null;
     stegoExtractResult.value = null;
+    clearStegoExtractDownload();
 }
 
 function handleSteghideFile(event) {
@@ -7579,6 +7927,20 @@ function clearMetadataEditor() {
 function clearStegoExtract() {
     stegoExtractFile.value = null;
     stegoExtractResult.value = null;
+    clearStegoExtractDownload();
+}
+
+function clearStegoEmbed() {
+    stegoEmbedFile.value = null;
+    stegoEmbedPayloadFile.value = null;
+    stegoEmbedPayloadName.value = "";
+    stegoEmbedPayload.value = "";
+    stegoEmbedCarrierHint.value = "auto";
+    stegoEmbedMode.value = "auto";
+    stegoEmbedPayloadSource.value = "text";
+    stegoEmbedTextEncoding.value = "utf8";
+    stegoEmbedResult.value = null;
+    clearStegoDownload();
 }
 
 function clearSteghideLab() {
@@ -7637,12 +7999,27 @@ function clearStegoDownload() {
         URL.revokeObjectURL(stegoEmbedDownloadUrl.value);
     }
     stegoEmbedDownloadUrl.value = "";
+    stegoEmbedDownloadName.value = "feanor-stego.bin";
 }
 
 function setStegoDownload(blob, filename) {
     clearStegoDownload();
     stegoEmbedDownloadUrl.value = URL.createObjectURL(blob);
     stegoEmbedDownloadName.value = filename;
+}
+
+function clearStegoExtractDownload() {
+    if (stegoExtractDownloadUrl.value) {
+        URL.revokeObjectURL(stegoExtractDownloadUrl.value);
+    }
+    stegoExtractDownloadUrl.value = "";
+    stegoExtractDownloadName.value = "feanor-payload.bin";
+}
+
+function setStegoExtractDownload(blob, filename) {
+    clearStegoExtractDownload();
+    stegoExtractDownloadUrl.value = URL.createObjectURL(blob);
+    stegoExtractDownloadName.value = filename;
 }
 
 function clearSteghideDownload() {
@@ -8304,6 +8681,7 @@ function parsePngChunks(bytes) {
             type,
             length,
             offset,
+            data,
             text: parsePngTextChunk(type, data)
         });
 
@@ -8963,6 +9341,27 @@ function collectContainerHints(bytes, type) {
         metadataLines.push(...pdf.metadataLines);
         indicators.push(...pdf.indicators);
         appendedBytes = pdf.appendedBytes;
+    } else if (type.family === "archive") {
+        formatLines.push(`Archivo comprimido/paquetizado: ${type.label}.`);
+        if (["GZIP", "BZIP2", "XZ", "7Z", "RAR"].includes(type.label)) {
+            indicators.push("Contenedor comprimido: la entropia alta es normal y el analisis interno requiere descompresion especifica.");
+        }
+        if (type.label === "TAR") {
+            formatLines.push("TAR conserva nombres, permisos y rutas internas; revisa path traversal al extraer fuera del navegador.");
+        }
+    } else if (type.family === "executable") {
+        formatLines.push(`Ejecutable detectado: ${type.label}.`);
+        indicators.push("El fichero es ejecutable o bytecode; no lo abras fuera de un entorno controlado si no confias en su origen.");
+    } else if (type.family === "capture") {
+        formatLines.push(`Captura de red detectada: ${type.label}.`);
+        indicators.push("Puede contener IPs, dominios, tokens o payloads de trafico en claro.");
+    } else if (type.family === "database") {
+        formatLines.push("Base de datos SQLite detectada; puede contener tablas, indices, paginas libres y datos borrados recuperables.");
+    } else if (type.family === "medical") {
+        formatLines.push("DICOM detectado; revisa PHI/PII clinica antes de compartir.");
+        indicators.push("Formato medico: puede incluir identidad de paciente, estudio, equipo y fechas.");
+    } else if (type.family === "message") {
+        formatLines.push("Mensaje de correo detectado; revisa cabeceras Received, Message-ID, DKIM, adjuntos y MIME boundaries.");
     }
 
     if (appendedBytes > 8) {
@@ -9046,8 +9445,163 @@ function buildStegoPacket(payloadBytes) {
     return packet;
 }
 
+function crc32Hex(bytes) {
+    return pngCrc32(bytes).toString(16).padStart(8, "0");
+}
+
+function buildUniversalStegoPacket(payloadBytes, header) {
+    const safeHeader = {
+        version: 2,
+        tool: "CodiceFeanor",
+        createdAt: new Date().toISOString(),
+        payloadSize: payloadBytes.length,
+        crc32: crc32Hex(payloadBytes),
+        ...header
+    };
+    const headerBytes = textToBytes(safeJson(safeHeader));
+    return concatBytes(
+        STEGO_PACKET_MAGIC_BYTES,
+        uint32BytesBE(headerBytes.length),
+        headerBytes,
+        payloadBytes
+    );
+}
+
+function parseUniversalStegoPacket(packet) {
+    const bytes = packet instanceof Uint8Array ? packet : new Uint8Array(packet);
+    if (bytes.length < STEGO_PACKET_HEADER_BYTES) {
+        throw new Error("El paquete Feanor V2 esta incompleto.");
+    }
+    const magic = bytes.slice(0, STEGO_PACKET_MAGIC_BYTES.length);
+    if (!bytesEqual(magic, STEGO_PACKET_MAGIC_BYTES)) {
+        throw new Error("No se encontro cabecera Feanor V2.");
+    }
+    const headerLength = readUint32BE(bytes, STEGO_PACKET_MAGIC_BYTES.length);
+    const headerStart = STEGO_PACKET_HEADER_BYTES;
+    const payloadStart = headerStart + headerLength;
+    if (headerLength <= 0 || payloadStart > bytes.length) {
+        throw new Error("La longitud de cabecera Feanor V2 no encaja con el fichero.");
+    }
+    const header = JSON.parse(bytesToUtf8(bytes.slice(headerStart, payloadStart)));
+    const payloadSize = Number(header.payloadSize);
+    if (!Number.isFinite(payloadSize) || payloadSize < 0 || payloadStart + payloadSize > bytes.length) {
+        throw new Error("El tamano de payload Feanor V2 no encaja con el paquete.");
+    }
+    const payloadBytes = bytes.slice(payloadStart, payloadStart + payloadSize);
+    const checksum = crc32Hex(payloadBytes);
+    return {
+        header,
+        payloadBytes,
+        payloadText: stegoPayloadToText(header, payloadBytes),
+        packetLength: payloadStart + payloadSize,
+        checksum,
+        checksumOk: !header.crc32 || header.crc32 === checksum
+    };
+}
+
+function stegoPayloadToText(header, payloadBytes) {
+    if (["text", "json"].includes(header.source)) {
+        return bytesToEncodedText(payloadBytes, header.encoding || "utf8");
+    }
+    if (header.source === "base64") return bytesToBase64(payloadBytes);
+
+    try {
+        const text = bytesToUtf8(payloadBytes);
+        const printable = Array.from(text).filter(char => {
+            const code = char.charCodeAt(0);
+            return code === 9 || code === 10 || code === 13 || code >= 32;
+        }).length;
+        if (text && printable / text.length > 0.85) return text;
+    } catch {
+        // Binary payload: Base64 preview below is safer.
+    }
+    return bytesToBase64(payloadBytes);
+}
+
+function extractUniversalStegoPacketFromRawBytes(bytes) {
+    const index = lastIndexOfBytes(bytes, STEGO_PACKET_MAGIC_BYTES);
+    if (index < 0) return null;
+    try {
+        return {
+            ...parseUniversalStegoPacket(bytes.slice(index)),
+            storage: "footer",
+            storageNote: "Cabecera Feanor V2 encontrada en bytes crudos al final o dentro del fichero."
+        };
+    } catch {
+        return null;
+    }
+}
+
+function readPngTextValue(type, data) {
+    if (type === "tEXt") {
+        const keywordEnd = data.indexOf(0);
+        if (keywordEnd < 0) return asciiSlice(data, 0, data.length);
+        return asciiSlice(data, keywordEnd + 1, data.length);
+    }
+    if (type !== "iTXt") return "";
+
+    let offset = data.indexOf(0);
+    if (offset < 0) return "";
+    offset += 3;
+    const languageEnd = data.indexOf(0, offset);
+    if (languageEnd < 0) return "";
+    const translatedEnd = data.indexOf(0, languageEnd + 1);
+    if (translatedEnd < 0) return "";
+    return bytesToUtf8(data.slice(translatedEnd + 1));
+}
+
+function extractPngItxtStegoPacket(bytes) {
+    if (!startsWithBytes(bytes, [0x89, 0x50, 0x4e, 0x47])) return null;
+    const parsed = parsePngChunks(bytes);
+    for (const chunk of parsed.chunks) {
+        if (!["iTXt", "tEXt"].includes(chunk.type)) continue;
+        const text = readPngTextValue(chunk.type, chunk.data);
+        const markerIndex = text.indexOf(STEGO_PACKET_B64_MARKER);
+        if (markerIndex < 0) continue;
+        const raw = text.slice(markerIndex + STEGO_PACKET_B64_MARKER.length);
+        const match = raw.match(/[A-Za-z0-9+/=]+/);
+        if (!match) continue;
+        return {
+            ...parseUniversalStegoPacket(base64ToBytes(match[0])),
+            storage: "png-itxt",
+            storageNote: "Paquete Feanor V2 localizado dentro de un chunk textual PNG."
+        };
+    }
+    return null;
+}
+
+function readUniversalStegoPacketFromImageData(imageData) {
+    const capacityBytes = calculateLsbCapacityBytes(imageData);
+    if (capacityBytes < STEGO_PACKET_HEADER_BYTES) return null;
+
+    const headerPrefix = readLsbBytes(imageData, STEGO_PACKET_HEADER_BYTES);
+    if (!bytesEqual(headerPrefix.slice(0, STEGO_PACKET_MAGIC_BYTES.length), STEGO_PACKET_MAGIC_BYTES)) {
+        return null;
+    }
+    const headerLength = readUint32BE(headerPrefix, STEGO_PACKET_MAGIC_BYTES.length);
+    const headerTotal = STEGO_PACKET_HEADER_BYTES + headerLength;
+    if (headerLength <= 0 || headerTotal > capacityBytes) {
+        throw new Error("La cabecera LSB Feanor V2 existe, pero no cabe en la imagen.");
+    }
+    const headerPacket = readLsbBytes(imageData, headerTotal);
+    const header = JSON.parse(bytesToUtf8(headerPacket.slice(STEGO_PACKET_HEADER_BYTES)));
+    const totalLength = headerTotal + Number(header.payloadSize || 0);
+    if (totalLength > capacityBytes) {
+        throw new Error("El payload LSB Feanor V2 declara mas bytes de los que caben en la imagen.");
+    }
+    return {
+        ...parseUniversalStegoPacket(readLsbBytes(imageData, totalLength)),
+        capacityBytes,
+        storage: "image-lsb",
+        storageNote: "Paquete Feanor V2 recuperado desde LSB RGB."
+    };
+}
+
 function readStegoPacketFromImageData(imageData) {
     const capacityBytes = calculateLsbCapacityBytes(imageData);
+    const universal = readUniversalStegoPacketFromImageData(imageData);
+    if (universal) return universal;
+
     if (capacityBytes < STEGO_HEADER_BYTES) {
         throw new Error("La imagen no tiene capacidad suficiente para contener una cabecera Feanor.");
     }
@@ -9066,9 +9620,20 @@ function readStegoPacketFromImageData(imageData) {
     const packet = readLsbBytes(imageData, STEGO_HEADER_BYTES + length);
     const payloadBytes = packet.slice(STEGO_HEADER_BYTES);
     return {
+        header: {
+            version: 1,
+            source: "text",
+            encoding: "utf8",
+            payloadName: "feanor-legacy.txt",
+            payloadSize: payloadBytes.length
+        },
         payloadBytes,
         payloadText: bytesToUtf8(payloadBytes),
-        capacityBytes
+        capacityBytes,
+        checksum: "",
+        checksumOk: true,
+        storage: "image-lsb-legacy",
+        storageNote: "Payload recuperado con la cabecera legacy FEANOR_STEGO_V1."
     };
 }
 
@@ -9275,6 +9840,88 @@ function readPacketBytesFromCarrierBytes(bytes, indexes, seed, byteLength) {
         output[Math.floor(bitIndex / 8)] = (output[Math.floor(bitIndex / 8)] << 1) | (bytes[carrierIndex] & 1);
     }
     return output;
+}
+
+function extractDirectLsbStegoPacket(bytes, type) {
+    const carrier = getByteCarrier(bytes, type);
+    if (!carrier || Math.floor(carrier.indexes.length / 8) < STEGO_PACKET_HEADER_BYTES) return null;
+
+    const headerPrefix = readPacketBytesFromCarrierBytes(bytes, carrier.indexes, STEGO_DIRECT_LSB_SEED, STEGO_PACKET_HEADER_BYTES);
+    if (!bytesEqual(headerPrefix.slice(0, STEGO_PACKET_MAGIC_BYTES.length), STEGO_PACKET_MAGIC_BYTES)) return null;
+
+    const headerLength = readUint32BE(headerPrefix, STEGO_PACKET_MAGIC_BYTES.length);
+    const headerTotal = STEGO_PACKET_HEADER_BYTES + headerLength;
+    if (headerLength <= 0 || headerTotal > Math.floor(carrier.indexes.length / 8)) {
+        throw new Error("La cabecera LSB directa existe, pero no encaja con la capacidad del portador.");
+    }
+    const headerPacket = readPacketBytesFromCarrierBytes(bytes, carrier.indexes, STEGO_DIRECT_LSB_SEED, headerTotal);
+    const header = JSON.parse(bytesToUtf8(headerPacket.slice(STEGO_PACKET_HEADER_BYTES)));
+    const totalLength = headerTotal + Number(header.payloadSize || 0);
+    if (totalLength > Math.floor(carrier.indexes.length / 8)) {
+        throw new Error("El payload LSB directo declara mas bytes de los que caben en el portador.");
+    }
+    return {
+        ...parseUniversalStegoPacket(readPacketBytesFromCarrierBytes(bytes, carrier.indexes, STEGO_DIRECT_LSB_SEED, totalLength)),
+        capacityBytes: Math.floor(carrier.indexes.length / 8),
+        storage: "byte-lsb",
+        storageNote: `Paquete Feanor V2 recuperado desde LSB directo de ${type.label}.`
+    };
+}
+
+async function buildStegoZipBundle(carrierFile, carrierBytes, packet, header, payloadBytes) {
+    const JSZip = (await import("jszip")).default;
+    const zip = new JSZip();
+    const coverName = carrierFile.name || "cover.bin";
+    const payloadName = header.payloadName || "payload.bin";
+    const manifest = {
+        ...header,
+        storage: "zip-bundle",
+        coverPath: `cover/${coverName}`,
+        packetPath: "feanor-packet.bin",
+        payloadPath: `hidden/${payloadName}`,
+        packetMagic: STEGO_PACKET_MAGIC_TEXT
+    };
+    zip.file(manifest.coverPath, carrierBytes);
+    zip.file(manifest.packetPath, packet);
+    zip.file(manifest.payloadPath, payloadBytes);
+    zip.file("feanor-stego-manifest.json", safeJson(manifest));
+    return {
+        blob: await zip.generateAsync({ type: "blob" }),
+        manifest
+    };
+}
+
+async function extractStegoZipBundle(bytes) {
+    try {
+        const JSZip = (await import("jszip")).default;
+        const zip = await JSZip.loadAsync(bytes);
+        const manifestFile = zip.file("feanor-stego-manifest.json");
+        if (!manifestFile) return null;
+        const manifest = JSON.parse(await manifestFile.async("string"));
+        const packetFile = manifest.packetPath ? zip.file(manifest.packetPath) : null;
+        if (packetFile) {
+            return {
+                ...parseUniversalStegoPacket(new Uint8Array(await packetFile.async("arraybuffer"))),
+                storage: "zip-bundle",
+                storageNote: "Paquete Feanor V2 recuperado desde bundle ZIP."
+            };
+        }
+        const payloadFile = manifest.payloadPath ? zip.file(manifest.payloadPath) : null;
+        if (!payloadFile) return null;
+        const payloadBytes = new Uint8Array(await payloadFile.async("arraybuffer"));
+        return {
+            header: manifest,
+            payloadBytes,
+            payloadText: stegoPayloadToText(manifest, payloadBytes),
+            packetLength: payloadBytes.length,
+            checksum: crc32Hex(payloadBytes),
+            checksumOk: !manifest.crc32 || manifest.crc32 === crc32Hex(payloadBytes),
+            storage: "zip-bundle",
+            storageNote: "Payload recuperado desde hidden/ dentro del bundle ZIP."
+        };
+    } catch {
+        return null;
+    }
 }
 
 async function bytesThroughCompressionStream(bytes, mode) {
@@ -10044,7 +10691,7 @@ async function analyzeStegoFile() {
         const indicators = [
             ...container.indicators,
             ...zipInfo.indicators,
-            findBytes(bytes, STEGO_MAGIC_BYTES) >= 0 ? "Cabecera Feanor visible en bytes crudos." : "",
+            findBytes(bytes, STEGO_MAGIC_BYTES) >= 0 || findBytes(bytes, STEGO_PACKET_MAGIC_BYTES) >= 0 ? "Cabecera Feanor visible en bytes crudos." : "",
             lsb?.hasFeanorPayload ? "Cabecera LSB de Feanor detectada en pixeles." : "",
             entropy > 7.85 && bytes.length > 4096 ? "Entropia global muy alta; puede ser compresion, cifrado o contenido aleatorio." : "",
             strings.some(line => /password|secret|token|private|payload|stego/i.test(line)) ? "Cadenas imprimibles con terminos sensibles." : ""
@@ -10060,13 +10707,14 @@ async function analyzeStegoFile() {
             `MIME navegador: ${file.type || "N/D"}`,
             `Magic bytes: ${bytesToHex(bytes.slice(0, 16))}`,
             `SHA-256: ${sha256}`,
+            ...analyzeEncodingSignals(bytes).map(line => `Encoding: ${line}`),
             lsb ? `Imagen: ${lsb.width}x${lsb.height}, capacidad LSB aprox ${formatBytesSize(lsb.capacityBytes)}` : "",
             lsb ? `Balance LSB RGB: ${(lsb.lsbRatio * 100).toFixed(2)}% de unos` : "",
             ...container.formatLines,
             ...zipInfo.formatLines
         ].filter(Boolean);
 
-        const highRisk = lsb?.hasFeanorPayload || findBytes(bytes, STEGO_MAGIC_BYTES) >= 0 || container.appendedBytes > 128;
+        const highRisk = lsb?.hasFeanorPayload || findBytes(bytes, STEGO_MAGIC_BYTES) >= 0 || findBytes(bytes, STEGO_PACKET_MAGIC_BYTES) >= 0 || container.appendedBytes > 128;
         const mediumRisk = !highRisk && (indicators.length > 0 || metadataLines.length > 0 || entropy > 7.85);
         const verdictTone = highRisk ? "verdict-danger" : mediumRisk ? "verdict-warning" : "verdict-success";
         const riskLabel = highRisk ? "Alta" : mediumRisk ? "Media" : "Baja";
@@ -10126,122 +10774,401 @@ async function analyzeStegoFile() {
     }
 }
 
+function stegoDetectedMime(type, file) {
+    const map = {
+        PNG: "image/png",
+        JPEG: "image/jpeg",
+        GIF: "image/gif",
+        BMP: "image/bmp",
+        WEBP: "image/webp",
+        WAV: "audio/wav",
+        AU: "audio/basic",
+        MP3: "audio/mpeg",
+        PDF: "application/pdf",
+        ZIP: "application/zip"
+    };
+    return file?.type || map[type.label] || "application/octet-stream";
+}
+
+function stegoOutputName(file, suffix, extension) {
+    const ext = extension || file?.name?.split(".").pop()?.toLowerCase() || "bin";
+    return `${safeFileBaseName(file?.name || "feanor-cover")}-${suffix}.${ext}`;
+}
+
+async function buildStegoPayloadDescriptor() {
+    const source = stegoEmbedPayloadSource.value;
+    if (source === "file") {
+        if (!stegoEmbedPayloadFile.value) {
+            throw new Error("Selecciona el fichero que quieres incrustar.");
+        }
+        const file = stegoEmbedPayloadFile.value;
+        const bytes = new Uint8Array(await file.arrayBuffer());
+        return {
+            bytes,
+            header: {
+                source: "file",
+                encoding: "binary",
+                payloadName: stegoEmbedPayloadName.value.trim() || file.name || "payload.bin",
+                payloadMime: file.type || "application/octet-stream"
+            },
+            preview: `Fichero: ${file.name}\nTamano: ${formatBytesSize(bytes.length)}\nMIME: ${file.type || "application/octet-stream"}`
+        };
+    }
+
+    if (!stegoEmbedPayload.value.trim()) {
+        throw new Error("Introduce datos para ocultar.");
+    }
+
+    if (source === "base64") {
+        const parsed = parseBase64Payload(stegoEmbedPayload.value);
+        const bytes = base64ToBytes(parsed.base64);
+        const format = formatFromMime(parsed.mime);
+        return {
+            bytes,
+            header: {
+                source: "base64",
+                encoding: "binary",
+                payloadName: `payload.${format?.extension || "bin"}`,
+                payloadMime: parsed.mime || "application/octet-stream",
+                inputWasDataUri: parsed.isDataUri
+            },
+            preview: `Base64 normalizado: ${parsed.base64.slice(0, 120)}${parsed.base64.length > 120 ? "..." : ""}`
+        };
+    }
+
+    const encoding = stegoEmbedTextEncoding.value;
+    const text = source === "json"
+        ? safeJson(JSON.parse(stegoEmbedPayload.value))
+        : stegoEmbedPayload.value;
+    const bytes = textToEncodedBytes(text, encoding);
+    return {
+        bytes,
+        header: {
+            source,
+            encoding,
+            payloadName: source === "json" ? "payload.json" : "payload.txt",
+            payloadMime: source === "json"
+                ? `application/json;charset=${getTextEncoding(encoding).mime}`
+                : `text/plain;charset=${getTextEncoding(encoding).mime}`
+        },
+        preview: text
+    };
+}
+
+function stegoPayloadPanel(header, payloadBytes, preview) {
+    const content = ["text", "json"].includes(header.source)
+        ? preview
+        : buildTextList("Payload", [
+            `Nombre: ${header.payloadName || "payload.bin"}`,
+            `MIME: ${header.payloadMime || "application/octet-stream"}`,
+            `Tamano: ${formatBytesSize(payloadBytes.length)}`,
+            `Base64: ${bytesToBase64(payloadBytes).slice(0, 320)}${payloadBytes.length > 240 ? "..." : ""}`
+        ]);
+    return {
+        title: "Payload preparado",
+        badge: header.source,
+        content,
+        copyValue: ["text", "json"].includes(header.source) ? preview : bytesToBase64(payloadBytes)
+    };
+}
+
+async function chooseAutoStegoMode(file, bytes, type, packet) {
+    const byteCarrier = getByteCarrier(bytes, type);
+    if (byteCarrier && packet.length <= Math.floor(byteCarrier.indexes.length / 8)) return { mode: "byte-lsb", carrier: byteCarrier };
+
+    if (type.family === "image" && type.label !== "SVG" && type.label !== "TIFF") {
+        try {
+            const image = await imageFileToCanvas(file);
+            if (packet.length <= calculateLsbCapacityBytes(image.imageData)) return { mode: "image-lsb", image };
+        } catch {
+            // Some image containers cannot be drawn by canvas; fall back below.
+        }
+    }
+
+    if (type.label === "PNG") return { mode: "png-itxt" };
+    return { mode: "append" };
+}
+
+function stegoEmbedResultObject({ file, type, mode, payload, packet, filename, capacityBytes = null, extraLines = [] }) {
+    const modeInfo = stegoEmbedModes.find(item => item.value === mode) || selectedStegoEmbedMode.value;
+    const usage = capacityBytes ? `${((packet.length / capacityBytes) * 100).toFixed(2)}%` : "N/D";
+    return {
+        verdictTone: "verdict-success",
+        verdictTitle: "Datos incrustados",
+        verdictBody: `Se genero ${filename} con ${modeInfo.label}. El paquete Feanor V2 conserva tipo, nombre, tamano y CRC32 del payload.`,
+        summaryCards: [
+            { label: "Portador", value: type.label, tone: "tone-neutral", note: `${type.family} / ${stegoEmbedCarrierHint.value}` },
+            { label: "Payload", value: formatBytesSize(payload.bytes.length), tone: "tone-success", note: selectedStegoPayloadSource.value.label },
+            { label: "Metodo", value: modeInfo.label, tone: "tone-success", note: selectedStegoEmbedMode.value.value === "auto" ? "Auto" : "Manual" },
+            { label: "Salida", value: filename, tone: "tone-success", note: "Descargable" }
+        ],
+        signalCards: [
+            { label: "Paquete", value: formatBytesSize(packet.length), tone: "tone-neutral", note: STEGO_PACKET_MAGIC_TEXT },
+            { label: "CRC32", value: crc32Hex(payload.bytes), tone: "tone-success", note: "Payload" },
+            { label: "Capacidad", value: capacityBytes ? formatBytesSize(capacityBytes) : "No aplica", tone: capacityBytes ? "tone-success" : "tone-neutral", note: capacityBytes ? usage : "Footer/metadata/ZIP" },
+            { label: "Cifrado", value: "No", tone: "tone-warning", note: "Ocultacion" }
+        ],
+        panels: [
+            {
+                title: "Resultado",
+                badge: mode,
+                content: buildTextList("Fichero generado", [
+                    `Portador original: ${file.name || "sin nombre"} (${formatBytesSize(file.size || 0)}).`,
+                    `Salida: ${filename}.`,
+                    `Metodo: ${modeInfo.note}`,
+                    ...extraLines
+                ]),
+                copyValue: filename
+            },
+            {
+                title: "Cabecera Feanor",
+                badge: "v2",
+                content: safeJson({
+                    magic: STEGO_PACKET_MAGIC_TEXT,
+                    mode,
+                    payloadName: payload.header.payloadName,
+                    payloadMime: payload.header.payloadMime,
+                    payloadSize: payload.bytes.length,
+                    crc32: crc32Hex(payload.bytes)
+                }),
+                copyValue: STEGO_PACKET_MAGIC_TEXT
+            },
+            stegoPayloadPanel(payload.header, payload.bytes, payload.preview)
+        ]
+    };
+}
+
 function fillStegoPayloadExample() {
+    stegoEmbedPayloadSource.value = "json";
+    stegoEmbedTextEncoding.value = "utf8";
     stegoEmbedPayload.value = safeJson({
         laboratorio: "Feanor",
-        tipo: "LSB RGB",
-        nota: "Payload oculto en PNG local"
+        tipo: "paquete V2",
+        payloads: ["texto", "json", "base64", "fichero"],
+        nota: "Auto elige LSB, PNG iTXt o footer segun el portador"
     });
 }
 
 async function embedStegoPayload() {
     if (!stegoEmbedFile.value) {
-        stegoEmbedResult.value = buildErrorResult("STEGO_IMAGE_EMPTY", "Falta imagen", "Selecciona una imagen portadora para incrustar datos.");
-        return;
-    }
-    if (!stegoEmbedPayload.value) {
-        stegoEmbedResult.value = buildErrorResult("STEGO_PAYLOAD_EMPTY", "Faltan datos", "Introduce el texto que quieres ocultar.");
+        stegoEmbedResult.value = buildErrorResult("STEGO_CARRIER_EMPTY", "Falta portador", "Selecciona el fichero donde quieres incrustar datos.");
         return;
     }
 
     try {
-        const payloadBytes = textToBytes(stegoEmbedPayload.value);
-        const packet = buildStegoPacket(payloadBytes);
-        const { canvas, context, imageData, width, height } = await imageFileToCanvas(stegoEmbedFile.value);
-        const capacityBytes = calculateLsbCapacityBytes(imageData);
-        if (packet.length > capacityBytes) {
-            throw new Error(`El payload necesita ${formatBytesSize(packet.length)} y la imagen solo ofrece ${formatBytesSize(capacityBytes)} utiles.`);
+        clearStegoDownload();
+        const file = stegoEmbedFile.value;
+        const carrierBytes = new Uint8Array(await file.arrayBuffer());
+        const type = detectFileType(carrierBytes, file);
+        const payload = await buildStegoPayloadDescriptor();
+        const baseHeader = {
+            ...payload.header,
+            carrierName: file.name || "cover.bin",
+            carrierMime: stegoDetectedMime(type, file),
+            carrierType: type.label,
+            carrierFamily: type.family,
+            carrierHint: stegoEmbedCarrierHint.value,
+            requestedMode: stegoEmbedMode.value
+        };
+        const packet = buildUniversalStegoPacket(payload.bytes, baseHeader);
+        const selected = stegoEmbedMode.value === "auto"
+            ? await chooseAutoStegoMode(file, carrierBytes, type, packet)
+            : { mode: stegoEmbedMode.value };
+        const mode = selected.mode;
+
+        if (mode === "image-lsb") {
+            const image = selected.image || await imageFileToCanvas(file);
+            const capacityBytes = calculateLsbCapacityBytes(image.imageData);
+            if (packet.length > capacityBytes) {
+                throw new Error(`El paquete necesita ${formatBytesSize(packet.length)} y la imagen solo ofrece ${formatBytesSize(capacityBytes)} utiles.`);
+            }
+            writeLsbBytes(image.imageData, packet);
+            image.context.putImageData(image.imageData, 0, 0);
+            const blob = await canvasToPngBlob(image.canvas);
+            const filename = stegoOutputName(file, "feanor-lsb", "png");
+            setStegoDownload(blob, filename);
+            stegoEmbedResult.value = stegoEmbedResultObject({
+                file,
+                type,
+                mode,
+                payload,
+                packet,
+                filename,
+                capacityBytes,
+                extraLines: [`Canvas: ${image.width}x${image.height}.`, "La salida se exporta como PNG para conservar los bits."]
+            });
+            return;
         }
 
-        writeLsbBytes(imageData, packet);
-        context.putImageData(imageData, 0, 0);
-        const blob = await canvasToPngBlob(canvas);
-        const filename = `${safeFileBaseName(stegoEmbedFile.value.name)}-feanor-stego.png`;
-        setStegoDownload(blob, filename);
+        if (mode === "byte-lsb") {
+            const carrier = selected.carrier || getByteCarrier(carrierBytes, type);
+            if (!carrier) throw new Error("LSB directo solo esta disponible para BMP, WAV y AU.");
+            const capacityBytes = Math.floor(carrier.indexes.length / 8);
+            if (packet.length > capacityBytes) {
+                throw new Error(`El paquete necesita ${formatBytesSize(packet.length)} y el portador solo ofrece ${formatBytesSize(capacityBytes)} utiles.`);
+            }
+            const outputBytes = writePacketToCarrierBytes(carrierBytes, carrier.indexes, packet, STEGO_DIRECT_LSB_SEED);
+            const filename = stegoOutputName(file, "feanor-direct-lsb", carrier.extension || type.extension || "bin");
+            setStegoDownload(new Blob([outputBytes], { type: carrier.mime || stegoDetectedMime(type, file) }), filename);
+            stegoEmbedResult.value = stegoEmbedResultObject({
+                file,
+                type,
+                mode,
+                payload,
+                packet,
+                filename,
+                capacityBytes,
+                extraLines: carrier.detail || []
+            });
+            return;
+        }
 
-        stegoEmbedResult.value = {
-            verdictTone: "verdict-success",
-            verdictTitle: "Payload incrustado",
-            verdictBody: "Se ha escrito una cabecera Feanor y el texto UTF-8 en LSB RGB. Descarga el PNG para conservarlo.",
-            summaryCards: [
-                { label: "Imagen", value: `${width}x${height}`, tone: "tone-neutral", note: "Canvas local" },
-                { label: "Payload", value: formatBytesSize(payloadBytes.length), tone: "tone-success", note: `${stegoEmbedPayload.value.length} chars` },
-                { label: "Capacidad", value: formatBytesSize(capacityBytes), tone: "tone-neutral", note: "RGB LSB" },
-                { label: "Uso", value: `${((packet.length / capacityBytes) * 100).toFixed(2)}%`, tone: "tone-success", note: "Ocupacion" }
-            ],
-            signalCards: [
-                { label: "Formato salida", value: "PNG", tone: "tone-success", note: "Sin recomprimir con perdida" },
-                { label: "Cabecera", value: STEGO_MAGIC_TEXT, tone: "tone-success", note: "Extractor Feanor" },
-                { label: "Cifrado", value: "No", tone: "tone-warning", note: "Solo ocultacion" },
-                { label: "Descarga", value: filename, tone: "tone-success", note: "Lista" }
-            ],
-            panels: [
-                {
-                    title: "Resultado",
-                    badge: "png",
-                    content: buildTextList("PNG generado", [
-                        `Archivo: ${filename}`,
-                        `Payload incrustado: ${formatBytesSize(payloadBytes.length)}.`,
-                        `Cabecera interna: ${STEGO_MAGIC_TEXT}.`,
-                        "Usa el boton Descargar PNG antes de salir de la vista."
-                    ]),
-                    copyValue: filename
-                },
-                {
-                    title: "Payload oculto",
-                    badge: "utf8",
-                    content: stegoEmbedPayload.value,
-                    copyValue: stegoEmbedPayload.value
-                }
-            ]
-        };
+        if (mode === "png-itxt") {
+            if (type.label !== "PNG") throw new Error("PNG iTXt solo se puede escribir sobre ficheros PNG validos.");
+            const parsed = parsePngChunks(carrierBytes);
+            const iend = parsed.chunks.find(chunk => chunk.type === "IEND");
+            if (!iend) throw new Error("No se encontro IEND; no es seguro insertar iTXt.");
+            const markerText = `${STEGO_PACKET_B64_MARKER}${bytesToBase64(packet)}`;
+            const chunk = makePngItxtChunk("FeanorStego", markerText, "und");
+            const outputBytes = concatBytes(carrierBytes.slice(0, iend.offset), chunk, carrierBytes.slice(iend.offset));
+            const filename = stegoOutputName(file, "feanor-itxt", "png");
+            setStegoDownload(new Blob([outputBytes], { type: "image/png" }), filename);
+            stegoEmbedResult.value = stegoEmbedResultObject({
+                file,
+                type,
+                mode,
+                payload,
+                packet,
+                filename,
+                extraLines: ["Se inserto un chunk iTXt FeanorStego antes de IEND.", "No se tocaron IDAT ni pixeles."]
+            });
+            return;
+        }
+
+        if (mode === "zip-bundle") {
+            const header = {
+                ...baseHeader,
+                storage: "zip-bundle",
+                payloadSize: payload.bytes.length,
+                crc32: crc32Hex(payload.bytes)
+            };
+            const bundle = await buildStegoZipBundle(file, carrierBytes, packet, header, payload.bytes);
+            const filename = stegoOutputName(file, "feanor-bundle", "zip");
+            setStegoDownload(bundle.blob, filename);
+            stegoEmbedResult.value = stegoEmbedResultObject({
+                file,
+                type,
+                mode,
+                payload,
+                packet,
+                filename,
+                extraLines: [`Cover: ${bundle.manifest.coverPath}.`, `Payload: ${bundle.manifest.payloadPath}.`, "Incluye manifest JSON y paquete binario Feanor."]
+            });
+            return;
+        }
+
+        const outputBytes = concatBytes(carrierBytes, packet);
+        const extension = file.name?.split(".").pop()?.toLowerCase() || type.extension || "bin";
+        const filename = stegoOutputName(file, "feanor-footer", extension);
+        setStegoDownload(new Blob([outputBytes], { type: stegoDetectedMime(type, file) }), filename);
+        stegoEmbedResult.value = stegoEmbedResultObject({
+            file,
+            type,
+            mode: "append",
+            payload,
+            packet,
+            filename,
+            extraLines: ["El paquete se anadio al final del fichero.", "Algunos parsers toleran bytes anexos; otros los eliminaran al reexportar."]
+        });
     } catch (error) {
         stegoEmbedResult.value = buildErrorResult("STEGO_EMBED_FAILED", "No se pudo incrustar el payload", error.message);
     }
 }
 
+function buildStegoExtractResult(file, type, extracted) {
+    const header = extracted.header || {};
+    const payloadName = header.payloadName || "feanor-payload.bin";
+    const payloadMime = header.payloadMime || "application/octet-stream";
+    const textLike = ["text", "json"].includes(header.source) || (extracted.payloadText && extracted.payloadText.length < 20000 && !/^[A-Za-z0-9+/=\s]+$/.test(extracted.payloadText));
+    setStegoExtractDownload(new Blob([extracted.payloadBytes], { type: payloadMime }), payloadName);
+
+    return {
+        primaryValue: extracted.payloadText,
+        verdictTone: extracted.checksumOk ? "verdict-success" : "verdict-warning",
+        verdictTitle: extracted.checksumOk ? "Payload recuperado" : "Payload recuperado con CRC dudoso",
+        verdictBody: `${extracted.storageNote || "Se encontro un paquete Feanor."} ${extracted.checksumOk ? "El CRC32 del payload coincide." : "El CRC32 no coincide o no estaba declarado."}`,
+        summaryCards: [
+            { label: "Fichero", value: type.label, tone: "tone-neutral", note: file.name || "entrada" },
+            { label: "Origen", value: extracted.storage || "desconocido", tone: "tone-success", note: "Metodo detectado" },
+            { label: "Payload", value: formatBytesSize(extracted.payloadBytes.length), tone: "tone-success", note: header.source || "binario" },
+            { label: "Nombre", value: payloadName, tone: "tone-neutral", note: payloadMime }
+        ],
+        signalCards: [
+            { label: "Version", value: String(header.version || 1), tone: "tone-neutral", note: "Formato Feanor" },
+            { label: "Encoding", value: header.encoding || "binary", tone: "tone-neutral", note: "Payload" },
+            { label: "CRC32", value: extracted.checksum || "N/D", tone: extracted.checksumOk ? "tone-success" : "tone-warning", note: extracted.checksumOk ? "OK" : "Revisar" },
+            { label: "Descarga", value: "Lista", tone: "tone-success", note: payloadName }
+        ],
+        panels: [
+            {
+                title: "Resultado",
+                badge: textLike ? "texto" : "base64",
+                content: textLike ? extracted.payloadText : bytesToBase64(extracted.payloadBytes),
+                copyValue: textLike ? extracted.payloadText : bytesToBase64(extracted.payloadBytes)
+            },
+            {
+                title: "Cabecera",
+                badge: "meta",
+                content: safeJson(header),
+                copyValue: safeJson(header)
+            },
+            {
+                title: "Payload Hex",
+                badge: "hex",
+                content: bytesToHex(extracted.payloadBytes),
+                copyValue: bytesToHex(extracted.payloadBytes)
+            }
+        ]
+    };
+}
+
 async function extractStegoPayload() {
     if (!stegoExtractFile.value) {
-        stegoExtractResult.value = buildErrorResult("STEGO_EXTRACT_EMPTY", "Falta imagen", "Selecciona una imagen para extraer datos.");
+        stegoExtractResult.value = buildErrorResult("STEGO_EXTRACT_EMPTY", "Falta fichero", "Selecciona un fichero para buscar paquetes Feanor.");
         return;
     }
 
     try {
-        const { imageData, width, height } = await imageFileToCanvas(stegoExtractFile.value);
-        const extracted = readStegoPacketFromImageData(imageData);
+        clearStegoExtractDownload();
+        const file = stegoExtractFile.value;
+        const bytes = new Uint8Array(await file.arrayBuffer());
+        const type = detectFileType(bytes, file);
+        let extracted = extractUniversalStegoPacketFromRawBytes(bytes)
+            || extractPngItxtStegoPacket(bytes)
+            || await extractStegoZipBundle(bytes);
 
-        stegoExtractResult.value = {
-            primaryValue: extracted.payloadText,
-            verdictTone: "verdict-success",
-            verdictTitle: "Payload recuperado",
-            verdictBody: "La imagen contiene una cabecera Feanor valida y el texto se ha reconstruido desde LSB RGB.",
-            summaryCards: [
-                { label: "Imagen", value: `${width}x${height}`, tone: "tone-neutral", note: "Canvas local" },
-                { label: "Payload", value: formatBytesSize(extracted.payloadBytes.length), tone: "tone-success", note: "UTF-8" },
-                { label: "Capacidad", value: formatBytesSize(extracted.capacityBytes), tone: "tone-neutral", note: "RGB LSB" },
-                { label: "Cabecera", value: "Valida", tone: "tone-success", note: STEGO_MAGIC_TEXT }
-            ],
-            signalCards: [
-                { label: "Texto", value: `${extracted.payloadText.length} chars`, tone: "tone-success", note: "Decodificado" },
-                { label: "Hex", value: `${bytesToHex(extracted.payloadBytes).length} chars`, tone: "tone-neutral", note: "Payload bruto" },
-                { label: "Origen", value: "LSB RGB", tone: "tone-success", note: "Feanor" },
-                { label: "Integridad", value: "Cabecera OK", tone: "tone-success", note: "Longitud coherente" }
-            ],
-            panels: [
-                {
-                    title: "Resultado",
-                    badge: "texto",
-                    content: extracted.payloadText,
-                    copyValue: extracted.payloadText
-                },
-                {
-                    title: "Payload Hex",
-                    badge: "hex",
-                    content: bytesToHex(extracted.payloadBytes),
-                    copyValue: bytesToHex(extracted.payloadBytes)
-                }
-            ]
-        };
+        if (!extracted && type.family === "image" && type.label !== "SVG" && type.label !== "TIFF") {
+            try {
+                const { imageData } = await imageFileToCanvas(file);
+                extracted = readStegoPacketFromImageData(imageData);
+            } catch {
+                extracted = null;
+            }
+        }
+
+        if (!extracted) {
+            try {
+                extracted = extractDirectLsbStegoPacket(bytes, type);
+            } catch {
+                extracted = null;
+            }
+        }
+
+        if (!extracted) {
+            throw new Error("No se encontro footer Feanor V2, PNG iTXt, bundle ZIP, LSB de imagen ni LSB directo BMP/WAV/AU.");
+        }
+
+        stegoExtractResult.value = buildStegoExtractResult(file, type, extracted);
     } catch (error) {
         stegoExtractResult.value = buildErrorResult("STEGO_EXTRACT_FAILED", "No se encontraron datos extraibles", error.message);
     }
@@ -10895,8 +11822,56 @@ function runRegexTest() {
 <style scoped>
 .feanor-page {
     min-height: 100vh;
-    background: #0b0f17;
+    background: #0b0a08;
+    color: #d8cfbf;
     font-family: 'Inter', sans-serif;
+}
+
+.feanor-page :deep(.card),
+.feanor-page :deep(.list-group-item),
+.feanor-page :deep(.dropdown-menu),
+.feanor-page :deep(.modal-content),
+.feanor-page :deep(.table) {
+    background-color: #17140f;
+    border-color: #302817;
+    color: #d8cfbf;
+}
+
+.feanor-page :deep(.btn-primary),
+.feanor-page :deep(.btn-info) {
+    background-color: #5b4a2e;
+    border-color: #725d39;
+    color: #f7f1e4;
+}
+
+.feanor-page :deep(.btn-primary:hover),
+.feanor-page :deep(.btn-primary:focus),
+.feanor-page :deep(.btn-info:hover),
+.feanor-page :deep(.btn-info:focus) {
+    background-color: #725d39;
+    border-color: #d6a756;
+    color: #fff6dc;
+    box-shadow: 0 0 0 0.18rem rgba(214, 167, 86, 0.18);
+}
+
+.feanor-page :deep(.alert-info),
+.feanor-page :deep(.bg-primary),
+.feanor-page :deep(.bg-info) {
+    background-color: #211b12 !important;
+    border-color: #5b4a2e !important;
+    color: #eadfcb !important;
+}
+
+.feanor-page :deep(.text-primary),
+.feanor-page :deep(.text-info),
+.feanor-page :deep(a.text-primary),
+.feanor-page :deep(a.text-info) {
+    color: #d6a756 !important;
+}
+
+.feanor-page :deep(.border-primary),
+.feanor-page :deep(.border-info) {
+    border-color: #725d39 !important;
 }
 
 .hero-banner {
@@ -10919,8 +11894,8 @@ function runRegexTest() {
 }
 
 .section-box {
-    background: #0f172a;
-    border: 1px solid #1e293b;
+    background: #17140f;
+    border: 1px solid #302817;
     border-radius: 8px;
     padding: 24px;
     margin-bottom: 24px;
@@ -10933,91 +11908,87 @@ function runRegexTest() {
 }
 
 .hash-module {
-    order: 21;
-}
-
-.symmetric-module {
-    order: 25;
-}
-
-.asymmetric-module {
-    order: 29;
-}
-
-.signature-module {
-    order: 30;
-}
-
-.aead-module {
-    order: 26;
-}
-
-.ecdh-module {
-    order: 31;
-}
-
-.kdf-module {
-    order: 22;
-}
-
-.certificate-module {
-    order: 33;
-}
-
-.key-converter-module {
-    order: 32;
-}
-
-.jwt-module {
-    order: 28;
-}
-
-.transform-module {
-    order: 9;
-}
-
-.byte-inspector-module {
-    order: 10;
-}
-
-.json-module {
-    order: 12;
-}
-
-.json-sign-module {
-    order: 24;
-}
-
-.secret-module {
-    order: 19;
-}
-
-.entropy-module {
     order: 20;
 }
 
-.otp-module {
+.symmetric-module {
+    order: 24;
+}
+
+.asymmetric-module {
+    order: 28;
+}
+
+.signature-module {
+    order: 29;
+}
+
+.aead-module {
+    order: 25;
+}
+
+.ecdh-module {
+    order: 30;
+}
+
+.kdf-module {
+    order: 21;
+}
+
+.certificate-module {
+    order: 32;
+}
+
+.key-converter-module {
+    order: 31;
+}
+
+.jwt-module {
     order: 27;
 }
 
-.timing-module {
-    order: 23;
+.transform-module {
+    order: 8;
 }
 
-.regex-module {
+.byte-inspector-module {
+    order: 9;
+}
+
+.json-module {
     order: 11;
 }
 
+.json-sign-module {
+    order: 23;
+}
+
+.secret-module {
+    order: 18;
+}
+
+.entropy-module {
+    order: 19;
+}
+
+.otp-module {
+    order: 26;
+}
+
+.timing-module {
+    order: 22;
+}
+
+.regex-module {
+    order: 10;
+}
+
 .copy-toast {
-    order: 34;
+    order: 33;
 }
 
 .caesar-module {
     order: 1;
-}
-
-.xor-module {
-    order: 3;
 }
 
 .atbash-module {
@@ -11025,47 +11996,47 @@ function runRegexTest() {
 }
 
 .boolean-ops-module {
-    order: 4;
+    order: 3;
 }
 
 .vigenere-module {
-    order: 5;
+    order: 4;
 }
 
 .affine-module {
-    order: 6;
+    order: 5;
 }
 
 .rail-fence-module {
-    order: 7;
+    order: 6;
 }
 
 .modular-module {
-    order: 8;
+    order: 7;
 }
 
 .stego-analyze-module {
-    order: 13;
+    order: 12;
 }
 
 .exif-module {
-    order: 14;
+    order: 13;
 }
 
 .metadata-editor-module {
-    order: 15;
+    order: 14;
 }
 
 .stego-embed-module {
-    order: 16;
+    order: 15;
 }
 
 .stego-extract-module {
-    order: 17;
+    order: 16;
 }
 
 .steghide-suite-module {
-    order: 18;
+    order: 17;
 }
 
 .intro-layout {
@@ -11082,7 +12053,7 @@ function runRegexTest() {
 }
 
 .section-kicker {
-    color: #94a3b8;
+    color: #a79c88;
     font-size: 0.8rem;
     font-weight: 700;
     letter-spacing: 0.08em;
@@ -11092,7 +12063,7 @@ function runRegexTest() {
 .section-name,
 .module-title {
     margin: 0;
-    color: #f8fafc;
+    color: #f7f1e4;
     font-size: 2rem;
     font-weight: 700;
 }
@@ -11100,7 +12071,7 @@ function runRegexTest() {
 .section-copy,
 .module-copy {
     margin: 0;
-    color: #cbd5e1;
+    color: #d8cfbf;
     line-height: 1.7;
     max-width: 84ch;
 }
@@ -11112,8 +12083,8 @@ function runRegexTest() {
     text-align: center;
     padding: 18px;
     border-radius: 8px;
-    background: linear-gradient(180deg, rgba(15, 23, 42, 0.92), rgba(2, 6, 23, 0.96));
-    border: 1px solid rgba(71, 85, 105, 0.42);
+    background: linear-gradient(180deg, rgba(33, 27, 18, 0.94), rgba(8, 7, 5, 0.96));
+    border: 1px solid rgba(214, 167, 86, 0.24);
 }
 
 .intro-emblem img {
@@ -11123,13 +12094,13 @@ function runRegexTest() {
 }
 
 .intro-emblem span {
-    color: #f8fafc;
+    color: #f7f1e4;
     font-size: 0.95rem;
     font-weight: 700;
 }
 
 .intro-emblem small {
-    color: #94a3b8;
+    color: #a79c88;
     line-height: 1.6;
 }
 
@@ -11152,18 +12123,18 @@ function runRegexTest() {
     display: grid;
     gap: 6px;
     padding-bottom: 10px;
-    border-bottom: 1px solid #1e293b;
+    border-bottom: 1px solid #302817;
 }
 
 .utility-group-head span {
-    color: #f8fafc;
+    color: #f7f1e4;
     font-size: 1.02rem;
     font-weight: 700;
 }
 
 .utility-group-head p {
     margin: 0;
-    color: #94a3b8;
+    color: #a79c88;
     line-height: 1.6;
 }
 
@@ -11180,24 +12151,24 @@ function runRegexTest() {
     align-items: center;
     min-width: 0;
     padding: 14px;
-    border: 1px solid #1f2937;
+    border: 1px solid #2b2418;
     border-radius: 8px;
-    background: #111827;
-    color: #cbd5e1;
+    background: #181510;
+    color: #d8cfbf;
     text-decoration: none;
     transition: border-color 0.18s ease, background 0.18s ease, transform 0.18s ease;
 }
 
 .utility-link:hover,
 .utility-link:focus {
-    background: #151f2e;
+    background: #211b12;
     border-color: rgba(214, 167, 86, 0.48);
-    color: #f8fafc;
+    color: #f7f1e4;
     transform: translateY(-1px);
 }
 
 .utility-link strong {
-    color: #f8fafc;
+    color: #f7f1e4;
     font-size: 0.98rem;
     font-weight: 700;
 }
@@ -11205,21 +12176,21 @@ function runRegexTest() {
 .utility-link p {
     grid-column: 1 / -1;
     margin: 0;
-    color: #94a3b8;
+    color: #a79c88;
     line-height: 1.55;
 }
 
 .tool-card,
 .metric-card,
 .signal-card {
-    background: #111827;
-    border: 1px solid #1f2937;
+    background: #181510;
+    border: 1px solid #2b2418;
     border-radius: 8px;
 }
 
 .metric-card label,
 .signal-card label {
-    color: #f8fafc;
+    color: #f7f1e4;
     font-size: 0.83rem;
     font-weight: 700;
     text-transform: uppercase;
@@ -11299,7 +12270,7 @@ function runRegexTest() {
     border-radius: 8px;
     background: #17130f;
     box-shadow: 0 18px 40px rgba(10, 7, 4, 0.38);
-    color: #cbd5e1;
+    color: #d8cfbf;
     line-height: 1.55;
     opacity: 0;
     pointer-events: none;
@@ -11310,7 +12281,7 @@ function runRegexTest() {
 .info-popover strong {
     display: block;
     margin-bottom: 6px;
-    color: #f8fafc;
+    color: #f7f1e4;
 }
 
 .info-popover p {
@@ -11352,7 +12323,7 @@ function runRegexTest() {
 
 .asymmetric-guide-panel h3 {
     margin: 0;
-    color: #f8fafc;
+    color: #f7f1e4;
     font-size: 1.02rem;
     font-weight: 700;
 }
@@ -11362,7 +12333,7 @@ function runRegexTest() {
     gap: 10px;
     margin: 0;
     padding-left: 1.25rem;
-    color: #cbd5e1;
+    color: #d8cfbf;
     line-height: 1.65;
 }
 
@@ -11373,24 +12344,24 @@ function runRegexTest() {
 
 .guide-steps strong,
 .guide-note strong {
-    color: #f8fafc;
+    color: #f7f1e4;
 }
 
 .guide-note {
     display: grid;
     gap: 6px;
     padding: 12px;
-    border: 1px solid rgba(148, 163, 184, 0.18);
+    border: 1px solid rgba(214, 167, 86, 0.18);
     border-radius: 8px;
     background: rgba(18, 15, 11, 0.72);
-    color: #94a3b8;
+    color: #a79c88;
     line-height: 1.6;
 }
 
 .field-label {
     display: inline-block;
     margin-bottom: 8px;
-    color: #dbe7f3;
+    color: #eadfcb;
     font-size: 0.9rem;
     font-weight: 600;
 }
@@ -11421,9 +12392,9 @@ function runRegexTest() {
     width: min(420px, 100%);
     padding: 4px;
     margin: 0 0 16px;
-    border: 1px solid #334155;
+    border: 1px solid #5b4a2e;
     border-radius: 8px;
-    background: #0b1220;
+    background: #100d09;
 }
 
 .mode-segment button {
@@ -11431,18 +12402,18 @@ function runRegexTest() {
     border: 0;
     border-radius: 6px;
     background: transparent;
-    color: #94a3b8;
+    color: #a79c88;
     font-weight: 700;
 }
 
 .mode-segment button:hover,
 .mode-segment button:focus {
-    color: #f8fafc;
+    color: #f7f1e4;
 }
 
 .mode-segment button.active {
-    background: #334155;
-    color: #f8fafc;
+    background: #5b4a2e;
+    color: #f7f1e4;
 }
 
 .base64-category-grid {
@@ -11459,10 +12430,10 @@ function runRegexTest() {
     align-items: center;
     min-height: 86px;
     padding: 12px;
-    border: 1px solid #1f2937;
+    border: 1px solid #2b2418;
     border-radius: 8px;
-    background: #111827;
-    color: #cbd5e1;
+    background: #181510;
+    color: #d8cfbf;
     text-align: left;
 }
 
@@ -11470,8 +12441,8 @@ function runRegexTest() {
 .category-chip:focus,
 .category-chip.active {
     border-color: rgba(214, 167, 86, 0.5);
-    background: #151f2e;
-    color: #f8fafc;
+    background: #211b12;
+    color: #f7f1e4;
 }
 
 .category-chip span {
@@ -11480,7 +12451,7 @@ function runRegexTest() {
     justify-content: center;
     min-width: 44px;
     padding: 4px 8px;
-    border: 1px solid #334155;
+    border: 1px solid #5b4a2e;
     border-radius: 999px;
     color: #d6a756;
     font-size: 0.72rem;
@@ -11489,13 +12460,13 @@ function runRegexTest() {
 
 .category-chip strong {
     min-width: 0;
-    color: #f8fafc;
+    color: #f7f1e4;
     font-size: 0.92rem;
 }
 
 .category-chip small {
     grid-column: 1 / -1;
-    color: #94a3b8;
+    color: #a79c88;
     line-height: 1.45;
 }
 
@@ -11504,9 +12475,9 @@ function runRegexTest() {
     gap: 12px;
     margin: 16px 0 18px;
     padding: 16px;
-    border: 1px solid #1f2937;
+    border: 1px solid #2b2418;
     border-radius: 8px;
-    background: #111827;
+    background: #181510;
 }
 
 .transform-preview-panel img,
@@ -11515,9 +12486,9 @@ function runRegexTest() {
 .transform-preview-panel iframe {
     width: 100%;
     max-height: 360px;
-    border: 1px solid #1e293b;
+    border: 1px solid #302817;
     border-radius: 8px;
-    background: #020617;
+    background: #080705;
 }
 
 .transform-preview-panel img {
@@ -11588,14 +12559,14 @@ function runRegexTest() {
 
 .transfer-panel-head h3 {
     margin: 0;
-    color: #f8fafc;
+    color: #f7f1e4;
     font-size: 1.08rem;
     font-weight: 700;
 }
 
 .transfer-panel-head p {
     margin: 0;
-    color: #94a3b8;
+    color: #a79c88;
     line-height: 1.55;
 }
 
@@ -11609,12 +12580,12 @@ function runRegexTest() {
 }
 
 .flow-note strong {
-    color: #f8fafc;
+    color: #f7f1e4;
     font-size: 0.86rem;
 }
 
 .flow-note span {
-    color: #94a3b8;
+    color: #a79c88;
     line-height: 1.55;
 }
 
@@ -11637,7 +12608,7 @@ function runRegexTest() {
 }
 
 .key-exchange-head strong {
-    color: #f8fafc;
+    color: #f7f1e4;
     font-size: 0.92rem;
 }
 
@@ -11650,21 +12621,21 @@ function runRegexTest() {
 }
 
 .input-dark {
-    background: #1f2937;
-    border: 1px solid #334155;
-    color: #f8fafc !important;
-    caret-color: #f8fafc;
+    background: #2b2418;
+    border: 1px solid #5b4a2e;
+    color: #f7f1e4 !important;
+    caret-color: #f7f1e4;
 }
 
 .input-dark::placeholder {
-    color: #94a3b8;
+    color: #a79c88;
 }
 
 .input-dark:focus {
-    background: #1f2937;
-    border-color: #64748b;
-    box-shadow: 0 0 0 0.2rem rgba(100, 116, 139, 0.18);
-    color: #f8fafc;
+    background: #2b2418;
+    border-color: #d6a756;
+    box-shadow: 0 0 0 0.2rem rgba(214, 167, 86, 0.18);
+    color: #f7f1e4;
 }
 
 .textarea-dark {
@@ -11705,7 +12676,7 @@ function runRegexTest() {
 
 .helper-copy {
     margin: 0 0 18px;
-    color: #94a3b8;
+    color: #a79c88;
     line-height: 1.6;
 }
 
@@ -11716,13 +12687,13 @@ function runRegexTest() {
     gap: 12px;
     margin: 14px 0 4px;
     padding: 12px 14px;
-    border: 1px solid rgba(148, 163, 184, 0.22);
+    border: 1px solid rgba(214, 167, 86, 0.2);
     border-radius: 8px;
-    background: rgba(15, 23, 42, 0.58);
+    background: rgba(24, 21, 16, 0.72);
 }
 
 .metadata-format-strip strong {
-    color: #f8fafc;
+    color: #f7f1e4;
     font-size: 0.94rem;
 }
 
@@ -11734,15 +12705,15 @@ function runRegexTest() {
 
 .metadata-format-strip p {
     margin: 0;
-    color: #94a3b8;
+    color: #a79c88;
     line-height: 1.5;
 }
 
 .inline-code {
-    background: rgba(15, 23, 42, 0.72);
-    border: 1px solid #334155;
+    background: rgba(16, 13, 9, 0.78);
+    border: 1px solid #5b4a2e;
     border-radius: 6px;
-    color: #e2e8f0;
+    color: #e7dcc8;
     padding: 2px 6px;
 }
 
@@ -11757,27 +12728,27 @@ function runRegexTest() {
 }
 
 .btn-main {
-    background: #334155;
-    border: 1px solid #475569;
-    color: #f8fafc;
+    background: #5b4a2e;
+    border: 1px solid #725d39;
+    color: #f7f1e4;
 }
 
 .btn-main:hover,
 .btn-main:focus {
-    background: #475569;
-    color: #f8fafc;
+    background: #725d39;
+    color: #f7f1e4;
 }
 
 .btn-subtle {
-    background: #0f172a;
-    border: 1px solid #334155;
-    color: #cbd5e1;
+    background: #17140f;
+    border: 1px solid #5b4a2e;
+    color: #d8cfbf;
 }
 
 .btn-subtle:hover,
 .btn-subtle:focus {
-    background: #1e293b;
-    color: #f8fafc;
+    background: #302817;
+    color: #f7f1e4;
 }
 
 .asymmetric-module .input-dark {
@@ -11820,15 +12791,15 @@ function runRegexTest() {
 .btn-quiet {
     padding: 5px 10px;
     background: transparent;
-    border: 1px solid #334155;
-    color: #cbd5e1;
+    border: 1px solid #5b4a2e;
+    color: #d8cfbf;
     font-size: 0.8rem;
 }
 
 .btn-quiet:hover,
 .btn-quiet:focus {
-    background: rgba(51, 65, 85, 0.4);
-    color: #f8fafc;
+    background: rgba(91, 74, 46, 0.4);
+    color: #f7f1e4;
 }
 
 .metric-card,
@@ -11841,7 +12812,7 @@ function runRegexTest() {
 
 .metric-card span,
 .signal-card span {
-    color: #f8fafc;
+    color: #f7f1e4;
     font-size: 1.05rem;
     font-weight: 700;
     word-break: break-word;
@@ -11849,7 +12820,7 @@ function runRegexTest() {
 
 .metric-card small,
 .signal-card small {
-    color: #94a3b8;
+    color: #a79c88;
     line-height: 1.55;
 }
 
@@ -11871,8 +12842,8 @@ function runRegexTest() {
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
-    background: rgba(15, 23, 42, 0.9);
-    color: #e2e8f0;
+    background: rgba(16, 13, 9, 0.9);
+    color: #e7dcc8;
     font-size: 0.72rem;
     font-weight: 700;
     letter-spacing: 0.05em;
@@ -11882,12 +12853,12 @@ function runRegexTest() {
 .verdict-body strong {
     display: block;
     margin-bottom: 4px;
-    color: #f8fafc;
+    color: #f7f1e4;
 }
 
 .verdict-body p {
     margin: 0;
-    color: #c9d4df;
+    color: #d8cfbf;
     line-height: 1.65;
 }
 
@@ -11927,7 +12898,7 @@ function runRegexTest() {
 
 .card-head h5 {
     margin: 0;
-    color: #f8fafc;
+    color: #f7f1e4;
     font-size: 1rem;
     font-weight: 600;
 }
@@ -11946,17 +12917,17 @@ function runRegexTest() {
     justify-content: center;
     padding: 5px 10px;
     border-radius: 999px;
-    border: 1px solid #334155;
-    background: rgba(15, 23, 42, 0.72);
-    color: #cbd5e1;
+    border: 1px solid #5b4a2e;
+    background: rgba(16, 13, 9, 0.78);
+    color: #d8cfbf;
     font-size: 0.74rem;
     font-weight: 700;
     text-transform: uppercase;
 }
 
 .output-box {
-    background: #020617;
-    border: 1px solid #1e293b;
+    background: #080705;
+    border: 1px solid #302817;
     border-radius: 8px;
     padding: 14px;
     max-height: 420px;
@@ -11971,7 +12942,7 @@ function runRegexTest() {
     overflow-wrap: anywhere;
     word-break: break-word;
     font-family: 'Courier New', monospace;
-    color: #cbd5e1;
+    color: #d8cfbf;
     font-size: 0.84rem;
     line-height: 1.65;
 }
@@ -11987,12 +12958,12 @@ function runRegexTest() {
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    color: #dbe7f3;
+    color: #eadfcb;
     font-size: 0.9rem;
 }
 
 .toggle-line input {
-    accent-color: #94a3b8;
+    accent-color: #a79c88;
 }
 
 .copy-toast {
@@ -12000,10 +12971,10 @@ function runRegexTest() {
     bottom: 16px;
     margin-left: auto;
     width: fit-content;
-    background: rgba(15, 23, 42, 0.94);
-    border: 1px solid #334155;
+    background: rgba(16, 13, 9, 0.94);
+    border: 1px solid #5b4a2e;
     border-radius: 999px;
-    color: #e2e8f0;
+    color: #e7dcc8;
     padding: 8px 14px;
     font-size: 0.85rem;
 }
@@ -12021,7 +12992,7 @@ function runRegexTest() {
 }
 
 .tone-neutral {
-    color: #cbd5e1 !important;
+    color: #d8cfbf !important;
 }
 
 @media (max-width: 1199px) {

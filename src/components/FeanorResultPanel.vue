@@ -137,8 +137,8 @@ defineEmits(["copy"]);
 .metric-card,
 .signal-card,
 .tool-card {
-    background: #111827;
-    border: 1px solid #1f2937;
+    background: #181510;
+    border: 1px solid #2b2418;
     border-radius: 8px;
 }
 
@@ -152,7 +152,7 @@ defineEmits(["copy"]);
 
 .metric-card label,
 .signal-card label {
-    color: #f8fafc;
+    color: #f7f1e4;
     font-size: 0.83rem;
     font-weight: 700;
     text-transform: uppercase;
@@ -161,7 +161,7 @@ defineEmits(["copy"]);
 
 .metric-card span,
 .signal-card span {
-    color: #f8fafc;
+    color: #f7f1e4;
     font-size: 1.05rem;
     font-weight: 700;
     word-break: break-word;
@@ -169,7 +169,7 @@ defineEmits(["copy"]);
 
 .metric-card small,
 .signal-card small {
-    color: #94a3b8;
+    color: #a79c88;
     line-height: 1.55;
 }
 
@@ -183,15 +183,15 @@ defineEmits(["copy"]);
 }
 
 .detail-panels {
-    border: 1px solid #1f2937;
+    border: 1px solid #2b2418;
     border-radius: 8px;
-    background: rgba(15, 23, 42, 0.58);
+    background: rgba(24, 21, 16, 0.72);
     padding: 12px;
 }
 
 .detail-panels summary {
     cursor: pointer;
-    color: #f8fafc;
+    color: #f7f1e4;
     font-size: 0.88rem;
     font-weight: 700;
     text-transform: uppercase;
@@ -203,7 +203,7 @@ defineEmits(["copy"]);
 }
 
 .detail-card {
-    background: #0b1220;
+    background: #100d09;
 }
 
 .verdict-card {
@@ -224,8 +224,8 @@ defineEmits(["copy"]);
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
-    background: rgba(15, 23, 42, 0.9);
-    color: #e2e8f0;
+    background: rgba(16, 13, 9, 0.9);
+    color: #e7dcc8;
     font-size: 0.72rem;
     font-weight: 700;
     letter-spacing: 0.05em;
@@ -235,12 +235,12 @@ defineEmits(["copy"]);
 .verdict-body strong {
     display: block;
     margin-bottom: 4px;
-    color: #f8fafc;
+    color: #f7f1e4;
 }
 
 .verdict-body p {
     margin: 0;
-    color: #c9d4df;
+    color: #d8cfbf;
     line-height: 1.65;
 }
 
@@ -275,7 +275,7 @@ defineEmits(["copy"]);
 
 .card-head h5 {
     margin: 0;
-    color: #f8fafc;
+    color: #f7f1e4;
     font-size: 1rem;
     font-weight: 600;
 }
@@ -294,9 +294,9 @@ defineEmits(["copy"]);
     justify-content: center;
     padding: 5px 10px;
     border-radius: 999px;
-    border: 1px solid #334155;
-    background: rgba(15, 23, 42, 0.72);
-    color: #cbd5e1;
+    border: 1px solid #5b4a2e;
+    background: rgba(16, 13, 9, 0.78);
+    color: #d8cfbf;
     font-size: 0.74rem;
     font-weight: 700;
     text-transform: uppercase;
@@ -305,22 +305,22 @@ defineEmits(["copy"]);
 .btn-quiet {
     padding: 5px 10px;
     background: transparent;
-    border: 1px solid #334155;
+    border: 1px solid #5b4a2e;
     border-radius: 6px;
-    color: #cbd5e1;
+    color: #d8cfbf;
     font-size: 0.8rem;
     font-weight: 600;
 }
 
 .btn-quiet:hover,
 .btn-quiet:focus {
-    background: rgba(51, 65, 85, 0.4);
-    color: #f8fafc;
+    background: rgba(91, 74, 46, 0.4);
+    color: #f7f1e4;
 }
 
 .output-box {
-    background: #020617;
-    border: 1px solid #1e293b;
+    background: #080705;
+    border: 1px solid #302817;
     border-radius: 8px;
     padding: 14px;
     max-height: 420px;
@@ -335,7 +335,7 @@ defineEmits(["copy"]);
     overflow-wrap: anywhere;
     word-break: break-word;
     font-family: "Courier New", monospace;
-    color: #cbd5e1;
+    color: #d8cfbf;
     font-size: 0.84rem;
     line-height: 1.65;
 }
@@ -353,7 +353,7 @@ defineEmits(["copy"]);
 }
 
 .tone-neutral {
-    color: #cbd5e1 !important;
+    color: #d8cfbf !important;
 }
 
 @media (max-width: 767px) {

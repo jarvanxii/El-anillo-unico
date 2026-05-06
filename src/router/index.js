@@ -13,7 +13,6 @@ import CodiceFeanorView from "../views/CodiceFeanorView.vue";
 import FeanorTeoriaView from "../views/CodiceFeanor/Feanor-TeoriaView.vue";
 import FeanorCifradoCesarView from "../views/CodiceFeanor/Feanor-CifradoCesarView.vue";
 import FeanorAtbashView from "../views/CodiceFeanor/Feanor-AtbashView.vue";
-import FeanorXorView from "../views/CodiceFeanor/Feanor-XorView.vue";
 import FeanorBooleanOpsView from "../views/CodiceFeanor/Feanor-BooleanOpsView.vue";
 import FeanorVigenereView from "../views/CodiceFeanor/Feanor-VigenereView.vue";
 import FeanorAffineView from "../views/CodiceFeanor/Feanor-AffineView.vue";
@@ -249,9 +248,7 @@ const routes = [
   },
   {
     path: "/el-codice-de-feanor/xor",
-    name: "feanor-xor",
-    component: FeanorXorView,
-    meta: { showFeanorHeader: true },
+    redirect: { name: "feanor-boolean-ops" },
   },
   {
     path: "/el-codice-de-feanor/nor-puertas-logicas",

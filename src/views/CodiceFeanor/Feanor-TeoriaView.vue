@@ -128,8 +128,31 @@ const coveredTools = computed(() => topic.value.toolRouteNames
 <style scoped>
 .feanor-page {
     min-height: 100vh;
-    background: #0b0f17;
+    background: #0b0a08;
+    color: #d8cfbf;
     font-family: "Inter", sans-serif;
+}
+
+.feanor-page :deep(.card),
+.feanor-page :deep(.list-group-item),
+.feanor-page :deep(.alert-info),
+.feanor-page :deep(.bg-primary),
+.feanor-page :deep(.bg-info) {
+    background-color: #17140f !important;
+    border-color: #302817 !important;
+    color: #d8cfbf !important;
+}
+
+.feanor-page :deep(.btn-primary),
+.feanor-page :deep(.btn-info) {
+    background-color: #5b4a2e;
+    border-color: #725d39;
+    color: #f7f1e4;
+}
+
+.feanor-page :deep(.text-primary),
+.feanor-page :deep(.text-info) {
+    color: #d6a756 !important;
 }
 
 .theory-shell {
@@ -139,8 +162,8 @@ const coveredTools = computed(() => topic.value.toolRouteNames
 }
 
 .section-box {
-    background: #0f172a;
-    border: 1px solid #1e293b;
+    background: #17140f;
+    border: 1px solid #302817;
     border-radius: 8px;
     padding: 24px;
     margin-bottom: 24px;
@@ -160,7 +183,7 @@ const coveredTools = computed(() => topic.value.toolRouteNames
 }
 
 .section-kicker {
-    color: #94a3b8;
+    color: #a79c88;
     font-size: 0.8rem;
     font-weight: 700;
     letter-spacing: 0.08em;
@@ -170,7 +193,7 @@ const coveredTools = computed(() => topic.value.toolRouteNames
 .section-name,
 .module-title {
     margin: 0;
-    color: #f8fafc;
+    color: #f7f1e4;
     font-size: 2rem;
     font-weight: 700;
 }
@@ -178,7 +201,7 @@ const coveredTools = computed(() => topic.value.toolRouteNames
 .section-copy,
 .module-copy {
     margin: 0;
-    color: #cbd5e1;
+    color: #d8cfbf;
     line-height: 1.7;
     max-width: 84ch;
 }
@@ -188,8 +211,8 @@ const coveredTools = computed(() => topic.value.toolRouteNames
 .pillar-card,
 .check-card,
 .use-case-card {
-    background: #111827;
-    border: 1px solid #1f2937;
+    background: #181510;
+    border: 1px solid #2b2418;
     border-radius: 8px;
 }
 
@@ -200,7 +223,7 @@ const coveredTools = computed(() => topic.value.toolRouteNames
 }
 
 .theory-side strong {
-    color: #f8fafc;
+    color: #f7f1e4;
 }
 
 .covered-tools {
@@ -228,7 +251,7 @@ const coveredTools = computed(() => topic.value.toolRouteNames
 
 .pillar-card {
     padding: 14px;
-    color: #dbe7f3;
+    color: #eadfcb;
     line-height: 1.6;
 }
 
@@ -253,7 +276,7 @@ const coveredTools = computed(() => topic.value.toolRouteNames
 
 .use-case-card p {
     margin: 0;
-    color: #cbd5e1;
+    color: #d8cfbf;
     line-height: 1.6;
 }
 
@@ -273,7 +296,7 @@ const coveredTools = computed(() => topic.value.toolRouteNames
 
 .card-head h5 {
     margin: 0;
-    color: #f8fafc;
+    color: #f7f1e4;
     font-size: 1rem;
     font-weight: 700;
 }
@@ -285,9 +308,9 @@ const coveredTools = computed(() => topic.value.toolRouteNames
     width: fit-content;
     padding: 5px 10px;
     border-radius: 999px;
-    border: 1px solid #334155;
-    background: rgba(15, 23, 42, 0.72);
-    color: #cbd5e1;
+    border: 1px solid #5b4a2e;
+    background: rgba(16, 13, 9, 0.78);
+    color: #d8cfbf;
     font-size: 0.74rem;
     font-weight: 700;
     text-transform: uppercase;
@@ -298,7 +321,7 @@ const coveredTools = computed(() => topic.value.toolRouteNames
     gap: 9px;
     margin: 0;
     padding-left: 1.1rem;
-    color: #cbd5e1;
+    color: #d8cfbf;
     line-height: 1.6;
 }
 
@@ -312,7 +335,7 @@ const coveredTools = computed(() => topic.value.toolRouteNames
     overflow-wrap: anywhere;
     word-break: break-word;
     font-family: "Courier New", monospace;
-    color: #cbd5e1;
+    color: #d8cfbf;
     font-size: 0.86rem;
     line-height: 1.65;
 }
@@ -336,7 +359,7 @@ const coveredTools = computed(() => topic.value.toolRouteNames
 
 .check-card p {
     margin: 0;
-    color: #cbd5e1;
+    color: #d8cfbf;
     line-height: 1.6;
 }
 

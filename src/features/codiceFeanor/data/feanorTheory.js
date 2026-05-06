@@ -4,19 +4,19 @@ const baseFeanorTheoryTopics = [
         label: "Fundamentos de codificacion",
         badge: "BASE",
         routeName: "feanor-teoria-fundamentos-codificacion",
-        summary: "Bits, bytes, texto, Unicode y representaciones como Hex, Base64, Base64URL y URL encoding.",
+        summary: "Bits, bytes, texto, Unicode, UTF-8/UTF-16, ASCII, Latin-1, Windows-1252 y representaciones como Hex, Base64, Base64URL y URL encoding.",
         toolRouteNames: ["feanor-base64", "feanor-base64url", "feanor-url-encoding", "feanor-hex", "feanor-inspector-bytes"],
         pillars: [
             "Un byte son 8 bits; casi todo lo que ves como texto acaba siendo una secuencia de bytes.",
             "Codificar no es cifrar: Base64, Hex o URL encoding solo cambian la representacion.",
-            "UTF-8 decide que bytes representan cada caracter, incluido cualquier caracter no ASCII."
+            "UTF-8, UTF-16, ASCII, Latin-1 y Windows-1252 deciden que bytes representan cada caracter; la misma letra puede ocupar bytes distintos segun el encoding."
         ],
         sections: [
             {
                 title: "Texto frente a bytes",
-                body: "Un navegador no procesa letras magicas: procesa bytes. La letra A en UTF-8 es 0x41, pero Ñ ocupa dos bytes: 0xC3 0x91. Por eso dos textos visualmente parecidos pueden tener longitudes binarias distintas.",
+                body: "Un navegador no procesa letras magicas: procesa bytes. La letra A en UTF-8, ASCII, Latin-1 y Windows-1252 es 0x41, pero en UTF-16LE se ve como 0x41 0x00. La Ñ ocupa dos bytes en UTF-8 (0xC3 0x91), un byte en Latin-1/Windows-1252 (0xD1) y una unidad de 16 bits en UTF-16. Por eso dos textos visualmente parecidos pueden producir huellas, HMAC o firmas distintas.",
                 bullets: [
-                    "La herramienta Inspector de bytes muestra la longitud real en bytes, no solo caracteres visuales.",
+                    "La herramienta Inspector de bytes muestra la longitud real en bytes, no solo caracteres visuales, y compara UTF-8, UTF-16LE/BE, ASCII, Latin-1 y Windows-1252.",
                     "Hex representa cada byte con dos simbolos: 0x41 se ve como 41.",
                     "Base64 agrupa los bits de tres bytes y los reparte en cuatro caracteres transportables."
                 ],
@@ -24,8 +24,27 @@ const baseFeanorTheoryTopics = [
                 exampleLines: [
                     "Texto: A",
                     "UTF-8: 41",
+                    "UTF-16LE: 41 00",
+                    "Windows-1252: 41",
                     "Base64: QQ==",
-                    "Si aparece Ñ, la cuenta cambia porque UTF-8 usa mas de un byte."
+                    "Si aparece Ñ, la cuenta cambia y el orden LE/BE importa en UTF-16."
+                ]
+            },
+            {
+                title: "Encoding en criptografia aplicada",
+                body: "Hash, HMAC, PBKDF2, HKDF, firmas y AEAD no procesan caracteres: procesan bytes exactos. Si dos sistemas no acuerdan encoding, pueden firmar o derivar claves incompatibles aunque el texto visible sea identico.",
+                bullets: [
+                    "Para interoperar con APIs modernas, UTF-8 suele ser la opcion correcta.",
+                    "Para revisar ficheros antiguos de Windows, Windows-1252 evita confundir comillas curvas, euro y caracteres del rango 0x80-0x9F.",
+                    "ASCII estricto es util para detectar entradas que no deberian contener caracteres extendidos.",
+                    "Latin-1 permite mapear byte a caracter sin expansion en muchos protocolos heredados."
+                ],
+                exampleTitle: "Caso profesional",
+                exampleLines: [
+                    "Mensaje visible: Ñ",
+                    "UTF-8: c3 91",
+                    "Latin-1/Windows-1252: d1",
+                    "Misma pantalla, bytes distintos, hash distinto."
                 ]
             },
             {
@@ -57,7 +76,7 @@ const baseFeanorTheoryTopics = [
         badge: "CLAS",
         routeName: "feanor-teoria-cesar-xor",
         summary: "Cesar, Atbash, XOR, NOR, Vigenere, Afin, Rail Fence y por que estos esquemas son utiles para aprender pero debiles para proteger.",
-        toolRouteNames: ["feanor-cifrado-cesar", "feanor-atbash", "feanor-xor", "feanor-boolean-ops", "feanor-vigenere", "feanor-affine", "feanor-rail-fence", "feanor-inspector-bytes"],
+        toolRouteNames: ["feanor-cifrado-cesar", "feanor-atbash", "feanor-boolean-ops", "feanor-vigenere", "feanor-affine", "feanor-rail-fence", "feanor-inspector-bytes"],
         pillars: [
             "Cesar mueve letras dentro de un alfabeto cerrado.",
             "XOR y XNOR son reversibles con la misma mascara; NOR y NAND son puertas universales, pero pierden informacion.",
@@ -174,7 +193,7 @@ const baseFeanorTheoryTopics = [
         badge: "MATH",
         routeName: "feanor-teoria-operaciones-xor-modulo",
         summary: "Tablas de verdad, XOR/NOR bit a bit, reversibilidad con clave, resto de division, rango modular y potencia modular.",
-        toolRouteNames: ["feanor-xor", "feanor-boolean-ops", "feanor-modular", "feanor-cifrado-cesar"],
+        toolRouteNames: ["feanor-boolean-ops", "feanor-modular", "feanor-cifrado-cesar"],
         pillars: [
             "XOR devuelve 1 cuando dos bits son distintos y 0 cuando son iguales.",
             "Aplicar XOR dos veces con la misma clave recupera el valor original.",
@@ -296,7 +315,7 @@ const baseFeanorTheoryTopics = [
         label: "Esteganografia y metadatos",
         badge: "META",
         routeName: "feanor-teoria-esteganografia-metadatos",
-        summary: "Ocultacion LSB, metadatos EXIF/XMP/PNG/PDF/ZIP/ID3/RIFF, huellas de formato y limites del analisis en navegador.",
+        summary: "Ocultacion LSB, footer universal, bundles ZIP, metadatos EXIF/XMP/PNG/PDF/ZIP/ID3/RIFF, huellas de formato y limites del analisis en navegador.",
         toolRouteNames: ["feanor-estego-analizador", "feanor-exif", "feanor-metadata-editor", "feanor-estego-incrustar", "feanor-estego-extraer", "feanor-steghide-suite"],
         pillars: [
             "Esteganografia es ocultar la existencia de un mensaje; no equivale a cifrarlo.",
@@ -305,18 +324,35 @@ const baseFeanorTheoryTopics = [
         ],
         sections: [
             {
-                title: "LSB en imagenes",
-                body: "La tecnica LSB cambia el bit menos significativo de canales de color. Visualmente suele ser imperceptible, pero esos bits pueden transportar un mensaje si el extractor conoce el formato usado.",
+                title: "LSB en imagenes y audio",
+                body: "La tecnica LSB cambia el bit menos significativo de canales de color o de muestras. Visualmente o auditivamente suele ser imperceptible, pero esos bits pueden transportar un mensaje si el extractor conoce el formato usado.",
                 bullets: [
                     "Un pixel RGB aporta 3 bits utiles si se usa un bit por canal.",
+                    "BMP, WAV y AU permiten pruebas directas porque tienen datos sin perdida faciles de indexar.",
                     "Guardar como PNG conserva los bits; JPEG puede destruirlos por compresion.",
                     "Si el mensaje es sensible, cifralo antes de incrustarlo."
                 ],
                 exampleTitle: "Flujo local",
                 exampleLines: [
-                    "payload UTF-8 -> cabecera FEANOR -> bits",
-                    "bits -> LSB de R, G y B",
-                    "imagen resultante -> PNG descargable"
+                    "payload UTF-8/UTF-16/fichero -> cabecera FEANOR V2 -> bits",
+                    "bits -> LSB de R, G y B o muestras WAV/BMP/AU",
+                    "resultado -> PNG o fichero directo descargable"
+                ]
+            },
+            {
+                title: "Footer universal y bundle ZIP",
+                body: "No todos los formatos se pueden reescribir con seguridad desde frontend. Para practicar con cualquier binario, el laboratorio ofrece dos rutas: anadir un paquete Feanor al final del fichero o crear un ZIP con cover, payload y manifiesto.",
+                bullets: [
+                    "El footer universal conserva el portador original y anade bytes despues del final logico; algunos programas los toleran y otros los eliminan al reexportar.",
+                    "El bundle ZIP es mas explicito: no pretende ser invisible, pero permite transportar cualquier tipo de payload sin corromper el original.",
+                    "El paquete Feanor V2 guarda tipo de payload, nombre, MIME, tamano y CRC32 para que el extractor sepa reconstruirlo.",
+                    "PNG iTXt usa metadatos textuales: es util para entender chunks, pero no debe confundirse con ocultacion fuerte."
+                ],
+                exampleTitle: "Casos de uso",
+                exampleLines: [
+                    "Texto JSON en PNG: usa iTXt o LSB.",
+                    "Fichero .zip dentro de audio WAV: usa LSB directo si cabe.",
+                    "Payload grande en PDF o MP4: usa footer universal o bundle ZIP."
                 ]
             },
             {
@@ -345,7 +381,8 @@ const baseFeanorTheoryTopics = [
                     "PNG usa chunks como tEXt, iTXt, zTXt o IEND.",
                     "MP3 suele usar ID3v2 al inicio; WAV puede usar LIST/INFO dentro de RIFF.",
                     "DOCX/XLSX/PPTX son ZIP con XML interno; JSZip permite leerlo en cliente.",
-                    "PDF puede exponer claves como Title, Author, Producer o JavaScript embebido."
+                    "PDF puede exponer claves como Title, Author, Producer o JavaScript embebido.",
+                    "Ejecutables, capturas PCAP, SQLite, DICOM, emails y archives comprimidos requieren lectura de firma real antes de asumir nada por extension."
                 ],
                 exampleTitle: "Senales utiles",
                 exampleLines: [
@@ -983,8 +1020,18 @@ const feanorTheoryUseCases = {
             body: "El analizador combina magic bytes, strings, entropia, metadatos y señales LSB para orientar la revision.",
             steps: [
                 "Analiza el fichero por tipo real, no por extension.",
-                "Busca bytes anexos despues de finales como IEND, EOI o %%EOF.",
-                "Si es imagen PNG del lab, prueba el extractor LSB."
+                "Busca bytes anexos despues de finales como IEND, EOI o %%EOF y cabeceras Feanor V2.",
+                "Si es imagen, BMP, WAV, AU, PNG iTXt o ZIP bundle del lab, prueba el extractor correspondiente."
+            ]
+        },
+        {
+            title: "Transportar un fichero dentro de otro",
+            badge: "payload",
+            body: "Cuando el payload no es texto, el laboratorio guarda nombre, MIME, tamano y CRC32 para reconstruirlo de forma ordenada.",
+            steps: [
+                "Selecciona Fichero completo como tipo de datos incrustados.",
+                "Elige Auto para que Feanor use LSB si cabe o footer/ZIP si el contenedor no es apto.",
+                "Extrae y descarga el payload recuperado para comprobar integridad."
             ]
         },
         {

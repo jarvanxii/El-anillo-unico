@@ -2,7 +2,7 @@ export const feanorUtilityGroups = [
     {
         id: "basicos",
         name: "Basicos y encoding",
-        summary: "Herramientas de entrada para transformar texto, revisar bytes, probar patrones y validar estructuras sencillas.",
+        summary: "Herramientas de entrada para transformar texto con multiples codificaciones, revisar bytes, probar patrones y validar estructuras sencillas.",
         utilities: [
             {
                 id: "caesar",
@@ -19,18 +19,11 @@ export const feanorUtilityGroups = [
                 description: "Sustitucion por espejo del alfabeto. La misma operacion cifra y descifra."
             },
             {
-                id: "xor",
-                label: "Operacion XOR",
-                badge: "XOR",
-                routeName: "feanor-xor",
-                description: "Combina bits, Hex, texto o bytes con OR exclusivo y muestra por que C XOR K recupera P."
-            },
-            {
                 id: "booleanOps",
-                label: "NOR y puertas",
-                badge: "NOR",
+                label: "XOR, NOR y puertas",
+                badge: "LOG",
                 routeName: "feanor-boolean-ops",
-                description: "Calcula NOR, NAND, AND, OR, XOR, XNOR y NOT sobre binario, Hex, texto o bytes."
+                description: "Combina el laboratorio XOR con NOR, NAND, AND, OR, XNOR y NOT sobre binario, Hex, bytes decimales y texto UTF/ASCII/Latin-1/Windows-1252."
             },
             {
                 id: "vigenere",
@@ -65,14 +58,14 @@ export const feanorUtilityGroups = [
                 label: "Base64",
                 badge: "B64",
                 routeName: "feanor-base64",
-                description: "Codifica y decodifica texto y ficheros Base64 por categorias: imagen, audio, video, PDF o binario."
+                description: "Codifica y decodifica texto con multiples encodings y ficheros Base64 por categorias: imagen, audio, video, PDF o binario."
             },
             {
                 id: "base64url",
                 label: "Base64URL",
                 badge: "B64U",
                 routeName: "feanor-base64url",
-                description: "Transforma texto con el alfabeto URL-safe usado en JWT, rutas y parametros."
+                description: "Transforma texto UTF/ASCII/Latin-1/Windows-1252 con el alfabeto URL-safe usado en JWT, rutas y parametros."
             },
             {
                 id: "urlEncoding",
@@ -86,14 +79,14 @@ export const feanorUtilityGroups = [
                 label: "Hexadecimal",
                 badge: "HEX",
                 routeName: "feanor-hex",
-                description: "Convierte texto UTF-8 a Hex y recupera texto desde bytes hexadecimales."
+                description: "Convierte texto UTF-8, UTF-16, ASCII, Latin-1 o Windows-1252 a Hex y recupera texto desde bytes hexadecimales."
             },
             {
                 id: "byte",
                 label: "Inspector de bytes",
                 badge: "BYTE",
                 routeName: "feanor-inspector-bytes",
-                description: "Muestra el mismo material como UTF-8, Hex, Base64, binario, decimal y tabla byte a byte."
+                description: "Muestra el mismo material como UTF-8, UTF-16, ASCII, Latin-1, Windows-1252, Hex, Base64, binario, decimal y tabla byte a byte."
             },
             {
                 id: "regex",
@@ -114,14 +107,14 @@ export const feanorUtilityGroups = [
     {
         id: "estego",
         name: "Esteganografia y metadatos",
-        summary: "Analisis local de ficheros, metadatos visibles y pruebas LSB para esconder o recuperar mensajes en imagenes.",
+        summary: "Analisis local de ficheros, metadatos visibles y pruebas LSB/footer/ZIP para esconder o recuperar mensajes y ficheros.",
         utilities: [
             {
                 id: "stegoAnalyze",
                 label: "Analizador de ficheros",
                 badge: "META",
                 routeName: "feanor-estego-analizador",
-                description: "Inspecciona magic bytes, entropia, cadenas, metadatos EXIF/ZIP/PDF/PNG y senales de esteganografia."
+                description: "Inspecciona magic bytes, entropia, codificaciones, cadenas, metadatos, contenedores, ejecutables, capturas, archivos y senales de esteganografia."
             },
             {
                 id: "exif",
@@ -142,14 +135,14 @@ export const feanorUtilityGroups = [
                 label: "Incrustar datos",
                 badge: "LSB+",
                 routeName: "feanor-estego-incrustar",
-                description: "Oculta texto en los bits menos significativos RGB de una imagen y genera un PNG descargable."
+                description: "Oculta texto, JSON, Base64 o ficheros completos con LSB de imagen, LSB BMP/WAV/AU, PNG iTXt, footer universal o bundle ZIP."
             },
             {
                 id: "stegoExtract",
                 label: "Extraer datos",
                 badge: "LSB-",
                 routeName: "feanor-estego-extraer",
-                description: "Lee imagenes generadas por el modulo LSB y recupera el payload textual si existe."
+                description: "Recupera payloads Feanor desde footer universal, PNG iTXt, bundle ZIP, LSB de imagen y LSB directo BMP/WAV/AU."
             },
             {
                 id: "steghideSuite",
@@ -184,28 +177,28 @@ export const feanorUtilityGroups = [
                 label: "Hash digest",
                 badge: "HASH",
                 routeName: "feanor-hash",
-                description: "Calcula huellas SHA/MD5 de mensajes y compara valores esperados sin clave secreta."
+                description: "Calcula huellas SHA/MD5 de mensajes con encoding configurable y compara valores esperados sin clave secreta."
             },
             {
                 id: "hmac",
                 label: "HMAC",
                 badge: "HMAC",
                 routeName: "feanor-hmac",
-                description: "Calcula HMAC con clave compartida para autenticar integridad de mensajes."
+                description: "Calcula HMAC con clave compartida y encoding configurable para autenticar integridad de mensajes."
             },
             {
                 id: "pbkdf2",
                 label: "PBKDF2",
                 badge: "PBK",
                 routeName: "feanor-pbkdf2",
-                description: "Deriva claves desde passwords con salt, hash, iteraciones y longitud de salida."
+                description: "Deriva claves desde passwords con salt, hash, iteraciones, longitud de salida y encoding de material."
             },
             {
                 id: "hkdf",
                 label: "HKDF",
                 badge: "HKDF",
                 routeName: "feanor-hkdf",
-                description: "Expande secretos de alta entropia con salt e info de contexto para separar usos."
+                description: "Expande secretos de alta entropia con salt, info de contexto y encoding configurable para separar usos."
             },
             {
                 id: "timing",
@@ -240,7 +233,7 @@ export const feanorUtilityGroups = [
                 label: "AEAD AES-GCM",
                 badge: "AEAD",
                 routeName: "feanor-aead",
-                description: "Cifra con autenticacion, AAD, IV, tag y comprobacion de alteraciones."
+                description: "Cifra con autenticacion, AAD, IV, tag, encoding configurable y comprobacion de alteraciones."
             },
             {
                 id: "otp",
@@ -275,7 +268,7 @@ export const feanorUtilityGroups = [
                 label: "Firma digital",
                 badge: "SIGN",
                 routeName: "feanor-firma-digital",
-                description: "Firma y verifica mensajes con RSA-PSS o ECDSA P-256 usando WebCrypto."
+                description: "Firma y verifica mensajes con encoding configurable, RSA-PSS o ECDSA P-256 usando WebCrypto."
             },
             {
                 id: "ecdh",

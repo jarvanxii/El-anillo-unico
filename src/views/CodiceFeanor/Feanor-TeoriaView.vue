@@ -19,6 +19,22 @@
                             {{ tool.label }}
                         </router-link>
                     </div>
+
+                    <template v-if="topicReferences.length">
+                        <strong>Referencias tecnicas</strong>
+                        <div class="reference-list">
+                            <a
+                                v-for="reference in topicReferences"
+                                :key="reference.url"
+                                class="reference-link"
+                                :href="reference.url"
+                                target="_blank"
+                                rel="noopener noreferrer">
+                                <span>{{ reference.label }}</span>
+                                <small>{{ reference.note }}</small>
+                            </a>
+                        </div>
+                    </template>
                 </aside>
             </section>
 
@@ -63,6 +79,17 @@
                         </div>
                         <pre class="result-pre">{{ section.exampleLines.join("\n") }}</pre>
                     </div>
+                </div>
+
+                <div v-if="section.references && section.references.length" class="section-reference-strip">
+                    <a
+                        v-for="reference in section.references"
+                        :key="reference.url"
+                        :href="reference.url"
+                        target="_blank"
+                        rel="noopener noreferrer">
+                        {{ reference.label }}
+                    </a>
                 </div>
             </section>
 
@@ -123,6 +150,7 @@ const topic = computed(() => feanorTheoryTopics.find(item => item.id === props.t
 const coveredTools = computed(() => topic.value.toolRouteNames
     .map(routeName => feanorUtilities.find(utility => utility.routeName === routeName))
     .filter(Boolean));
+const topicReferences = computed(() => topic.value.references || []);
 </script>
 
 <style scoped>
@@ -231,6 +259,11 @@ const coveredTools = computed(() => topic.value.toolRouteNames
     gap: 8px;
 }
 
+.reference-list {
+    display: grid;
+    gap: 10px;
+}
+
 .covered-tools a {
     color: #d6a756;
     text-decoration: none;
@@ -239,6 +272,34 @@ const coveredTools = computed(() => topic.value.toolRouteNames
 
 .covered-tools a:hover,
 .covered-tools a:focus {
+    color: #ffe2a3;
+}
+
+.reference-link {
+    display: grid;
+    gap: 4px;
+    padding: 10px 12px;
+    border: 1px solid #302817;
+    border-radius: 8px;
+    background: #13100c;
+    color: #d6a756;
+    text-decoration: none;
+}
+
+.reference-link span {
+    color: #f7f1e4;
+    font-weight: 700;
+    line-height: 1.35;
+}
+
+.reference-link small {
+    color: #a79c88;
+    line-height: 1.45;
+}
+
+.reference-link:hover,
+.reference-link:focus {
+    border-color: #5b4a2e;
     color: #ffe2a3;
 }
 
@@ -259,6 +320,33 @@ const coveredTools = computed(() => topic.value.toolRouteNames
     display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
     gap: 16px;
+}
+
+.section-reference-strip {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 16px;
+}
+
+.section-reference-strip a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 34px;
+    padding: 7px 10px;
+    border: 1px solid #302817;
+    border-radius: 8px;
+    background: #13100c;
+    color: #d6a756;
+    font-size: 0.86rem;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.section-reference-strip a:hover,
+.section-reference-strip a:focus {
+    border-color: #5b4a2e;
+    color: #ffe2a3;
 }
 
 .use-case-grid {
@@ -352,9 +440,8 @@ const coveredTools = computed(() => topic.value.toolRouteNames
     width: 10px;
     height: 10px;
     margin-top: 7px;
-    border-radius: 999px;
+    border-radius: 3px;
     background: #d6a756;
-    box-shadow: 0 0 12px rgba(214, 167, 86, 0.42);
 }
 
 .check-card p {

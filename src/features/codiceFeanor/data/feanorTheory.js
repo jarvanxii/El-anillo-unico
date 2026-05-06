@@ -469,8 +469,8 @@ const baseFeanorTheoryTopics = [
         label: "Hash, HMAC y timing",
         badge: "HASH",
         routeName: "feanor-teoria-hash-hmac-timing",
-        summary: "Funciones hash, integridad autenticada, comparaciones constantes y ataques por tiempo.",
-        toolRouteNames: ["feanor-hash", "feanor-hmac", "feanor-comparador-constante"],
+        summary: "Funciones hash, integridad autenticada, rainbow tables, comparaciones constantes y ataques por tiempo.",
+        toolRouteNames: ["feanor-hash", "feanor-hash-lookup", "feanor-hashcat-john-workbench", "feanor-password-cracker", "feanor-rainbow-tables", "feanor-hmac", "feanor-comparador-constante"],
         pillars: [
             "Un hash resume datos de forma determinista y no reversible en condiciones normales.",
             "HMAC combina hash y clave secreta para autenticar integridad.",
@@ -492,6 +492,74 @@ const baseFeanorTheoryTopics = [
                 ]
             },
             {
+                title: "Funciones *sum y checksums",
+                body: "Herramientas de terminal como md5sum, sha1sum, sha256sum y sha512sum imprimen una huella hexadecimal seguida del nombre del fichero. Los comandos sum -r, sum -s, CRC-32, Adler-32 o Fletcher-16 son checksums: sirven para detectar errores accidentales y compatibilidad, no para seguridad.",
+                bullets: [
+                    "sha256sum es una forma practica de verificar descargas y artefactos publicados.",
+                    "md5sum y sha1sum se conservan para sistemas heredados, pero no deben usarse como garantia fuerte.",
+                    "SUM/CRC/Fletcher/Adler son rapidos y utiles en contenedores o protocolos, pero un atacante puede recalcularlos."
+                ],
+                exampleTitle: "Salida CLI",
+                exampleLines: [
+                    "sha256sum paquete.zip",
+                    "a5b1...  paquete.zip",
+                    "sum -r legacy.bin -> checksum y bloques de 1024 bytes"
+                ]
+            },
+            {
+                title: "Lookup, identificacion y founds",
+                body: "Servicios como CrackStation o Hashes.com no descifran hashes: consultan bases de datos de hashes ya resueltos o verifican que un plaintext produce una huella concreta. En frontend no se replica una tabla de miles de millones de entradas, pero si se puede identificar formato, verificar founds y probar una wordlist local.",
+                bullets: [
+                    "Un hash no salado puede aparecer en tablas precalculadas; un hash con salt unico reduce ese riesgo.",
+                    "La identificacion por longitud es probabilistica: MD5, NTLM y MD4 comparten 32 caracteres hexadecimales.",
+                    "El formato hash[:salt]:plain permite demostrar localmente que un found es correcto sin exponerlo en una base publica.",
+                    "Un fallo de wordlist no prueba seguridad; solo indica que esa lista concreta no contenia el plaintext."
+                ],
+                exampleTitle: "Flujo local",
+                exampleLines: [
+                    "hash -> identificar candidatos por patron y longitud",
+                    "hash:plain -> calcular hash(plain) y comparar",
+                    "hash:salt:plain -> probar hash(plain+salt), hash(salt+plain) o algoritmo seleccionado",
+                    "hash + wordlist local -> buscar coincidencias sin red"
+                ]
+            },
+            {
+                title: "Cracking por diccionario",
+                body: "Un password hash cracker no invierte matematicamente MD5 o SHA1. Toma candidatos, aplica el mismo algoritmo y compara el resultado con el hash objetivo. Si coinciden, ha encontrado un plaintext plausible. Este enfoque funciona especialmente bien contra passwords debiles en hashes rapidos y sin salt.",
+                bullets: [
+                    "MD5 y SHA1 son muy rapidos: millones o miles de millones de intentos por segundo en hardware dedicado.",
+                    "Salt obliga a recalcular por usuario y rompe tablas rainbow genericas.",
+                    "Reglas de mangling prueban variantes humanas: mayusculas, sufijos, anos, signos y leet speak.",
+                    "Argon2id, scrypt, yescrypt y bcrypt reducen el impacto porque hacen caro cada intento offline."
+                ],
+                exampleTitle: "Comandos habituales",
+                exampleLines: [
+                    "hashcat --identify hashes.txt",
+                    "hashcat -m 0 hashes.txt wordlist.txt        # MD5",
+                    "hashcat -m 100 hashes.txt wordlist.txt      # SHA1",
+                    "hashcat -m 1400 hashes.txt wordlist.txt     # SHA256",
+                    "john --format=raw-md5 hashes.txt --wordlist=wordlist.txt"
+                ]
+            },
+            {
+                title: "Rainbow tables",
+                body: "Una rainbow table cambia tiempo de ataque por memoria. En vez de guardar cada hash y cada plaintext, guarda cadenas: start -> hash -> reduccion -> hash -> reduccion -> endpoint. Para buscar un hash, se simulan reducciones desde distintas posiciones, se compara el endpoint y, si coincide, se regenera la cadena original para encontrar el plaintext exacto.",
+                bullets: [
+                    "La funcion de reduccion no descifra el hash: transforma un digest en otro candidato dentro de un dominio definido por alfabeto y longitud.",
+                    "Se guardan inicios y endpoints para ahorrar espacio, aceptando colisiones y cobertura parcial.",
+                    "Funcionan mejor contra hashes rapidos y sin salt como MD5/SHA1 heredados.",
+                    "Un salt unico por usuario obliga a generar tablas especificas por salt; Argon2id, scrypt, yescrypt y bcrypt hacen el coste mucho menos practico."
+                ],
+                exampleTitle: "Flujo operativo",
+                exampleLines: [
+                    "1. Definir dominio: algoritmo, charset, longitud minima/maxima.",
+                    "2. Generar cadenas con rtgen o con el lab local.",
+                    "3. Ordenar/endpoints para busqueda rapida.",
+                    "4. Buscar el hash y regenerar la cadena candidata.",
+                    "5. Si hay FOUND, migrar el secreto a KDF con salt unico."
+                ]
+            },
+            {
                 title: "Por que HMAC",
                 body: "Un hash simple prueba que el contenido no cambio si ya confias en la huella. HMAC prueba que quien genero la huella conocia una clave compartida.",
                 bullets: [
@@ -510,7 +578,120 @@ const baseFeanorTheoryTopics = [
         checklist: [
             "Usa SHA-256+ para huellas nuevas.",
             "Usa HMAC cuando haya una clave compartida.",
+            "No guardes passwords con MD5/SHA1/SHA2 simples; migra a Argon2id, scrypt, yescrypt o bcrypt.",
             "Compara tokens y firmas con rutina constante."
+        ]
+    },
+    {
+        id: "red-team-hashcracking",
+        label: "Red Team hash cracking",
+        badge: "RT",
+        routeName: "feanor-teoria-red-team-hashcracking",
+        summary: "Como usar Hashcat, John the Ripper, mascaras, reglas, wordlists, potfiles, founds y formatos de hash de forma autorizada y reproducible.",
+        toolRouteNames: ["feanor-hashcat-john-workbench", "feanor-password-cracker", "feanor-rainbow-tables", "feanor-hash-lookup", "feanor-hash", "feanor-yescrypt", "feanor-argon2", "feanor-scrypt", "feanor-bcrypt"],
+        pillars: [
+            "Hashcat destaca en ataques GPU, mascaras, reglas y modos muy amplios; John destaca en formatos, single crack, reglas y crypt/shadow.",
+            "Un cracking profesional empieza por identificar formato y alcance, no por lanzar fuerza bruta a ciegas.",
+            "Los founds deben verificarse, documentarse y traducirse en mitigacion: rotacion, bloqueo de reutilizacion y migracion a KDF moderno.",
+            "El navegador de Feanor previsualiza y entrena; el volumen real pertenece a herramientas offline controladas."
+        ],
+        sections: [
+            {
+                title: "Flujo profesional minimo",
+                body: "Antes de atacar un hash hay que saber de donde viene, que formato tiene, si incluye salt, si hay usuario asociado y que politica de alcance autoriza la prueba. El mismo valor de 32 caracteres hex puede ser MD5, NTLM, MD4 o LM; elegir mal el modo desperdicia tiempo y puede producir conclusiones falsas.",
+                bullets: [
+                    "Normaliza entradas: un hash por linea, conserva usuario si existe y separa muestras de produccion.",
+                    "Identifica con patron, prefijo y contexto: $2b$ suele ser bcrypt, $argon2id$ Argon2, $y$ yescrypt, * + 40 hex MySQL5.",
+                    "Fija limites: wordlists permitidas, tiempo maximo, hardware, output, potfile y custodia de founds.",
+                    "Repite la verificacion: todo FOUND se recalcula localmente antes de reportarlo."
+                ],
+                exampleTitle: "Checklist operativo",
+                exampleLines: [
+                    "1. hashcat --identify hashes.txt",
+                    "2. john --list=formats | grep -i '<formato>'",
+                    "3. seleccionar modo: -m 0 MD5, -m 100 SHA1, -m 1000 NTLM, -m 3200 bcrypt...",
+                    "4. ejecutar wordlist/reglas/mascara dentro del alcance",
+                    "5. john --show o hashcat --show para exportar founds verificados"
+                ]
+            },
+            {
+                title: "Ataques de Hashcat",
+                body: "Hashcat organiza ataques con -a. Straight (-a 0) usa diccionario, combinator (-a 1) une dos listas, brute-force/mask (-a 3) usa patrones, hybrid (-a 6 y -a 7) combina wordlist y mascara, y association (-a 9) aprovecha relaciones por hash/contexto. La clave no es probarlo todo, sino modelar como crean passwords los usuarios del entorno auditado.",
+                bullets: [
+                    "Straight: primero contra listas de passwords filtradas o corporativas autorizadas.",
+                    "Rules: transforma entradas con best64, OneRuleToRuleThemStill, dive o reglas propias.",
+                    "Mask: expresa politicas como ?u?l?l?l?l?d?d o ?1?1?1?1?d?d con charsets personalizados.",
+                    "Hybrid: prueba palabra+ano, palabra+simbolo, prefijo+palabra o patrones por campana.",
+                    "No confundas keyspace con intentos utiles: una mascara enorme sin hipotesis consume tiempo sin aportar evidencia."
+                ],
+                exampleTitle: "Comandos Hashcat",
+                exampleLines: [
+                    "hashcat -m 0 -a 0 hashes.txt wordlist.txt -r rules/best64.rule",
+                    "hashcat -m 1000 -a 3 ntlm.txt '?u?l?l?l?l?d?d' --increment",
+                    "hashcat -m 1400 -a 6 sha256.txt wordlist.txt '?d?d?d?d'",
+                    "hashcat -m 3200 bcrypt.txt wordlist.txt -O -w 3",
+                    "hashcat --show -m 0 hashes.txt"
+                ]
+            },
+            {
+                title: "Modos de John",
+                body: "John the Ripper tiene modos con una filosofia algo distinta. Wordlist usa diccionarios y reglas; single crack aprovecha usuario, nombre real, host y campos GECOS; incremental genera candidatos por estadistica; external permite programar logica. Para hashes crypt de Linux, John suele ser especialmente comodo porque detecta variantes como yescrypt via --format=crypt.",
+                bullets: [
+                    "single crack es excelente cuando hay usernames o metadatos asociados.",
+                    "wordlist + rules permite reglas potentes sin depender de GPU.",
+                    "incremental conviene para busquedas prolongadas y controladas.",
+                    "john.pot centraliza founds; separa potfiles por auditoria para no contaminar evidencias."
+                ],
+                exampleTitle: "Comandos John",
+                exampleLines: [
+                    "john --format=raw-md5 --wordlist=wordlist.txt hashes.txt",
+                    "john --format=nt --wordlist=wordlist.txt --rules hashes.txt",
+                    "john --format=crypt --wordlist=wordlist.txt shadow-yescrypt.txt",
+                    "john --single hashes-con-usuarios.txt",
+                    "john --show hashes.txt"
+                ]
+            },
+            {
+                title: "Reglas, mascaras y charsets",
+                body: "Una regla modifica una palabra; una mascara genera palabras desde cero. En una auditoria real se combinan: diccionario corporativo, reglas humanas, mascara para sufijos y variantes contextualizadas. Feanor implementa una version local limitada para ensenar el mecanismo sin bloquear el navegador.",
+                bullets: [
+                    "?l minusculas, ?u mayusculas, ?d digitos, ?s simbolos, ?a todo imprimible.",
+                    "?1 a ?4 son charsets personalizados; por ejemplo -1 ?l?d permite ?1?1?1?1.",
+                    "Reglas comunes: lower, upper, capitalize, append digits, append year, reverse, duplicate y leet.",
+                    "Mide keyspace antes de ejecutar: 62^10 no es una prueba razonable para navegador ni para una ventana corta."
+                ],
+                exampleTitle: "Mascaras utiles",
+                exampleLines: [
+                    "?l?l?l?l?d?d        # cuatro minusculas + dos digitos",
+                    "?u?l?l?l?l?d?d      # Capitalizada + dos digitos",
+                    "-1 ?l?d ?1?1?1?1?1  # cinco caracteres minuscula/digito",
+                    "wordlist + ?d?d?d?d # palabra seguida de ano o PIN corto"
+                ]
+            },
+            {
+                title: "Founds y mitigacion",
+                body: "El objetivo defensivo no es coleccionar plaintexts, sino demostrar riesgo y cerrarlo. Un found indica que una credencial o patron era recuperable bajo el alcance probado. Despues hay que rotar, invalidar sesiones, revisar reutilizacion y endurecer almacenamiento.",
+                bullets: [
+                    "Guarda founds con minima exposicion y acceso restringido.",
+                    "Reporta algoritmo, modo, wordlist/regla, tiempo, hardware y muestra de evidencia.",
+                    "Migra MD5/SHA1/SHA2 simples a Argon2id, scrypt, yescrypt o bcrypt con salt unico.",
+                    "Si el hash ya era KDF moderno, ajusta coste y politica de passwords en vez de volver a hashes rapidos."
+                ],
+                exampleTitle: "Formato de evidencia",
+                exampleLines: [
+                    "hash:plain verificado localmente",
+                    "modo: hashcat -m 1000 -a 0 -r best64.rule",
+                    "impacto: password comun recuperada",
+                    "mitigacion: reset, MFA, KDF moderno, bloqueo de reutilizacion"
+                ]
+            }
+        ],
+        checklist: [
+            "No ejecutes cracking sin autorizacion explicita.",
+            "Identifica formato antes de elegir modo.",
+            "Empieza por wordlists/reglas con hipotesis, luego mascaras acotadas.",
+            "Separa potfiles por auditoria y verifica founds.",
+            "Traduce resultados a mitigacion concreta."
         ]
     },
     {
@@ -518,11 +699,13 @@ const baseFeanorTheoryTopics = [
         label: "Derivacion de claves",
         badge: "KDF",
         routeName: "feanor-teoria-derivacion-claves",
-        summary: "PBKDF2, HKDF, salts, iteraciones, info de contexto y conversion de material humano en claves.",
-        toolRouteNames: ["feanor-pbkdf2", "feanor-hkdf"],
+        summary: "PBKDF2, HKDF, Argon2, scrypt, yescrypt, bcrypt, salts, coste, memoria e info de contexto.",
+        toolRouteNames: ["feanor-pbkdf2", "feanor-hkdf", "feanor-argon2", "feanor-scrypt", "feanor-yescrypt", "feanor-bcrypt"],
         pillars: [
             "PBKDF2 endurece passwords con salt e iteraciones.",
             "HKDF extrae y expande material de alta entropia para usos concretos.",
+            "Argon2, scrypt y yescrypt elevan coste de memoria para castigar ataques GPU/ASIC.",
+            "bcrypt sigue siendo muy usado, pero limita la entrada efectiva a 72 bytes.",
             "Salt no es secreto; evita tablas precalculadas y salidas repetidas."
         ],
         sections: [
@@ -555,6 +738,23 @@ const baseFeanorTheoryTopics = [
                     "app/hmac/request-signing",
                     "Cambiar info evita reutilizar la misma clave para todo."
                 ]
+            },
+            {
+                title: "Argon2, scrypt, yescrypt y bcrypt",
+                body: "Argon2id, scrypt, yescrypt y bcrypt son funciones pensadas para passwords: guardan parametros junto al hash y hacen caro cada intento de diccionario. Argon2id suele ser la opcion moderna general; scrypt es util cuando quieres coste de memoria portable; yescrypt evoluciona sobre scrypt y aparece como formato $y$ en sistemas Linux modernos; bcrypt sigue presente por compatibilidad y despliegue historico.",
+                bullets: [
+                    "Argon2 controla memoria, iteraciones y paralelismo; Argon2id mezcla defensa contra side-channel y GPU.",
+                    "scrypt usa N, r y p; N debe ser potencia de 2 y domina memoria/CPU.",
+                    "yescrypt tambien usa N/r/p y parametros propios como t; se reconoce habitualmente por prefijos $y$ o $gy$ en crypt(5).",
+                    "bcrypt usa coste logaritmico y formato $2b$, pero no deriva una clave binaria arbitraria."
+                ],
+                exampleTitle: "Lectura rapida",
+                exampleLines: [
+                    "Argon2id(password, salt, mem=19456 KiB, t=2, p=1) -> $argon2id$...",
+                    "scrypt(password, salt, N=16384, r=8, p=1) -> clave / PHC",
+                    "yescrypt(password, salt, N=4096, r=32, p=1, t=0) -> $y$...",
+                    "bcrypt(password, cost=10) -> $2b$10$..."
+                ]
             }
         ],
         checklist: [
@@ -573,7 +773,7 @@ const baseFeanorTheoryTopics = [
         pillars: [
             "La misma clave cifra y descifra.",
             "Un IV/nonce evita que mensajes iguales produzcan salidas iguales en modos modernos.",
-            "DES, RC4 o MD5 quedan como aprendizaje o compatibilidad, no como recomendacion."
+            "DES, RC4, RC4Drop y RabbitLegacy quedan como aprendizaje o compatibilidad, no como recomendacion."
         ],
         sections: [
             {
@@ -581,7 +781,7 @@ const baseFeanorTheoryTopics = [
                 body: "En cifrado simetrico, emisor y receptor conocen la misma clave. Si esa clave se filtra, cualquiera puede descifrar o producir mensajes cifrados equivalentes.",
                 bullets: [
                     "AES es el estandar moderno mas comun.",
-                    "TripleDES, DES, RC4 y Rabbit aparecen por historia y compatibilidad.",
+                    "TripleDES, DES, RC4, RC4Drop, Rabbit y RabbitLegacy aparecen por historia, compatibilidad o analisis.",
                     "Una passphrase humana debe derivarse antes de ser clave real."
                 ],
                 exampleTitle: "Modelo mental",
@@ -589,6 +789,22 @@ const baseFeanorTheoryTopics = [
                     "textoPlano + clave -> textoCifrado",
                     "textoCifrado + mismaClave -> textoPlano",
                     "Si cambia la clave, el descifrado falla o devuelve basura."
+                ]
+            },
+            {
+                title: "Modos y padding",
+                body: "Los cifrados de bloque como AES, DES y TripleDES necesitan un modo de operacion y normalmente padding. CBC, CFB, CTR, OFB y ECB cambian como se encadenan los bloques; Pkcs7, AnsiX923, Iso10126, Iso97971, ZeroPadding o NoPadding definen como cerrar el ultimo bloque.",
+                bullets: [
+                    "CBC necesita IV y padding; es comun en material antiguo.",
+                    "CTR/OFB/CFB convierten el bloque en flujo y son utiles para comparar propiedades.",
+                    "ECB se mantiene solo para reconocer patrones legacy; no oculta bloques repetidos.",
+                    "NoPadding exige entradas con longitud multiplo del bloque."
+                ],
+                exampleTitle: "Lectura rapida",
+                exampleLines: [
+                    "AES-CBC-Pkcs7: formato clasico con padding.",
+                    "AES-CTR: flujo derivado de contador.",
+                    "AES-ECB: laboratorio de lo que no debes elegir para datos reales."
                 ]
             },
             {
@@ -864,6 +1080,675 @@ const baseFeanorTheoryTopics = [
     }
 ];
 
+const feanorTheoryCliSections = {
+    "fundamentos-codificacion": [
+        {
+            title: "Bash/CLI para bytes y encoding",
+            body: "Estos comandos reproducen fuera del navegador lo que hacen los labs de Base64, Base64URL, Hex, URL encoding e inspector de bytes. Sirven para verificar interoperabilidad entre frontend, APIs, ficheros y pipelines Linux.",
+            bullets: [
+                "Usa codificacion para representar bytes en otro formato; no aporta confidencialidad.",
+                "Usa `base64 -w0` en GNU/Linux para evitar saltos de linea; en macOS puedes hacer `base64 | tr -d '\\n'`.",
+                "Usa `xxd` u `od` para mirar bytes reales cuando el texto visible no explica el fallo.",
+                "Comprueba MIME con `file --mime-type`; la extension no es una prueba tecnica suficiente."
+            ],
+            exampleTitle: "Comandos Bash",
+            exampleLines: [
+                "printf 'Hola Feanor' | base64 -w0",
+                "printf 'Hola Feanor' | xxd -p -c 256",
+                "printf '\\u00d1' | iconv -f UTF-8 -t UTF-16LE | xxd -p",
+                "basenc --base64url payload.bin > payload.b64url",
+                "base64 -d payload.b64 > payload.bin",
+                "python3 - <<'PY'",
+                "from urllib.parse import quote, unquote",
+                "print(quote('mensaje con espacios / ? &', safe=''))",
+                "print(unquote('mensaje%20con%20espacios'))",
+                "PY",
+                "file --mime-type payload.bin"
+            ]
+        }
+    ],
+    "cesar-xor": [
+        {
+            title: "Bash/CLI para cifrados clasicos",
+            body: "Cesar, Vigenere, Afin, Rail Fence y XOR son utiles para practicar alfabetos, sustitucion, transposicion y reversibilidad. En terminal conviene escribir scripts pequenos y visibles, porque el objetivo es auditar la logica, no esconderla.",
+            bullets: [
+                "Cesar y Afin operan sobre posiciones de un alfabeto y aplican modulo.",
+                "XOR opera sobre bits o bytes; la misma mascara revierte el resultado.",
+                "NOR, NAND, AND y OR son puertas logicas: algunas no son reversibles y por eso no sirven por si solas como cifrado recuperable."
+            ],
+            exampleTitle: "Comandos Bash",
+            exampleLines: [
+                "python3 - <<'PY'",
+                "alphabet = 'ABCDEFGHIJKLMN\\u00d1OPQRSTUVWXYZ'",
+                "text = 'FEANOR'",
+                "shift = 3",
+                "print(''.join(alphabet[(alphabet.index(c) + shift) % len(alphabet)] if c in alphabet else c for c in text))",
+                "PY",
+                "printf 'secret' | xxd -p",
+                "python3 - <<'PY'",
+                "msg = bytes.fromhex('736563726574')",
+                "key = b'K'",
+                "print(bytes(b ^ key[i % len(key)] for i, b in enumerate(msg)).hex())",
+                "PY"
+            ]
+        }
+    ],
+    "operaciones-xor-modulo": [
+        {
+            title: "Bash/CLI para XOR y modulo",
+            body: "La terminal es perfecta para comprobar operaciones matematicas exactas. Python maneja enteros grandes sin cambiar de tipo manualmente, y OpenSSL aporta utilidades como `prime` para explorar material numerico.",
+            bullets: [
+                "XOR se calcula bit a bit y se representa normalmente en binario o hexadecimal.",
+                "Modulo devuelve el resto y mantiene el resultado dentro de 0..N-1 si N es positivo.",
+                "La potencia modular `pow(base, exp, mod)` evita crear enteros gigantes intermedios."
+            ],
+            exampleTitle: "Comandos Bash",
+            exampleLines: [
+                "python3 - <<'PY'",
+                "print(format(0b1001 ^ 0b1010, '04b'))",
+                "print(118613842 % 9091)",
+                "print(pow(7, 560, 561))",
+                "print((23 + 7) % 7)",
+                "PY",
+                "openssl prime 1000003"
+            ]
+        }
+    ],
+    "parsing-json-regex": [
+        {
+            title: "Bash/CLI para JSON, logs y regex",
+            body: "Estos comandos conectan el banco regex y el diff JSON con trabajo real de logs, APIs y revisiones de payloads firmados. La idea profesional es validar, normalizar y luego comparar.",
+            bullets: [
+                "`jq` valida y transforma JSON con tipos reales, no con sustituciones de texto.",
+                "`python3 -m json.tool` es una forma rapida de detectar JSON mal formado.",
+                "`grep -E` ayuda en logs, pero para JSON estructurado debes preferir `jq`."
+            ],
+            exampleTitle: "Comandos Bash",
+            exampleLines: [
+                "python3 -m json.tool response.json > response.pretty.json",
+                "jq -S -c . response.json > response.canonical.json",
+                "diff -u <(jq -S . old.json) <(jq -S . new.json)",
+                "grep -Eo 'Bearer[[:space:]]+[A-Za-z0-9._-]+' app.log",
+                "jq -r '.items[] | select(.active == true) | .id' response.json"
+            ]
+        }
+    ],
+    "esteganografia-metadatos": [
+        {
+            title: "Bash/CLI forense para ficheros",
+            body: "El laboratorio frontend orienta el analisis sin subir archivos a terceros. Para una investigacion profesional, replica hallazgos con herramientas nativas como ExifTool, binwalk, strings, xxd, steghide, stegseek o zsteg.",
+            bullets: [
+                "ExifTool lee y escribe metadatos en muchas familias de imagen, audio, video y documentos.",
+                "Steghide soporta JPEG, BMP, WAV y AU como portadores; el payload puede ser cualquier formato.",
+                "StegSeek automatiza cracking por diccionario y el modo seed para detectar contenido Steghide.",
+                "Busca magic bytes, finales logicos, bytes anexos, strings, entropia y contenedores internos antes de concluir."
+            ],
+            exampleTitle: "Comandos Bash",
+            exampleLines: [
+                "exiftool -a -G1 -s sospechoso.jpg",
+                "exiftool -json audio.mp3 > metadata.json",
+                "binwalk sospechoso.bin",
+                "strings -a -n 8 sospechoso.bin | head",
+                "xxd -g1 -l 128 sospechoso.bin",
+                "pngcheck -v imagen.png",
+                "steghide info cover.jpg",
+                "steghide extract -sf stego.jpg -p 'passphrase'",
+                "stegseek --seed stego.jpg",
+                "stegseek stego.jpg wordlist.txt",
+                "zsteg imagen.png"
+            ]
+        }
+    ],
+    "secretos-entropia": [
+        {
+            title: "Bash/CLI para secretos",
+            body: "Generar secretos profesionales significa usar un generador criptografico, escoger longitud suficiente y adaptar la representacion al canal: hex para claves legibles, Base64/Base64URL para APIs y binario para ficheros.",
+            bullets: [
+                "`openssl rand` usa el generador criptografico de OpenSSL.",
+                "El modulo `secrets` de Python esta pensado para tokens y claves de seguridad.",
+                "Un UUID v4 es util como identificador, pero no siempre reemplaza una clave secreta de 256 bits."
+            ],
+            exampleTitle: "Comandos Bash",
+            exampleLines: [
+                "openssl rand -hex 32",
+                "openssl rand -base64 32",
+                "python3 - <<'PY'",
+                "import secrets",
+                "print(secrets.token_urlsafe(32))",
+                "print(secrets.token_hex(32))",
+                "PY",
+                "uuidgen"
+            ]
+        }
+    ],
+    "hash-hmac-timing": [
+        {
+            title: "Bash/CLI para hashes, HMAC y *sum",
+            body: "Una huella hash se recalcula y se compara; no se descifra. Los comandos `*sum` imprimen el digest y el nombre de fichero, mientras que `cksum` y `sum` cubren checksums historicos o de transporte.",
+            bullets: [
+                "Usa SHA-256 o SHA-512 para verificacion moderna de artefactos.",
+                "Usa MD5/SHA-1 solo para compatibilidad heredada, no como garantia fuerte.",
+                "Usa HMAC cuando la integridad dependa de una clave compartida.",
+                "Usa comparacion constante para secretos, tokens o MACs; no compares byte a byte con salida temprana."
+            ],
+            exampleTitle: "Comandos Bash",
+            exampleLines: [
+                "sha256sum archivo.iso",
+                "sha512sum archivo.iso",
+                "sha256sum -c SHA256SUMS",
+                "md5sum legacy.bin",
+                "openssl dgst -sha256 archivo.iso",
+                "openssl dgst -sha256 -hmac 'clave-compartida' mensaje.txt",
+                "printf '%s' 'mensaje' | sha512sum",
+                "cksum -a sha3 -l 256 archivo.bin",
+                "sum -r legacy.bin",
+                "sum -s legacy.bin",
+                "hashcat --identify hashes.txt",
+                "hashcat -m 0 hashes.txt wordlist.txt",
+                "john --wordlist=wordlist.txt hashes.txt",
+                "john --show hashes.txt",
+                "rtgen md5 loweralpha-numeric 1 7 0 2400 1000000 0",
+                "rtsort md5_loweralpha-numeric#1-7_0_2400x1000000_0.rt",
+                "rcrack . -h 5f4dcc3b5aa765d61d8327deb882cf99"
+            ]
+        }
+    ],
+    "red-team-hashcracking": [
+        {
+            title: "Bash/CLI para Hashcat y John",
+            body: "Estos comandos cubren identificacion, ataques por diccionario, reglas, mascaras, potfiles y founds. Ajusta siempre modo, wordlist, reglas y alcance a la autorizacion de la auditoria.",
+            bullets: [
+                "Hashcat usa -m para tipo de hash y -a para modo de ataque.",
+                "John usa --format para formato y modos como --single, --wordlist, --rules o --incremental.",
+                "El potfile guarda founds; separalo por proyecto para mantener evidencias limpias."
+            ],
+            exampleTitle: "Comandos Bash",
+            exampleLines: [
+                "hashcat --identify hashes.txt",
+                "hashcat -m 0 -a 0 md5.txt wordlist.txt -r rules/best64.rule --outfile found.txt",
+                "hashcat -m 1000 -a 3 ntlm.txt '?u?l?l?l?l?d?d' --increment -O -w 3",
+                "hashcat -m 3200 bcrypt.txt wordlist.txt -O -w 3",
+                "hashcat --show -m 0 md5.txt",
+                "john --format=raw-md5 --wordlist=wordlist.txt hashes.txt",
+                "john --format=nt --wordlist=wordlist.txt --rules hashes.txt",
+                "john --format=crypt --wordlist=wordlist.txt shadow-yescrypt.txt",
+                "john --single hashes-con-usuarios.txt",
+                "john --show hashes.txt"
+            ]
+        }
+    ],
+    "derivacion-claves": [
+        {
+            title: "Bash/CLI para KDF y password hashing",
+            body: "PBKDF2 convierte passwords humanas en claves mas caras de atacar; HKDF separa claves desde material fuerte; Argon2, scrypt, yescrypt y bcrypt son formatos habituales para almacenar/verificar passwords.",
+            bullets: [
+                "PBKDF2 necesita salt unico e iteraciones suficientes para elevar coste offline.",
+                "HKDF no endurece passwords debiles; extrae y expande secretos ya fuertes.",
+                "Argon2id, scrypt y yescrypt deben documentar memoria/coste ademas del salt.",
+                "bcrypt guarda coste y salt en el propio hash, pero trunca entradas largas.",
+                "No reutilices la misma clave derivada para cifrar, firmar y autenticar a la vez."
+            ],
+            exampleTitle: "Comandos Bash",
+            exampleLines: [
+                "openssl kdf -keylen 32 -kdfopt digest:SHA2-256 -kdfopt pass:correct-horse -kdfopt salt:0011223344556677 -kdfopt iter:200000 PBKDF2",
+                "openssl kdf -keylen 32 -kdfopt digest:SHA2-256 -kdfopt key:input-secret -kdfopt salt:salt-v1 -kdfopt info:feanor/aes HKDF",
+                "python3 - <<'PY'",
+                "import hashlib",
+                "print(hashlib.pbkdf2_hmac('sha256', b'password', b'salt-v1', 200000, 32).hex())",
+                "PY",
+                "argon2id -id -t 2 -m 15 -p 1 -l 32 -S $(openssl rand -hex 16) -e",
+                "openssl kdf -keylen 32 -kdfopt pass:correct-horse -kdfopt salt:0011223344556677 -kdfopt N:16384 -kdfopt r:8 -kdfopt p:1 SCRYPT",
+                "mkpasswd -m yescrypt 'correct-horse'        # si libxcrypt/mkpasswd lo soporta",
+                "john --format=crypt --wordlist=wordlist.txt shadow-yescrypt.txt",
+                "hashcat -m 8900 yescrypt-kdf.hash wordlist.txt # formato KDF generico, no shadow $y$ sin convertir",
+                "htpasswd -bnBC 10 '' 'correct-horse' | tr -d ':\n'",
+                "python3 - <<'PY'",
+                "import bcrypt",
+                "print(bcrypt.hashpw(b'correct-horse', bcrypt.gensalt(rounds=10)).decode())",
+                "PY"
+            ]
+        }
+    ],
+    "cifrado-simetrico": [
+        {
+            title: "Bash/CLI para cifrado simetrico",
+            body: "OpenSSL `enc` es util para practicar cifrado simetrico clasico, pero no es un formato completo de mensajeria segura. Para datos reales, prefiere esquemas autenticados y guarda version, KDF, salt, IV/nonce, algoritmo y tag.",
+            bullets: [
+                "CBC requiere IV impredecible y padding; CTR/OFB/CFB convierten el bloque en flujo.",
+                "ECB solo debe usarse como ejemplo de riesgo porque revela bloques repetidos.",
+                "DES, RC4 y variantes antiguas son material legacy: analizalos, pero no los elijas para proteger datos nuevos."
+            ],
+            exampleTitle: "Comandos Bash",
+            exampleLines: [
+                "openssl enc -aes-256-cbc -salt -pbkdf2 -iter 200000 -in claro.txt -out claro.txt.enc",
+                "openssl enc -d -aes-256-cbc -pbkdf2 -iter 200000 -in claro.txt.enc -out claro.txt",
+                "openssl enc -aes-256-ctr -K 00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff -iv 01020304050607080900010203040506 -in claro.txt -out claro.ctr",
+                "openssl enc -list | grep -E 'aes|des|rc4'"
+            ]
+        }
+    ],
+    "aead-gcm": [
+        {
+            title: "Bash/CLI para AEAD",
+            body: "AEAD significa cifrado autenticado con datos asociados. AES-GCM devuelve ciphertext y tag; si cambian ciphertext, AAD, IV o tag, el descifrado debe fallar. OpenSSL `enc` no es el ejemplo adecuado para GCM/CCM de fichero; para practicar desde shell puedes usar Node WebCrypto.",
+            bullets: [
+                "El IV de GCM suele ser de 12 bytes y debe ser unico por clave.",
+                "AAD se conserva visible, pero queda autenticado.",
+                "El tag no es opcional: es la prueba de integridad/autenticidad."
+            ],
+            exampleTitle: "Comandos Bash",
+            exampleLines: [
+                "node <<'JS'",
+                "const { webcrypto } = require('crypto');",
+                "const enc = new TextEncoder();",
+                "const key = await webcrypto.subtle.generateKey({ name: 'AES-GCM', length: 256 }, true, ['encrypt', 'decrypt']);",
+                "const iv = webcrypto.getRandomValues(new Uint8Array(12));",
+                "const aad = enc.encode('header=v1');",
+                "const ct = await webcrypto.subtle.encrypt({ name: 'AES-GCM', iv, additionalData: aad, tagLength: 128 }, key, enc.encode('secreto'));",
+                "console.log(Buffer.from(iv).toString('hex'));",
+                "console.log(Buffer.from(ct).toString('base64'));",
+                "JS"
+            ]
+        }
+    ],
+    "tokens-otp-jwt": [
+        {
+            title: "Bash/CLI para JWT y OTP",
+            body: "Un JWT se puede decodificar sin clave porque header y payload son Base64URL. Eso solo inspecciona; validar exige comprobar firma, algoritmo, `kid`, `exp`, `nbf`, `iss`, `aud` y permisos. OTP depende de secreto compartido, contador o reloj.",
+            bullets: [
+                "JWT usa Base64URL sin padding en sus segmentos.",
+                "HOTP usa contador; TOTP usa `floor(unixTime / step)`.",
+                "oathtool permite contrastar codigos OTP locales cuando esta instalado."
+            ],
+            exampleTitle: "Comandos Bash",
+            exampleLines: [
+                "JWT='eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMjMifQ.signature'",
+                "JWT=\"$JWT\" python3 - <<'PY'",
+                "import base64, json, os",
+                "for part in os.environ['JWT'].split('.')[:2]:",
+                "    part += '=' * (-len(part) % 4)",
+                "    print(json.dumps(json.loads(base64.urlsafe_b64decode(part)), indent=2))",
+                "PY",
+                "openssl dgst -sha256 -hmac 'jwt-secret' signing-input.txt",
+                "oathtool --totp -b JBSWY3DPEHPK3PXP",
+                "python3 - <<'PY'",
+                "import time",
+                "print(int(time.time()) // 30)",
+                "PY"
+            ]
+        }
+    ],
+    "asimetrica-hibrida": [
+        {
+            title: "Bash/CLI para RSA-OAEP e hibrido",
+            body: "RSA-OAEP cifra material pequeno. Para documentos o blobs grandes, el patron profesional es hibrido: AES-GCM para el contenido y RSA-OAEP para envolver la clave AES.",
+            bullets: [
+                "La clave publica cifra o verifica; la clave privada descifra o firma, segun el uso.",
+                "No cifres archivos grandes directamente con RSA.",
+                "Etiqueta en el sobre algoritmo, hash OAEP, IV, AAD y version."
+            ],
+            exampleTitle: "Comandos Bash",
+            exampleLines: [
+                "openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:3072 -out private.pem",
+                "openssl pkey -in private.pem -pubout -out public.pem",
+                "openssl rand 32 > content.key",
+                "openssl pkeyutl -encrypt -pubin -inkey public.pem -pkeyopt rsa_padding_mode:oaep -pkeyopt rsa_oaep_md:sha256 -in content.key -out content.key.wrap",
+                "openssl pkeyutl -decrypt -inkey private.pem -pkeyopt rsa_padding_mode:oaep -pkeyopt rsa_oaep_md:sha256 -in content.key.wrap -out content.key"
+            ]
+        }
+    ],
+    "firmas-ecdh": [
+        {
+            title: "Bash/CLI para firmas y ECDH",
+            body: "Firmar demuestra integridad y posesion de clave privada; no cifra. ECDH acuerda un secreto compartido; no autentica por si mismo. En protocolos serios, autentica claves publicas y deriva el secreto con HKDF.",
+            bullets: [
+                "RSA-PSS y ECDSA son esquemas de firma, no de cifrado.",
+                "ECDH sin autenticacion permite man-in-the-middle.",
+                "El secreto ECDH bruto debe pasar por HKDF antes de alimentar AEAD o HMAC."
+            ],
+            exampleTitle: "Comandos Bash",
+            exampleLines: [
+                "openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:3072 -out sign-private.pem",
+                "openssl pkey -in sign-private.pem -pubout -out sign-public.pem",
+                "openssl dgst -sha256 -sign sign-private.pem -out msg.sig msg.txt",
+                "openssl dgst -sha256 -verify sign-public.pem -signature msg.sig msg.txt",
+                "openssl genpkey -algorithm EC -pkeyopt ec_paramgen_curve:P-256 -out alice.pem",
+                "openssl genpkey -algorithm EC -pkeyopt ec_paramgen_curve:P-256 -out bob.pem",
+                "openssl pkey -in bob.pem -pubout -out bob.pub.pem",
+                "openssl pkeyutl -derive -inkey alice.pem -peerkey bob.pub.pem -out alice.shared"
+            ]
+        }
+    ],
+    "formatos-pki": [
+        {
+            title: "Bash/CLI para PEM, DER, JWK y X.509",
+            body: "PKI falla a menudo por formato, cadena o identidad, no por el algoritmo. Inspecciona PEM/DER, fechas, SAN, emisor, sujeto, huella, extensiones y confianza antes de asumir que un certificado es valido.",
+            bullets: [
+                "PEM es DER en Base64 con cabeceras; DER es ASN.1 binario.",
+                "Un certificado contiene clave publica y firma del emisor, no la clave privada.",
+                "La identidad TLS moderna se comprueba en SAN, no solo en Subject CN."
+            ],
+            exampleTitle: "Comandos Bash",
+            exampleLines: [
+                "openssl x509 -in cert.pem -noout -text",
+                "openssl x509 -in cert.pem -noout -fingerprint -sha256",
+                "openssl x509 -in cert.pem -outform DER -out cert.der",
+                "openssl x509 -in cert.der -inform DER -out cert.pem",
+                "openssl asn1parse -in cert.pem -i",
+                "openssl verify -CAfile chain.pem cert.pem"
+            ]
+        }
+    ]
+};
+
+const feanorTheoryReferences = {
+    "fundamentos-codificacion": [
+        {
+            label: "GNU coreutils base64/basenc",
+            url: "https://www.gnu.org/software/coreutils/manual/coreutils.html",
+            note: "Base64, Base64URL, base32, basenc y utilidades de bytes."
+        },
+        {
+            label: "RFC 4648",
+            url: "https://www.rfc-editor.org/rfc/rfc4648",
+            note: "Base16, Base32, Base64 y Base64URL."
+        }
+    ],
+    "cesar-xor": [
+        {
+            label: "CyberChef",
+            url: "https://gchq.github.io/CyberChef/",
+            note: "Banco practico para Cesar, XOR, Base64, Hex y recetas reproducibles."
+        },
+        {
+            label: "Python bitwise operators",
+            url: "https://docs.python.org/3/reference/expressions.html#binary-bitwise-operations",
+            note: "Referencia para XOR, AND, OR, shifts y mascaras."
+        }
+    ],
+    "operaciones-xor-modulo": [
+        {
+            label: "Python pow()",
+            url: "https://docs.python.org/3/library/functions.html#pow",
+            note: "Potencia modular eficiente con enteros grandes."
+        },
+        {
+            label: "OpenSSL prime",
+            url: "https://docs.openssl.org/3.5/man1/openssl-prime/",
+            note: "Utilidad CLI para probar primos y material numerico."
+        }
+    ],
+    "parsing-json-regex": [
+        {
+            label: "jq manual",
+            url: "https://jqlang.org/manual/",
+            note: "Filtrado, canonicalizacion practica y extraccion JSON."
+        },
+        {
+            label: "GNU grep manual",
+            url: "https://www.gnu.org/software/grep/manual/grep.html",
+            note: "Regex de terminal para logs y texto plano."
+        }
+    ],
+    "esteganografia-metadatos": [
+        {
+            label: "ExifTool",
+            url: "https://www.exiftool.org/",
+            note: "Lectura/escritura de metadatos en imagen, audio, video y documentos."
+        },
+        {
+            label: "Steghide manual",
+            url: "https://steghide.sourceforge.net/documentation/manual.pdf",
+            note: "Embed, extract, info, encinfo y formatos JPEG/BMP/WAV/AU."
+        },
+        {
+            label: "StegSeek",
+            url: "https://github.com/RickdeJager/stegseek",
+            note: "Cracking por diccionario y modo seed para Steghide."
+        },
+        {
+            label: "binwalk",
+            url: "https://github.com/ReFirmLabs/binwalk",
+            note: "Deteccion de firmas, firmware y datos embebidos."
+        },
+        {
+            label: "zsteg",
+            url: "https://github.com/zed-0xff/zsteg",
+            note: "Analisis LSB y planos de bits en PNG/BMP."
+        }
+    ],
+    "secretos-entropia": [
+        {
+            label: "OpenSSL rand",
+            url: "https://docs.openssl.org/3.5/man1/openssl-rand/",
+            note: "Generacion de bytes pseudoaleatorios criptograficos."
+        },
+        {
+            label: "Python secrets",
+            url: "https://docs.python.org/3/library/secrets.html",
+            note: "Tokens seguros y generacion local de material secreto."
+        },
+        {
+            label: "OWASP Password Storage",
+            url: "https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html",
+            note: "Criterios profesionales para passwords y almacenamiento."
+        }
+    ],
+    "hash-hmac-timing": [
+        {
+            label: "GNU coreutils *sum",
+            url: "https://www.gnu.org/software/coreutils/manual/coreutils.html",
+            note: "sha256sum, sha512sum, cksum, sum y verificacion con -c."
+        },
+        {
+            label: "OpenSSL dgst",
+            url: "https://docs.openssl.org/3.5/man1/openssl-dgst/",
+            note: "Hashes, firmas y MAC/HMAC desde CLI."
+        },
+        {
+            label: "RFC 2104 HMAC",
+            url: "https://www.rfc-editor.org/rfc/rfc2104",
+            note: "Definicion original de HMAC."
+        },
+        {
+            label: "CrackStation",
+            url: "https://crackstation.net/",
+            note: "Lookup de hashes no salados con tablas precalculadas."
+        },
+        {
+            label: "Hashes.com Hash Decrypter",
+            url: "https://hashes.com/en/decrypt/hash",
+            note: "Identificacion, lookup y formato hash[:salt] para founds."
+        },
+        {
+            label: "Hashes.com Verify Hash",
+            url: "https://hashes.com/en/tools/verify",
+            note: "Verificacion de founds hash[:salt]:plain contra multiples algoritmos."
+        },
+        {
+            label: "Kali rainbowcrack",
+            url: "https://www.kali.org/tools/rainbowcrack/",
+            note: "rtgen, rtsort y rcrack para generar, ordenar y consultar rainbow tables."
+        },
+        {
+            label: "Hashcat",
+            url: "https://hashcat.net/hashcat/",
+            note: "Cracking profesional offline con GPU, modos, reglas y wordlists."
+        },
+        {
+            label: "John the Ripper",
+            url: "https://www.openwall.com/john/",
+            note: "Cracking offline, formatos de password y ecosistema *2john."
+        }
+    ],
+    "red-team-hashcracking": [
+        {
+            label: "Hashcat",
+            url: "https://hashcat.net/hashcat/",
+            note: "Herramienta principal GPU/CPU para cracking offline autorizado."
+        },
+        {
+            label: "Hashcat wiki",
+            url: "https://hashcat.net/wiki/doku.php?id=hashcat",
+            note: "Opciones, modos, workloads, sesiones y uso de comandos."
+        },
+        {
+            label: "Hashcat mask attack",
+            url: "https://hashcat.net/wiki/doku.php?id=mask_attack",
+            note: "Charsets ?l, ?u, ?d, ?s, ?a, custom charsets y ataques -a 3."
+        },
+        {
+            label: "Hashcat rule based attack",
+            url: "https://hashcat.net/wiki/doku.php?id=rule_based_attack",
+            note: "Reglas de mangling compatibles con ataques por diccionario."
+        },
+        {
+            label: "John the Ripper",
+            url: "https://www.openwall.com/john/",
+            note: "Cracker offline con formatos, single crack, wordlist, incremental y external."
+        },
+        {
+            label: "John options",
+            url: "https://www.openwall.com/john/doc/OPTIONS.shtml",
+            note: "Referencia de parametros CLI, potfiles, wordlists y reglas."
+        },
+        {
+            label: "John cracking modes",
+            url: "https://www.openwall.com/john/doc/MODES.shtml",
+            note: "Single, wordlist, incremental, mask y external."
+        }
+    ],
+    "derivacion-claves": [
+        {
+            label: "OpenSSL kdf",
+            url: "https://docs.openssl.org/3.5/man1/openssl-kdf/",
+            note: "PBKDF2, HKDF y otras KDF desde CLI."
+        },
+        {
+            label: "RFC 5869 HKDF",
+            url: "https://www.rfc-editor.org/rfc/rfc5869",
+            note: "Extract/expand, salt e info de contexto."
+        },
+        {
+            label: "OWASP Password Storage",
+            url: "https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html",
+            note: "Recomendaciones para Argon2id, scrypt, bcrypt y PBKDF2."
+        },
+        {
+            label: "Openwall yescrypt",
+            url: "https://www.openwall.com/yescrypt/",
+            note: "yescrypt como KDF y password hashing scheme escalable sobre scrypt."
+        },
+        {
+            label: "Argon2 PHC",
+            url: "https://github.com/P-H-C/phc-winner-argon2",
+            note: "Implementacion y especificacion de referencia del ganador Password Hashing Competition."
+        },
+        {
+            label: "bcrypt.js",
+            url: "https://github.com/dcodeIO/bcrypt.js",
+            note: "Implementacion JS/browser compatible con bcrypt."
+        },
+        {
+            label: "scrypt-js",
+            url: "https://github.com/ricmoo/scrypt-js",
+            note: "Implementacion JS asincrona de scrypt para navegador."
+        },
+        {
+            label: "yescrypt-wasm",
+            url: "https://www.npmjs.com/package/yescrypt-wasm",
+            note: "Modulo WebAssembly usado por el laboratorio frontend para yescrypt."
+        }
+    ],
+    "cifrado-simetrico": [
+        {
+            label: "OpenSSL enc",
+            url: "https://docs.openssl.org/3.5/man1/openssl-enc/",
+            note: "Cifrado simetrico clasico, KDF, salt, IV y modos legacy."
+        },
+        {
+            label: "NIST block cipher modes",
+            url: "https://csrc.nist.gov/projects/block-cipher-techniques/bcm/current-modes",
+            note: "Modos CBC, CTR, GCM y documentacion tecnica de referencia."
+        }
+    ],
+    "aead-gcm": [
+        {
+            label: "WebCrypto AES-GCM",
+            url: "https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/encrypt",
+            note: "Uso frontend de AES-GCM con IV, AAD y tag."
+        },
+        {
+            label: "NIST SP 800-38D",
+            url: "https://csrc.nist.gov/publications/detail/sp/800-38d/final",
+            note: "GCM y GMAC como modos autenticados."
+        }
+    ],
+    "tokens-otp-jwt": [
+        {
+            label: "RFC 7519 JWT",
+            url: "https://www.rfc-editor.org/rfc/rfc7519",
+            note: "Estructura, claims y modelo JWT."
+        },
+        {
+            label: "RFC 6238 TOTP",
+            url: "https://www.rfc-editor.org/rfc/rfc6238",
+            note: "OTP basado en tiempo."
+        },
+        {
+            label: "RFC 4226 HOTP",
+            url: "https://www.rfc-editor.org/rfc/rfc4226",
+            note: "OTP basado en contador."
+        },
+        {
+            label: "OATH Toolkit",
+            url: "https://www.nongnu.org/oath-toolkit/",
+            note: "oathtool para contrastar HOTP/TOTP desde terminal."
+        }
+    ],
+    "asimetrica-hibrida": [
+        {
+            label: "OpenSSL pkeyutl",
+            url: "https://docs.openssl.org/3.5/man1/openssl-pkeyutl/",
+            note: "RSA-OAEP, operaciones con clave publica y derivacion."
+        },
+        {
+            label: "OpenSSL genpkey",
+            url: "https://docs.openssl.org/3.5/man1/openssl-genpkey/",
+            note: "Generacion de claves RSA, EC y otros algoritmos."
+        }
+    ],
+    "firmas-ecdh": [
+        {
+            label: "OpenSSL dgst",
+            url: "https://docs.openssl.org/3.5/man1/openssl-dgst/",
+            note: "Firmar y verificar digest con claves."
+        },
+        {
+            label: "OpenSSL pkeyutl",
+            url: "https://docs.openssl.org/3.5/man1/openssl-pkeyutl/",
+            note: "Derivacion ECDH y operaciones de clave publica."
+        }
+    ],
+    "formatos-pki": [
+        {
+            label: "OpenSSL x509",
+            url: "https://docs.openssl.org/3.5/man1/openssl-x509/",
+            note: "Inspeccion y conversion de certificados X.509."
+        },
+        {
+            label: "OpenSSL asn1parse",
+            url: "https://docs.openssl.org/3.5/man1/openssl-asn1parse/",
+            note: "Inspeccion ASN.1 para DER/PEM."
+        },
+        {
+            label: "RFC 5280 PKIX",
+            url: "https://www.rfc-editor.org/rfc/rfc5280",
+            note: "Perfil X.509 de Internet PKI."
+        }
+    ]
+};
+
 const feanorTheoryUseCases = {
     "fundamentos-codificacion": [
         {
@@ -1081,10 +1966,10 @@ const feanorTheoryUseCases = {
         {
             title: "Verificar una descarga",
             badge: "sha",
-            body: "Una huella SHA-256 confirma que el fichero local coincide con la huella publicada.",
+            body: "Una huella SHA-256 o una linea sha256sum confirma que el fichero local coincide con la huella publicada.",
             steps: [
-                "Calcula SHA-256 del material.",
-                "Pega la huella esperada.",
+                "Calcula SHA-256 del material o copia la linea sha256sum generada.",
+                "Pega la huella esperada; tambien puedes comparar contra la parte hexadecimal de una linea *sum.",
                 "Compara y rechaza el fichero si no coincide."
             ]
         },
@@ -1106,6 +1991,78 @@ const feanorTheoryUseCases = {
                 "Compara dos valores con varias iteraciones.",
                 "Observa diferencias de tiempo entre fallo temprano y fallo tardio.",
                 "Usa comparacion constante para tokens, firmas y HMAC."
+            ]
+        },
+        {
+            title: "Verificar founds sin exponer secretos",
+            badge: "look",
+            body: "Cuando recibes lineas tipo hash:plain o hash:salt:plain, puedes demostrar si el plaintext corresponde al hash sin consultar una base externa.",
+            steps: [
+                "Pega los founds y selecciona algoritmo o autodeteccion.",
+                "Elige el modo de salt si conoces el formato exacto.",
+                "Verifica localmente y escala a Hashcat o John si necesitas reglas, modos o volumen."
+            ]
+        },
+        {
+            title: "Auditar hashes rapidos heredados",
+            badge: "red",
+            body: "Si aparece una base antigua con MD5, SHA1 o SHA256 simple, el primer control defensivo es probar una wordlist autorizada y demostrar el riesgo de passwords debiles.",
+            steps: [
+                "Pega hashes en formato hash o hash:salt y deja autodeteccion si no conoces el algoritmo.",
+                "Carga una wordlist propia con candidatos de laboratorio o passwords autorizados.",
+                "Activa reglas comunes y revisa FOUND/MISS para priorizar migracion a Argon2id, scrypt, yescrypt o bcrypt."
+            ]
+        },
+        {
+            title: "Explicar por que importa el salt",
+            badge: "rain",
+            body: "Una rainbow table pequena permite demostrar que una tabla reutilizable deja de servir cuando cada usuario tiene un salt distinto.",
+            steps: [
+                "Genera una tabla sin salt para MD5 y resuelve hashes de ejemplo.",
+                "Repite con un salt global y observa que la tabla ya queda ligada a ese salt.",
+                "Documenta la migracion: salt unico por credencial y KDF lento con coste ajustado."
+            ]
+        }
+    ],
+    "red-team-hashcracking": [
+        {
+            title: "Elegir modo correcto",
+            badge: "id",
+            body: "El mismo hash puede encajar en varios algoritmos por longitud, asi que la identificacion debe combinar patron y contexto.",
+            steps: [
+                "Pega una muestra en el workbench.",
+                "Revisa candidatos detectados y selecciona el formato real si lo conoces.",
+                "Genera comandos Hashcat/John con el modo seleccionado."
+            ]
+        },
+        {
+            title: "Probar una hipotesis de passwords",
+            badge: "dict",
+            body: "Una auditoria seria empieza por hipotesis: nombres, entorno, anos, politicas y patrones humanos.",
+            steps: [
+                "Carga una wordlist primaria autorizada.",
+                "Activa reglas best64-lite o sufijos comunes.",
+                "Compara keyspace, candidatos locales y comando generado antes de ejecutar fuera del navegador."
+            ]
+        },
+        {
+            title: "Acotar una mascara",
+            badge: "mask",
+            body: "Las mascaras dan control sobre estructura, pero explotan rapido si no se limita longitud y charset.",
+            steps: [
+                "Define ?l, ?u, ?d, ?s o ?1-?4 personalizados.",
+                "Observa el keyspace estimado.",
+                "Usa --increment solo si el tiempo y alcance lo permiten."
+            ]
+        },
+        {
+            title: "Reportar founds",
+            badge: "pot",
+            body: "Un found tiene valor defensivo cuando se verifica y se transforma en mitigacion concreta.",
+            steps: [
+                "Exporta founds con hashcat --show o john --show.",
+                "Verifica muestras en el hash lookup local.",
+                "Documenta modo, regla, tiempo, alcance y recomendacion de migracion."
             ]
         }
     ],
@@ -1139,6 +2096,16 @@ const feanorTheoryUseCases = {
                 "Comparte parametros no secretos.",
                 "Compara la salida Hex esperada."
             ]
+        },
+        {
+            title: "Almacenar passwords de usuarios",
+            badge: "pass",
+            body: "Para passwords persistentes, guarda un hash parametrizado como Argon2id, scrypt, yescrypt o bcrypt, nunca la password ni un SHA rapido.",
+            steps: [
+                "Genera salt unico por password.",
+                "Escoge coste acorde al servidor y documenta los parametros.",
+                "Guarda el string codificado completo para poder verificar y migrar coste despues."
+            ]
         }
     ],
     "cifrado-simetrico": [
@@ -1155,10 +2122,10 @@ const feanorTheoryUseCases = {
         {
             title: "Comparar algoritmos historicos",
             badge: "legacy",
-            body: "DES, RC4 o TripleDES ayudan a reconocer material heredado, no a diseñar sistemas nuevos.",
+            body: "DES, TripleDES, RC4, RC4Drop y RabbitLegacy ayudan a reconocer material heredado, no a diseñar sistemas nuevos.",
             steps: [
                 "Cifra el mismo texto con varios algoritmos.",
-                "Observa cambios de formato y longitud.",
+                "Cambia modos CBC/CFB/CTR/OFB/ECB y padding para ver cuando la recuperacion depende de todos los parametros.",
                 "Marca algoritmos heredados como compatibilidad, no recomendacion."
             ]
         },
@@ -1337,5 +2304,10 @@ const feanorTheoryUseCases = {
 
 export const feanorTheoryTopics = baseFeanorTheoryTopics.map(topic => ({
     ...topic,
+    sections: [
+        ...topic.sections,
+        ...(feanorTheoryCliSections[topic.id] || [])
+    ],
+    references: feanorTheoryReferences[topic.id] || [],
     useCases: feanorTheoryUseCases[topic.id] || []
 }));

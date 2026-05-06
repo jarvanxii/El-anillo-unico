@@ -16,7 +16,7 @@
                             </button>
                         </div>
                     </div>
-                    <div class="output-box">
+                    <div class="output-box" :class="outputToneClass">
                         <pre class="result-pre">{{ panel.content }}</pre>
                     </div>
                 </div>
@@ -62,7 +62,7 @@
                                     </button>
                                 </div>
                             </div>
-                            <div class="output-box">
+                            <div class="output-box" :class="outputToneClass">
                                 <pre class="result-pre">{{ panel.content }}</pre>
                             </div>
                         </div>
@@ -123,6 +123,14 @@ const resultPanels = computed(() => {
 const detailPanels = computed(() => {
     const primaryPanelSet = new Set(resultPanels.value);
     return allPanels.value.filter(panel => !primaryPanelSet.has(panel));
+});
+
+const outputToneClass = computed(() => {
+    const tone = String(props.result.verdictTone || "");
+    if (tone.includes("danger")) return "output-box-danger";
+    if (tone.includes("warning")) return "output-box-warning";
+    if (tone.includes("success")) return "output-box-success";
+    return "output-box-neutral";
 });
 
 const analysisCards = computed(() => [
@@ -319,17 +327,37 @@ defineEmits(["copy"]);
 }
 
 .output-box {
+    position: relative;
     background: #080705;
     border: 1px solid #302817;
+    border-left-width: 4px;
     border-radius: 8px;
     padding: 14px;
     max-height: 420px;
     overflow: auto;
     max-width: 100%;
     -webkit-overflow-scrolling: touch;
+    transition: border-color 0.18s ease, background 0.18s ease;
+}
+
+.output-box-success {
+    background: #07120b;
+    border-color: rgba(34, 197, 94, 0.74);
+}
+
+.output-box-warning {
+    background: #120d04;
+    border-color: rgba(245, 158, 11, 0.72);
+}
+
+.output-box-danger {
+    background: #140707;
+    border-color: rgba(248, 113, 113, 0.78);
 }
 
 .result-pre {
+    position: relative;
+    z-index: 1;
     margin: 0;
     white-space: pre-wrap;
     overflow-wrap: anywhere;

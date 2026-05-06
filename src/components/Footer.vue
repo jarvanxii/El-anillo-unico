@@ -9,8 +9,8 @@
                 </div>
                 <p class="brand-description">
                     Archivo digital inspirado en la Tierra Media. Un portal donde convergen
-                    ciberseguridad, privacidad, herramientas, inteligencia artificial y
-                    conocimiento moderno bajo una estética legendaria.
+                    ciberseguridad, criptografía, herramientas digitales, inteligencia artificial y
+                    conocimiento informático en un mismo reino.
                 </p>
                 <div class="brand-quote">
                     “Un sitio para gobernarlos a todos.”

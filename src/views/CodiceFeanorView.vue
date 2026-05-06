@@ -19,7 +19,7 @@
 
                     <div class="intro-emblem">
                         <img src="@/assets/logos/feanor.webp" alt="Sello de Feanor" />
-                        <span>32 modulos enlazados</span>
+                        <span>{{ feanorUtilityCount }} modulos enlazados</span>
                         <small>Procesamiento en cliente.</small>
                     </div>
                 </div>
@@ -464,14 +464,16 @@
                     </div>
                     <div class="control-field">
                         <label class="field-label" for="hash-algorithm">Algoritmo</label>
-                        <select id="hash-algorithm" v-model="hashAlgorithm" class="form-select input-dark">
-                            <option v-for="item in hashAlgorithms" :key="item" :value="item">{{ item }}</option>
+                        <select id="hash-algorithm" v-model="hashAlgorithm" class="form-select input-dark algorithm-select">
+                            <option v-for="item in visibleHashAlgorithms" :key="item.value" :value="item.value">
+                                {{ algorithmSelectLabel(item) }}
+                            </option>
                         </select>
                     </div>
                     <div class="control-field">
                         <label class="field-label" for="hash-encoding">Salida</label>
                         <select id="hash-encoding" v-model="hashEncoding" class="form-select input-dark">
-                            <option v-for="item in hashEncodings" :key="item.value" :value="item.value">
+                            <option v-for="item in visibleHashEncodings" :key="item.value" :value="item.value">
                                 {{ item.label }}
                             </option>
                         </select>
@@ -575,6 +577,9 @@
                 <div class="inline-actions">
                     <button class="btn btn-main" @click="runHashLab">Calcular</button>
                     <button class="btn btn-subtle" @click="fillHashExample">Cargar ejemplo</button>
+                    <button v-if="hashMode === 'digest'" class="btn btn-subtle" @click="fillHashSumExample">
+                        Ejemplo *sum
+                    </button>
                     <button v-if="hashMode === 'pbkdf2'" class="btn btn-subtle" @click="generateHashSalt">
                         Nuevo salt
                     </button>
@@ -592,6 +597,468 @@
                 <FeanorResultPanel v-if="hashResult" :result="hashResult" icon="HASH" @copy="copyText" />
             </section>
 
+            <section v-if="isModuleVisible('hashLookup')" class="section-box hash-lookup-module">
+                <div class="module-header">
+                    <span class="section-kicker">Modulo 20B</span>
+                    <h2 class="module-title">Identificador, verificador y wordlist local</h2>
+                    <p class="module-copy">
+                        Inspirado en CrackStation y Hashes.com, pero ejecutado en local: identifica tipos probables,
+                        verifica pares <code class="inline-code">hash[:salt]:plain</code> y prueba una wordlist
+                        pequena sin enviar hashes ni candidatos a ningun servidor.
+                    </p>
+                </div>
+
+                <div class="control-grid">
+                    <div class="control-field">
+                        <label class="field-label" for="hash-lookup-algorithm">Algoritmo</label>
+                        <select id="hash-lookup-algorithm" v-model="hashLookupAlgorithm" class="form-select input-dark algorithm-select">
+                            <option v-for="item in hashLookupAlgorithmOptions" :key="item.value" :value="item.value">
+                                {{ algorithmSelectLabel(item) }}
+                            </option>
+                        </select>
+                    </div>
+                    <div class="control-field">
+                        <label class="field-label" for="hash-lookup-salt-mode">Salt</label>
+                        <select id="hash-lookup-salt-mode" v-model="hashLookupSaltMode" class="form-select input-dark">
+                            <option v-for="item in hashLookupSaltModes" :key="item.value" :value="item.value">
+                                {{ item.label }}
+                            </option>
+                        </select>
+                    </div>
+                    <div class="control-field">
+                        <label class="field-label" for="hash-lookup-encoding">Codificacion plain/salt</label>
+                        <select id="hash-lookup-encoding" v-model="hashLookupTextEncoding" class="form-select input-dark">
+                            <option v-for="item in textEncodingOptions" :key="item.value" :value="item.value">
+                                {{ item.label }}
+                            </option>
+                        </select>
+                    </div>
+                    <div class="control-field">
+                        <label class="field-label" for="hash-lookup-limit">Limite wordlist</label>
+                        <input
+                            id="hash-lookup-limit"
+                            v-model.number="hashLookupLimit"
+                            type="number"
+                            min="1"
+                            max="100000"
+                            step="1000"
+                            class="form-control input-dark"
+                        />
+                    </div>
+                    <div class="control-field full-span">
+                        <label class="field-label" for="hash-lookup-input">Hashes / founds</label>
+                        <textarea
+                            id="hash-lookup-input"
+                            v-model="hashLookupInput"
+                            class="form-control input-dark textarea-dark mono-textarea"
+                            rows="6"
+                            placeholder="hash&#10;hash:salt&#10;hash:salt:plain&#10;hash:plain"
+                        ></textarea>
+                    </div>
+                    <div class="control-field full-span">
+                        <label class="field-label" for="hash-lookup-candidates">Wordlist local</label>
+                        <textarea
+                            id="hash-lookup-candidates"
+                            v-model="hashLookupCandidates"
+                            class="form-control input-dark textarea-dark mono-textarea"
+                            rows="7"
+                            placeholder="Un candidato por linea. Ejemplo: password, admin, Mithril-Forge-2026..."
+                        ></textarea>
+                    </div>
+                </div>
+
+                <div class="inline-actions">
+                    <button class="btn btn-main" @click="identifyHashLookupInput">Identificar</button>
+                    <button class="btn btn-main" @click="verifyHashLookupFounds">Verificar founds</button>
+                    <button class="btn btn-subtle" @click="crackHashLookupWithWordlist">Probar wordlist</button>
+                    <button class="btn btn-subtle" @click="fillHashLookupExample">Cargar ejemplo</button>
+                    <button class="btn btn-subtle" @click="sendHashResultToLookup">Usar ultimo hash</button>
+                </div>
+                <p class="helper-copy">
+                    Esto no consulta bases externas ni replica tablas rainbow: si no aportas una wordlist local, solo
+                    identifica y verifica. Para auditorias reales, exporta los formatos sugeridos hacia John/Hashcat.
+                </p>
+
+                <FeanorResultPanel v-if="hashLookupResult" :result="hashLookupResult" icon="LOOK" @copy="copyText" />
+            </section>
+
+            <section v-if="isModuleVisible('hashcatJohnWorkbench')" class="section-box red-team-workbench-module">
+                <div class="module-header">
+                    <span class="section-kicker">Red Team</span>
+                    <h2 class="module-title">Hashcat / John workbench</h2>
+                    <p class="module-copy">
+                        Planifica ataques autorizados con modos de Hashcat y John: identifica formato, estima keyspace,
+                        previsualiza candidatos locales y genera comandos reproducibles para CPU/GPU o auditoria offline.
+                    </p>
+                </div>
+
+                <div class="control-grid">
+                    <div class="control-field">
+                        <label class="field-label" for="redteam-hash-mode">Formato hash</label>
+                        <select id="redteam-hash-mode" v-model="redTeamWorkbenchHashMode" class="form-select input-dark algorithm-select">
+                            <option v-for="item in redTeamHashModeOptions" :key="item.value" :value="item.value">
+                                {{ algorithmSelectLabel(item) }}
+                            </option>
+                        </select>
+                    </div>
+                    <div class="control-field">
+                        <label class="field-label" for="redteam-attack-mode">Modo de ataque</label>
+                        <select id="redteam-attack-mode" v-model="redTeamWorkbenchAttackMode" class="form-select input-dark algorithm-select">
+                            <option v-for="item in redTeamAttackModes" :key="item.value" :value="item.value">
+                                {{ item.label }} | hashcat {{ item.hashcatMode }} | john {{ item.johnMode }}
+                            </option>
+                        </select>
+                    </div>
+                    <div class="control-field">
+                        <label class="field-label" for="redteam-rule-preset">Reglas</label>
+                        <select id="redteam-rule-preset" v-model="redTeamWorkbenchRulePreset" class="form-select input-dark">
+                            <option v-for="item in redTeamRulePresets" :key="item.value" :value="item.value">
+                                {{ item.label }}
+                            </option>
+                        </select>
+                    </div>
+                    <div class="control-field">
+                        <label class="field-label" for="redteam-limit">Limite preview local</label>
+                        <input id="redteam-limit" v-model.number="redTeamWorkbenchLimit" type="number" min="100" max="500000" step="1000" class="form-control input-dark" />
+                    </div>
+                    <div class="control-field">
+                        <label class="field-label" for="redteam-workload">Workload Hashcat</label>
+                        <input id="redteam-workload" v-model.number="redTeamWorkbenchWorkload" type="number" min="1" max="4" step="1" class="form-control input-dark" />
+                    </div>
+                    <div class="control-field">
+                        <label class="field-label" for="redteam-mask">Mascara</label>
+                        <input id="redteam-mask" v-model="redTeamWorkbenchMask" class="form-control input-dark mono-input" placeholder="?u?l?l?l?l?d?d" />
+                    </div>
+                    <div class="control-field">
+                        <label class="field-label" for="redteam-charset1">Charset ?1</label>
+                        <input id="redteam-charset1" v-model="redTeamWorkbenchCharset1" class="form-control input-dark mono-input" placeholder="?l?d" />
+                    </div>
+                    <div class="control-field">
+                        <label class="field-label" for="redteam-charset2">Charset ?2</label>
+                        <input id="redteam-charset2" v-model="redTeamWorkbenchCharset2" class="form-control input-dark mono-input" placeholder="?u?l" />
+                    </div>
+                    <div class="control-field">
+                        <label class="field-label" for="redteam-charset3">Charset ?3</label>
+                        <input id="redteam-charset3" v-model="redTeamWorkbenchCharset3" class="form-control input-dark mono-input" placeholder="?d?s" />
+                    </div>
+                    <div class="control-field">
+                        <label class="field-label" for="redteam-charset4">Charset ?4</label>
+                        <input id="redteam-charset4" v-model="redTeamWorkbenchCharset4" class="form-control input-dark mono-input" placeholder="aeiourstln0123456789" />
+                    </div>
+                    <div class="control-field full-span">
+                        <label class="field-label" for="redteam-input">Hashes objetivo / muestra</label>
+                        <textarea
+                            id="redteam-input"
+                            v-model="redTeamWorkbenchInput"
+                            class="form-control input-dark textarea-dark mono-textarea"
+                            rows="6"
+                            placeholder="hash&#10;usuario:hash&#10;$y$j9T$...&#10;$2b$10$..."
+                        ></textarea>
+                    </div>
+                    <div class="control-field full-span">
+                        <label class="field-label" for="redteam-primary-wordlist">Wordlist primaria</label>
+                        <textarea
+                            id="redteam-primary-wordlist"
+                            v-model="redTeamWorkbenchPrimaryWordlist"
+                            class="form-control input-dark textarea-dark mono-textarea"
+                            rows="7"
+                            placeholder="password&#10;admin&#10;empresa&#10;Mithril"
+                        ></textarea>
+                    </div>
+                    <div v-if="redTeamWorkbenchAttackMode === 'combinator'" class="control-field full-span">
+                        <label class="field-label" for="redteam-secondary-wordlist">Wordlist secundaria</label>
+                        <textarea
+                            id="redteam-secondary-wordlist"
+                            v-model="redTeamWorkbenchSecondaryWordlist"
+                            class="form-control input-dark textarea-dark mono-textarea"
+                            rows="5"
+                            placeholder="2026&#10;!&#10;prod&#10;dev"
+                        ></textarea>
+                    </div>
+                </div>
+
+                <div class="checkbox-grid">
+                    <label class="toggle-line"><input v-model="redTeamWorkbenchOptimized" type="checkbox" /> Hashcat -O</label>
+                    <label class="toggle-line"><input v-model="redTeamWorkbenchUsername" type="checkbox" /> hashes con usuario</label>
+                    <label class="toggle-line"><input v-model="redTeamWorkbenchIncrement" type="checkbox" /> --increment en mascaras</label>
+                </div>
+
+                <div class="inline-actions">
+                    <button class="btn btn-main" @click="runRedTeamWorkbench">Generar plan</button>
+                    <button class="btn btn-subtle" @click="fillRedTeamWorkbenchExample">Cargar ejemplo</button>
+                    <button class="btn btn-subtle" @click="sendHashResultToRedTeamWorkbench">Usar ultimo hash</button>
+                    <button class="btn btn-subtle" @click="clearRedTeamWorkbench">Limpiar</button>
+                </div>
+                <p class="helper-copy">
+                    El navegador solo previsualiza candidatos y verifica hashes rapidos de laboratorio. Para volumen real,
+                    usa los comandos generados con autorizacion, limites de alcance y potfile controlado.
+                </p>
+
+                <FeanorResultPanel v-if="redTeamWorkbenchResult" :result="redTeamWorkbenchResult" icon="RT" @copy="copyText" />
+            </section>
+
+            <section v-if="isModuleVisible('passwordCracker')" class="section-box password-cracker-module">
+                <div class="module-header">
+                    <span class="section-kicker">Red Team</span>
+                    <h2 class="module-title">Password hash cracker local</h2>
+                    <p class="module-copy">
+                        Audita hashes rapidos por diccionario sin salir del navegador. MD5, SHA1 y familias SHA no se
+                        decodifican: se recalculan candidatos, se comparan y se reporta el plaintext solo si hay match.
+                    </p>
+                </div>
+
+                <div class="control-grid">
+                    <div class="control-field">
+                        <label class="field-label" for="password-cracker-algorithm">Algoritmo</label>
+                        <select
+                            id="password-cracker-algorithm"
+                            v-model="passwordCrackerAlgorithm"
+                            class="form-select input-dark algorithm-select">
+                            <option v-for="item in passwordCrackerAlgorithmOptions" :key="item.value" :value="item.value">
+                                {{ algorithmSelectLabel(item) }}
+                            </option>
+                        </select>
+                    </div>
+                    <div class="control-field">
+                        <label class="field-label" for="password-cracker-salt-mode">Salt</label>
+                        <select id="password-cracker-salt-mode" v-model="passwordCrackerSaltMode" class="form-select input-dark">
+                            <option v-for="item in hashLookupSaltModes" :key="item.value" :value="item.value">
+                                {{ item.label }}
+                            </option>
+                        </select>
+                    </div>
+                    <div class="control-field">
+                        <label class="field-label" for="password-cracker-encoding">Codificacion candidatos</label>
+                        <select id="password-cracker-encoding" v-model="passwordCrackerTextEncoding" class="form-select input-dark">
+                            <option v-for="item in textEncodingOptions" :key="item.value" :value="item.value">
+                                {{ item.label }}
+                            </option>
+                        </select>
+                    </div>
+                    <div class="control-field">
+                        <label class="field-label" for="password-cracker-attack">Ataque</label>
+                        <select id="password-cracker-attack" v-model="passwordCrackerAttackMode" class="form-select input-dark algorithm-select">
+                            <option v-for="item in passwordCrackerAttackModes" :key="item.value" :value="item.value">
+                                {{ item.label }} | hashcat {{ item.hashcatMode }} | john {{ item.johnMode }}
+                            </option>
+                        </select>
+                    </div>
+                    <div class="control-field">
+                        <label class="field-label" for="password-cracker-rules">Reglas</label>
+                        <select id="password-cracker-rules" v-model="passwordCrackerRuleMode" class="form-select input-dark">
+                            <option v-for="item in passwordCrackerRuleModes" :key="item.value" :value="item.value">
+                                {{ item.label }}
+                            </option>
+                        </select>
+                    </div>
+                    <div v-if="['mask', 'hybridWordMask', 'hybridMaskWord'].includes(passwordCrackerAttackMode)" class="control-field">
+                        <label class="field-label" for="password-cracker-mask">Mascara</label>
+                        <input id="password-cracker-mask" v-model="passwordCrackerMask" class="form-control input-dark mono-input" placeholder="?d?d?d" />
+                    </div>
+                    <div class="control-field">
+                        <label class="field-label" for="password-cracker-limit">Limite candidatos</label>
+                        <input
+                            id="password-cracker-limit"
+                            v-model.number="passwordCrackerLimit"
+                            type="number"
+                            min="1"
+                            max="50000"
+                            step="1000"
+                            class="form-control input-dark"
+                        />
+                    </div>
+                    <div class="control-field">
+                        <label class="field-label" for="password-cracker-budget">Presupuesto intentos</label>
+                        <input
+                            id="password-cracker-budget"
+                            v-model.number="passwordCrackerAttemptBudget"
+                            type="number"
+                            min="1000"
+                            max="500000"
+                            step="1000"
+                            class="form-control input-dark"
+                        />
+                    </div>
+                    <div class="control-field full-span">
+                        <label class="field-label" for="password-cracker-input">Hashes objetivo</label>
+                        <textarea
+                            id="password-cracker-input"
+                            v-model="passwordCrackerInput"
+                            class="form-control input-dark textarea-dark mono-textarea"
+                            rows="6"
+                            placeholder="hash&#10;hash:salt&#10;*MYSQL5HASH"
+                        ></textarea>
+                    </div>
+                    <div class="control-field full-span">
+                        <label class="field-label" for="password-cracker-candidates">Wordlist / candidatos</label>
+                        <textarea
+                            id="password-cracker-candidates"
+                            v-model="passwordCrackerCandidates"
+                            class="form-control input-dark textarea-dark mono-textarea"
+                            rows="8"
+                            placeholder="Un candidato por linea. Ejemplo: password, admin, verano2026..."
+                        ></textarea>
+                    </div>
+                    <div v-if="passwordCrackerAttackMode === 'combinator'" class="control-field full-span">
+                        <label class="field-label" for="password-cracker-secondary-candidates">Wordlist secundaria</label>
+                        <textarea
+                            id="password-cracker-secondary-candidates"
+                            v-model="passwordCrackerSecondaryCandidates"
+                            class="form-control input-dark textarea-dark mono-textarea"
+                            rows="5"
+                            placeholder="2026&#10;!&#10;prod&#10;dev"
+                        ></textarea>
+                    </div>
+                    <template v-if="['mask', 'hybridWordMask', 'hybridMaskWord'].includes(passwordCrackerAttackMode)">
+                        <div class="control-field">
+                            <label class="field-label" for="password-cracker-charset1">Charset ?1</label>
+                            <input id="password-cracker-charset1" v-model="passwordCrackerCharset1" class="form-control input-dark mono-input" placeholder="?l?d" />
+                        </div>
+                        <div class="control-field">
+                            <label class="field-label" for="password-cracker-charset2">Charset ?2</label>
+                            <input id="password-cracker-charset2" v-model="passwordCrackerCharset2" class="form-control input-dark mono-input" placeholder="?u?l" />
+                        </div>
+                        <div class="control-field">
+                            <label class="field-label" for="password-cracker-charset3">Charset ?3</label>
+                            <input id="password-cracker-charset3" v-model="passwordCrackerCharset3" class="form-control input-dark mono-input" placeholder="?d?s" />
+                        </div>
+                        <div class="control-field">
+                            <label class="field-label" for="password-cracker-charset4">Charset ?4</label>
+                            <input id="password-cracker-charset4" v-model="passwordCrackerCharset4" class="form-control input-dark mono-input" placeholder="aeiourstln0123456789" />
+                        </div>
+                    </template>
+                </div>
+
+                <div class="inline-actions">
+                    <button class="btn btn-main" @click="runPasswordCracker">Crackear hashes</button>
+                    <button class="btn btn-subtle" @click="analyzePasswordCrackerHashes">Analizar hashes</button>
+                    <button class="btn btn-subtle" @click="fillPasswordCrackerExample">Cargar ejemplo</button>
+                    <button class="btn btn-subtle" @click="clearPasswordCracker">Limpiar</button>
+                </div>
+                <p class="helper-copy">
+                    Pensado para auditoria propia y laboratorios. Para bcrypt, Argon2, scrypt, yescrypt, NTLM,
+                    md5crypt o volumen real, usa el resultado de identificacion como guia hacia Hashcat o John the
+                    Ripper.
+                </p>
+
+                <FeanorResultPanel v-if="passwordCrackerResult" :result="passwordCrackerResult" icon="RED" @copy="copyText" />
+            </section>
+
+            <section v-if="isModuleVisible('rainbowTables')" class="section-box rainbow-table-module">
+                <div class="module-header">
+                    <span class="section-kicker">Red Team</span>
+                    <h2 class="module-title">Rainbow tables</h2>
+                    <p class="module-copy">
+                        Genera tablas rainbow locales de laboratorio, exporta endpoints y busca hashes rapidos sin enviar datos fuera del navegador.
+                        El objetivo es entender el trade-off memoria/tiempo y por que salts unicos y KDF modernos rompen este enfoque.
+                    </p>
+                </div>
+
+                <div class="control-grid">
+                    <div class="control-field">
+                        <label class="field-label" for="rainbow-algorithm">Algoritmo</label>
+                        <select id="rainbow-algorithm" v-model="rainbowAlgorithm" class="form-select input-dark algorithm-select">
+                            <option v-for="item in rainbowAlgorithmOptions" :key="item.value" :value="item.value">
+                                {{ algorithmSelectLabel(item) }}
+                            </option>
+                        </select>
+                    </div>
+                    <div class="control-field">
+                        <label class="field-label" for="rainbow-salt-mode">Salt</label>
+                        <select id="rainbow-salt-mode" v-model="rainbowSaltMode" class="form-select input-dark">
+                            <option v-for="item in rainbowSaltModes" :key="item.value" :value="item.value">
+                                {{ item.label }}
+                            </option>
+                        </select>
+                    </div>
+                    <div class="control-field">
+                        <label class="field-label" for="rainbow-encoding">Codificacion plain/salt</label>
+                        <select id="rainbow-encoding" v-model="rainbowTextEncoding" class="form-select input-dark">
+                            <option v-for="item in textEncodingOptions" :key="item.value" :value="item.value">
+                                {{ item.label }}
+                            </option>
+                        </select>
+                    </div>
+                    <div class="control-field">
+                        <label class="field-label" for="rainbow-chain-length">Longitud cadena</label>
+                        <input id="rainbow-chain-length" v-model.number="rainbowChainLength" type="number" min="10" max="1000" class="form-control input-dark" />
+                    </div>
+                    <div class="control-field">
+                        <label class="field-label" for="rainbow-max-seeds">Max semillas</label>
+                        <input id="rainbow-max-seeds" v-model.number="rainbowMaxSeeds" type="number" min="1" max="1000" class="form-control input-dark" />
+                    </div>
+                    <div class="control-field">
+                        <label class="field-label" for="rainbow-min-length">Longitud minima</label>
+                        <input id="rainbow-min-length" v-model.number="rainbowPlainMin" type="number" min="1" max="16" class="form-control input-dark" />
+                    </div>
+                    <div class="control-field">
+                        <label class="field-label" for="rainbow-max-length">Longitud maxima</label>
+                        <input id="rainbow-max-length" v-model.number="rainbowPlainMax" type="number" min="1" max="16" class="form-control input-dark" />
+                    </div>
+                    <div class="control-field">
+                        <label class="field-label" for="rainbow-alphabet">Alfabeto reduccion</label>
+                        <select id="rainbow-alphabet" v-model="rainbowAlphabetPreset" class="form-select input-dark">
+                            <option v-for="item in rainbowAlphabetOptions" :key="item.value" :value="item.value">
+                                {{ item.label }}
+                            </option>
+                        </select>
+                    </div>
+                    <div class="control-field">
+                        <label class="field-label" for="rainbow-salt">Salt global opcional</label>
+                        <input id="rainbow-salt" v-model="rainbowSalt" class="form-control input-dark" placeholder="Se usa solo si el modo de salt no es Sin salt" />
+                    </div>
+                    <div v-if="rainbowAlphabetPreset === 'custom'" class="control-field">
+                        <label class="field-label" for="rainbow-custom-alphabet">Alfabeto personalizado</label>
+                        <input id="rainbow-custom-alphabet" v-model="rainbowCustomAlphabet" class="form-control input-dark mono-textarea" placeholder="abcdef0123456789" />
+                    </div>
+                    <div class="control-field full-span">
+                        <label class="field-label" for="rainbow-seeds">Semillas / inicios de cadena</label>
+                        <textarea
+                            id="rainbow-seeds"
+                            v-model="rainbowSeeds"
+                            class="form-control input-dark textarea-dark mono-textarea"
+                            rows="7"
+                            placeholder="password&#10;admin&#10;Mithril2026&#10;dragon"
+                        ></textarea>
+                    </div>
+                    <div class="control-field full-span">
+                        <label class="field-label" for="rainbow-targets">Hashes objetivo</label>
+                        <textarea
+                            id="rainbow-targets"
+                            v-model="rainbowTargets"
+                            class="form-control input-dark textarea-dark mono-textarea"
+                            rows="7"
+                            placeholder="hash&#10;hash:salt"
+                        ></textarea>
+                    </div>
+                    <div class="control-field full-span">
+                        <label class="field-label" for="rainbow-serialized">Tabla exportada / importada</label>
+                        <textarea
+                            id="rainbow-serialized"
+                            v-model="rainbowSerializedTable"
+                            class="form-control input-dark textarea-dark mono-textarea"
+                            rows="6"
+                            placeholder="JSON de tabla rainbow local. Genera o importa una tabla para reutilizar endpoints."
+                        ></textarea>
+                    </div>
+                </div>
+
+                <div class="inline-actions">
+                    <button class="btn btn-main" @click="generateRainbowTable">Generar tabla</button>
+                    <button class="btn btn-main" @click="lookupRainbowTargets">Buscar hashes</button>
+                    <button class="btn btn-subtle" @click="exportRainbowTable">Exportar tabla</button>
+                    <button class="btn btn-subtle" @click="importRainbowTable">Importar tabla</button>
+                    <button class="btn btn-subtle" @click="fillRainbowExample">Cargar ejemplo</button>
+                    <button class="btn btn-subtle" @click="sendHashResultToRainbow">Usar ultimo hash</button>
+                    <button class="btn btn-subtle" @click="clearRainbowTables">Limpiar</button>
+                </div>
+                <p class="helper-copy">
+                    Usa tablas pequenas para aprendizaje y auditoria propia. Para volumen real, genera tablas offline con herramientas especializadas y migra passwords a Argon2id, scrypt, yescrypt o bcrypt con salt unico.
+                </p>
+
+                <FeanorResultPanel v-if="rainbowResult" :result="rainbowResult" icon="RAIN" @copy="copyText" />
+            </section>
+
             <section v-if="isModuleVisible('symmetric')" class="section-box symmetric-module">
                 <div class="module-header">
                     <span class="section-kicker">Modulo 24</span>
@@ -605,8 +1072,45 @@
                 <div class="control-grid">
                     <div class="control-field">
                         <label class="field-label" for="cipher-algorithm">Algoritmo</label>
-                        <select id="cipher-algorithm" v-model="cipherAlgorithm" class="form-select input-dark">
-                            <option v-for="item in cipherAlgorithms" :key="item" :value="item">{{ item }}</option>
+                        <select id="cipher-algorithm" v-model="cipherAlgorithm" class="form-select input-dark algorithm-select">
+                            <option v-for="item in cipherAlgorithms" :key="item.value" :value="item.value">
+                                {{ algorithmSelectLabel(item) }}
+                            </option>
+                        </select>
+                    </div>
+                    <div v-if="isCipherBlockAlgorithm" class="control-field">
+                        <label class="field-label" for="cipher-mode">Modo</label>
+                        <select id="cipher-mode" v-model="cipherMode" class="form-select input-dark">
+                            <option v-for="item in cipherModes" :key="item.value" :value="item.value">
+                                {{ item.label }}
+                            </option>
+                        </select>
+                    </div>
+                    <div v-if="isCipherBlockAlgorithm" class="control-field">
+                        <label class="field-label" for="cipher-padding">Padding</label>
+                        <select id="cipher-padding" v-model="cipherPadding" class="form-select input-dark">
+                            <option v-for="item in cipherPaddings" :key="item.value" :value="item.value">
+                                {{ item.label }}
+                            </option>
+                        </select>
+                    </div>
+                    <div v-if="cipherAlgorithm === 'RC4Drop'" class="control-field">
+                        <label class="field-label" for="cipher-drop">Drop</label>
+                        <input
+                            id="cipher-drop"
+                            v-model.number="cipherDropWords"
+                            type="number"
+                            min="0"
+                            step="1"
+                            class="form-control input-dark"
+                        />
+                    </div>
+                    <div class="control-field">
+                        <label class="field-label" for="cipher-text-encoding">Codificacion texto</label>
+                        <select id="cipher-text-encoding" v-model="cipherTextEncoding" class="form-select input-dark">
+                            <option v-for="item in textEncodingOptions" :key="item.value" :value="item.value">
+                                {{ item.label }}
+                            </option>
                         </select>
                     </div>
                     <div class="control-field full-span">
@@ -707,8 +1211,10 @@
                     </div>
                     <div class="control-field">
                         <label class="field-label" for="asymmetric-hash">Hash OAEP</label>
-                        <select id="asymmetric-hash" v-model="asymmetricHash" class="form-select input-dark">
-                            <option v-for="item in asymmetricHashes" :key="item" :value="item">{{ item }}</option>
+                        <select id="asymmetric-hash" v-model="asymmetricHash" class="form-select input-dark algorithm-select">
+                            <option v-for="item in asymmetricHashOptions" :key="item.value" :value="item.value">
+                                {{ algorithmSelectLabel(item) }}
+                            </option>
                         </select>
                     </div>
                 </div>
@@ -869,9 +1375,10 @@
                 <div class="control-grid compact-grid">
                     <div class="control-field">
                         <label class="field-label" for="signature-algorithm">Algoritmo</label>
-                        <select id="signature-algorithm" v-model="signatureAlgorithm" class="form-select input-dark">
-                            <option value="RSA-PSS">RSA-PSS SHA-256</option>
-                            <option value="ECDSA-P256">ECDSA P-256 SHA-256</option>
+                        <select id="signature-algorithm" v-model="signatureAlgorithm" class="form-select input-dark algorithm-select">
+                            <option v-for="item in signatureAlgorithmOptions" :key="item.value" :value="item.value">
+                                {{ algorithmSelectLabel(item) }}
+                            </option>
                         </select>
                     </div>
                     <div class="control-field">
@@ -1129,19 +1636,20 @@
                     <div v-if="activeKdfToolConfig.showMode" class="control-field">
                         <label class="field-label" for="kdf-mode">Modo</label>
                         <select id="kdf-mode" v-model="kdfMode" class="form-select input-dark">
-                            <option value="PBKDF2">PBKDF2</option>
-                            <option value="HKDF">HKDF</option>
+                            <option v-for="item in kdfModeOptions" :key="item.value" :value="item.value">
+                                {{ item.label }}
+                            </option>
                         </select>
                     </div>
                     <div class="control-field">
-                        <label class="field-label" for="kdf-hash">Hash</label>
-                        <select id="kdf-hash" v-model="kdfHash" class="form-select input-dark">
-                            <option value="SHA-256">SHA-256</option>
-                            <option value="SHA-384">SHA-384</option>
-                            <option value="SHA-512">SHA-512</option>
+                        <label class="field-label" for="kdf-hash">{{ kdfAlgorithmLabel }}</label>
+                        <select id="kdf-hash" v-model="kdfHash" class="form-select input-dark algorithm-select">
+                            <option v-for="item in visibleKdfAlgorithmOptions" :key="item.value" :value="item.value">
+                                {{ algorithmSelectLabel(item) }}
+                            </option>
                         </select>
                     </div>
-                    <div class="control-field">
+                    <div v-if="isKdfLengthVisible" class="control-field">
                         <label class="field-label" for="kdf-length">Bytes salida</label>
                         <input id="kdf-length" v-model.number="kdfLength" type="number" min="16" max="128" class="form-control input-dark" />
                     </div>
@@ -1157,15 +1665,51 @@
                         <label class="field-label" for="kdf-iterations">Iteraciones PBKDF2</label>
                         <input id="kdf-iterations" v-model.number="kdfIterations" type="number" min="1000" step="1000" class="form-control input-dark" />
                     </div>
+                    <template v-if="kdfMode === 'ARGON2'">
+                        <div class="control-field">
+                            <label class="field-label" for="kdf-argon-iterations">Iteraciones Argon2</label>
+                            <input id="kdf-argon-iterations" v-model.number="kdfArgonIterations" type="number" min="1" max="10" class="form-control input-dark" />
+                        </div>
+                        <div class="control-field">
+                            <label class="field-label" for="kdf-argon-memory">Memoria KiB</label>
+                            <input id="kdf-argon-memory" v-model.number="kdfArgonMemory" type="number" min="1024" max="262144" step="1024" class="form-control input-dark" />
+                        </div>
+                        <div class="control-field">
+                            <label class="field-label" for="kdf-argon-parallelism">Paralelismo</label>
+                            <input id="kdf-argon-parallelism" v-model.number="kdfArgonParallelism" type="number" min="1" max="8" class="form-control input-dark" />
+                        </div>
+                    </template>
+                    <template v-if="kdfMode === 'SCRYPT' || kdfMode === 'YESCRYPT'">
+                        <div class="control-field">
+                            <label class="field-label" for="kdf-scrypt-n">N CPU/memoria</label>
+                            <input id="kdf-scrypt-n" v-model.number="kdfScryptN" type="number" min="1024" step="1024" class="form-control input-dark" />
+                        </div>
+                        <div class="control-field">
+                            <label class="field-label" for="kdf-scrypt-r">r bloque</label>
+                            <input id="kdf-scrypt-r" v-model.number="kdfScryptR" type="number" min="1" max="32" class="form-control input-dark" />
+                        </div>
+                        <div class="control-field">
+                            <label class="field-label" for="kdf-scrypt-p">p paralelismo</label>
+                            <input id="kdf-scrypt-p" v-model.number="kdfScryptP" type="number" min="1" max="16" class="form-control input-dark" />
+                        </div>
+                        <div v-if="kdfMode === 'YESCRYPT'" class="control-field">
+                            <label class="field-label" for="kdf-yescrypt-t">t extra</label>
+                            <input id="kdf-yescrypt-t" v-model.number="kdfYescryptT" type="number" min="0" max="16" class="form-control input-dark" />
+                        </div>
+                    </template>
+                    <div v-if="kdfMode === 'BCRYPT'" class="control-field">
+                        <label class="field-label" for="kdf-bcrypt-rounds">Coste bcrypt</label>
+                        <input id="kdf-bcrypt-rounds" v-model.number="kdfBcryptRounds" type="number" min="4" max="15" class="form-control input-dark" />
+                    </div>
+                    <div class="control-field full-span">
+                        <label class="field-label" for="kdf-input">{{ kdfInputLabel }}</label>
+                        <input id="kdf-input" v-model="kdfInput" class="form-control input-dark" :placeholder="kdfInputPlaceholder" />
+                    </div>
+                    <div class="control-field full-span">
+                        <label class="field-label" for="kdf-salt">{{ kdfSaltLabel }}</label>
+                        <input id="kdf-salt" v-model="kdfSalt" class="form-control input-dark mono-input" :placeholder="kdfSaltPlaceholder" />
+                    </div>
                     <div v-if="kdfMode === 'HKDF'" class="control-field full-span">
-                        <label class="field-label" for="kdf-input">Material de entrada</label>
-                        <input id="kdf-input" v-model="kdfInput" class="form-control input-dark" placeholder="Password, semilla o secreto base" />
-                    </div>
-                    <div class="control-field full-span">
-                        <label class="field-label" for="kdf-salt">Salt Base64</label>
-                        <input id="kdf-salt" v-model="kdfSalt" class="form-control input-dark mono-input" placeholder="Salt aleatorio" />
-                    </div>
-                    <div class="control-field full-span">
                         <label class="field-label" for="kdf-info">Info HKDF</label>
                         <input id="kdf-info" v-model="kdfInfo" class="form-control input-dark" placeholder="Contexto: app, protocolo, uso de clave" />
                     </div>
@@ -1231,11 +1775,10 @@
                     </div>
                     <div class="control-field">
                         <label class="field-label" for="key-converter-algorithm">Algoritmo</label>
-                        <select id="key-converter-algorithm" v-model="keyConverterAlgorithm" class="form-select input-dark">
-                            <option value="RSA-OAEP">RSA-OAEP</option>
-                            <option value="RSA-PSS">RSA-PSS</option>
-                            <option value="ECDSA">ECDSA P-256</option>
-                            <option value="ECDH">ECDH P-256</option>
+                        <select id="key-converter-algorithm" v-model="keyConverterAlgorithm" class="form-select input-dark algorithm-select">
+                            <option v-for="item in keyConverterAlgorithmOptions" :key="item.value" :value="item.value">
+                                {{ algorithmSelectLabel(item) }}
+                            </option>
                         </select>
                     </div>
                     <div class="control-field full-span">
@@ -1958,9 +2501,10 @@
                     </div>
                     <div class="control-field">
                         <label class="field-label" for="steghide-encryption">Cifrado frontend</label>
-                        <select id="steghide-encryption" v-model="steghideEncryption" class="form-select input-dark">
-                            <option value="aes-gcm">AES-GCM + PBKDF2</option>
-                            <option value="none">Sin cifrado</option>
+                        <select id="steghide-encryption" v-model="steghideEncryption" class="form-select input-dark algorithm-select">
+                            <option v-for="item in steghideEncryptionOptions" :key="item.value" :value="item.value">
+                                {{ algorithmSelectLabel(item) }}
+                            </option>
                         </select>
                     </div>
                     <div class="control-field full-span">
@@ -2101,9 +2645,10 @@
                 <div class="control-grid">
                     <div class="control-field">
                         <label class="field-label" for="json-sign-algorithm">Algoritmo</label>
-                        <select id="json-sign-algorithm" v-model="jsonSignAlgorithm" class="form-select input-dark">
-                            <option value="SHA256">HMAC-SHA256</option>
-                            <option value="SHA512">HMAC-SHA512</option>
+                        <select id="json-sign-algorithm" v-model="jsonSignAlgorithm" class="form-select input-dark algorithm-select">
+                            <option v-for="item in jsonSignAlgorithmOptions" :key="item.value" :value="item.value">
+                                {{ algorithmSelectLabel(item) }}
+                            </option>
                         </select>
                     </div>
                     <div class="control-field full-span">
@@ -2259,10 +2804,10 @@
                     </div>
                     <div class="control-field">
                         <label class="field-label" for="otp-algorithm">Algoritmo</label>
-                        <select id="otp-algorithm" v-model="otpAlgorithm" class="form-select input-dark">
-                            <option value="SHA1">SHA1</option>
-                            <option value="SHA256">SHA256</option>
-                            <option value="SHA512">SHA512</option>
+                        <select id="otp-algorithm" v-model="otpAlgorithm" class="form-select input-dark algorithm-select">
+                            <option v-for="item in otpAlgorithmOptions" :key="item.value" :value="item.value">
+                                {{ algorithmSelectLabel(item) }}
+                            </option>
                         </select>
                     </div>
                     <div class="control-field">
@@ -2390,7 +2935,10 @@
 </template>
 
 <script setup>
-import { computed, reactive, ref, watch } from "vue";
+import { computed, nextTick, onMounted, onUpdated, reactive, ref, watch } from "vue";
+import argon2Browser from "argon2-browser/dist/argon2-bundled.min.js";
+import * as scryptJs from "scrypt-js";
+import bcrypt from "bcryptjs";
 import CryptoJS from "crypto-js";
 import * as Diff from "diff";
 import { jwtDecode } from "jwt-decode";
@@ -2399,6 +2947,23 @@ import zxcvbn from "zxcvbn";
 import FeanorResultPanel from "@/components/FeanorResultPanel.vue";
 import { feanorTheoryTopics } from "@/features/codiceFeanor/data/feanorTheory";
 import { feanorUtilityGroups } from "@/features/codiceFeanor/data/feanorUtilities";
+import {
+    detectRedTeamHashModes,
+    findRedTeamHashMode,
+    redTeamHashModeOptions
+} from "@/features/codiceFeanor/redTeam/hashcatJohnCatalog";
+import {
+    buildHashcatCommand,
+    buildJohnCommand,
+    buildRedTeamWorkflowLines,
+    generateRedTeamCandidates,
+    redTeamAttackModes,
+    redTeamDefaultCharsets,
+    redTeamRulePresets
+} from "@/features/codiceFeanor/redTeam/candidateEngine";
+
+const yescryptWasm = require("yescrypt-wasm");
+const { Yescrypt } = yescryptWasm;
 
 const props = defineProps({
     toolModule: {
@@ -2407,7 +2972,144 @@ const props = defineProps({
     }
 });
 
+const requiredFeanorFieldIds = new Set([
+    "caesar-alphabet",
+    "caesar-logic",
+    "caesar-shift",
+    "caesar-input",
+    "atbash-alphabet",
+    "atbash-input",
+    "boolean-operation",
+    "boolean-mode",
+    "boolean-repeat",
+    "boolean-left",
+    "vigenere-alphabet",
+    "vigenere-direction",
+    "vigenere-key",
+    "vigenere-input",
+    "affine-alphabet",
+    "affine-direction",
+    "affine-a",
+    "affine-b",
+    "affine-input",
+    "rail-direction",
+    "rail-count",
+    "rail-input",
+    "modular-operation",
+    "modular-base",
+    "modular-modulus",
+    "hash-mode",
+    "hash-algorithm",
+    "hash-encoding",
+    "hash-input-kind",
+    "hash-text-encoding",
+    "hash-lookup-algorithm",
+    "hash-lookup-salt-mode",
+    "hash-lookup-encoding",
+    "hash-lookup-limit",
+    "hash-lookup-input",
+    "redteam-hash-mode",
+    "redteam-attack-mode",
+    "redteam-rule-preset",
+    "redteam-limit",
+    "redteam-workload",
+    "redteam-input",
+    "password-cracker-algorithm",
+    "password-cracker-salt-mode",
+    "password-cracker-encoding",
+    "password-cracker-attack",
+    "password-cracker-rules",
+    "password-cracker-limit",
+    "password-cracker-budget",
+    "password-cracker-input",
+    "rainbow-algorithm",
+    "rainbow-salt-mode",
+    "rainbow-encoding",
+    "rainbow-chain-length",
+    "rainbow-max-seeds",
+    "rainbow-min-length",
+    "rainbow-max-length",
+    "rainbow-alphabet",
+    "rainbow-seeds",
+    "rainbow-targets",
+    "cipher-algorithm",
+    "cipher-text-encoding",
+    "cipher-key",
+    "cipher-input",
+    "asymmetric-key-size",
+    "asymmetric-hash",
+    "asymmetric-public-key",
+    "asymmetric-plaintext",
+    "asymmetric-private-key",
+    "asymmetric-ciphertext",
+    "signature-algorithm",
+    "signature-salt",
+    "signature-text-encoding",
+    "signature-message",
+    "signature-public-key",
+    "signature-private-key",
+    "signature-output",
+    "aead-key-size",
+    "aead-tag-length",
+    "aead-text-encoding",
+    "aead-key",
+    "aead-iv",
+    "aead-plaintext",
+    "aead-ciphertext",
+    "ecdh-curve",
+    "ecdh-bits",
+    "kdf-mode",
+    "kdf-hash",
+    "kdf-length",
+    "kdf-text-encoding",
+    "kdf-input",
+    "kdf-salt",
+    "certificate-input",
+    "key-converter-kind",
+    "key-converter-algorithm",
+    "key-converter-input",
+    "jwt-input",
+    "transform-format",
+    "transform-text-encoding",
+    "byte-input-mode",
+    "byte-input",
+    "stego-analyze-file",
+    "exif-file",
+    "exif-profile",
+    "exif-detail-mode",
+    "metadata-editor-type",
+    "metadata-editor-mode",
+    "metadata-editor-file",
+    "stego-embed-carrier-kind",
+    "stego-embed-mode",
+    "stego-embed-file",
+    "stego-payload-source",
+    "stego-extract-file",
+    "steghide-operation",
+    "steghide-encryption",
+    "steghide-cover-file",
+    "json-sign-algorithm",
+    "json-sign-secret",
+    "json-sign-input",
+    "secret-kind",
+    "secret-length",
+    "entropy-input",
+    "otp-mode",
+    "otp-algorithm",
+    "otp-digits",
+    "otp-step",
+    "otp-secret",
+    "timing-iterations",
+    "timing-left",
+    "timing-right",
+    "regex-pattern",
+    "regex-text"
+]);
+
 const isOverviewPage = computed(() => !props.toolModule);
+const feanorUtilityCount = computed(() =>
+    feanorUtilityGroups.reduce((total, group) => total + group.utilities.length, 0)
+);
 
 const hashModes = [
     { label: "Digest", value: "digest" },
@@ -2418,8 +3120,8 @@ const hashModes = [
 const hashToolConfigs = {
     hash: {
         title: "Hash digest",
-        copy: "Calcula huellas deterministas de mensajes o ficheros textuales y compara contra un valor esperado.",
-        helper: "Digest sirve para huellas publicas e integridad sin clave. No es cifrado y no autentica al emisor.",
+        copy: "Calcula huellas deterministas, salidas tipo md5sum/sha256sum y checksums SUM de mensajes o ficheros.",
+        helper: "Digest sirve para huellas publicas e integridad sin clave. Las salidas *sum facilitan comparar con terminal; los SUM/CRC son checksums, no seguridad criptografica.",
         mode: "digest",
         showMode: false
     },
@@ -2432,16 +3134,118 @@ const hashToolConfigs = {
     }
 };
 
-const hashAlgorithms = ["SHA256", "SHA512", "SHA3", "SHA1", "MD5"];
-const hashEncodings = [
+const algorithmSelectColumnWidths = {
+    name: 18,
+    command: 38
+};
+const algorithmSelectPad = String.fromCharCode(160);
+
+function padAlgorithmSelectColumn(value, width) {
+    const text = String(value || "").trim();
+    return text.length >= width ? text : `${text}${algorithmSelectPad.repeat(width - text.length)}`;
+}
+
+function algorithmSelectLabel(item) {
+    if (!item.selectLabel) return item.label || String(item.value);
+    const [name, command, status] = item.selectLabel.split("|").map(part => part.trim());
+    return [
+        padAlgorithmSelectColumn(name, algorithmSelectColumnWidths.name),
+        padAlgorithmSelectColumn(command, algorithmSelectColumnWidths.command),
+        status
+    ].join(" | ");
+}
+
+const hashDigestAlgorithms = [
+    { value: "SHA256", label: "SHA-256 / sha256sum", selectLabel: "SHA256 | sha256sum | Recomendado", family: "digest" },
+    { value: "SHA512", label: "SHA-512 / sha512sum", selectLabel: "SHA512 | sha512sum | Recomendado", family: "digest" },
+    { value: "SHA3", label: "SHA-3", selectLabel: "SHA3 | cksum -a sha3 -l 256 | Recomendado", family: "digest" },
+    { value: "SHA1", label: "SHA-1 / sha1sum", selectLabel: "SHA1 | sha1sum | Inseguro", family: "digest", legacy: true },
+    { value: "MD5", label: "MD5 / md5sum", selectLabel: "MD5 | md5sum | Inseguro", family: "digest", legacy: true }
+];
+
+const hashChecksumAlgorithms = [
+    { value: "SUM8", label: "SUM-8 aditivo", selectLabel: "SUM8 | suma aditiva 8-bit | No criptografico", family: "checksum", bits: 8 },
+    { value: "SUM16", label: "SUM-16 aditivo", selectLabel: "SUM16 | suma aditiva 16-bit | No criptografico", family: "checksum", bits: 16 },
+    { value: "SUM32", label: "SUM-32 aditivo", selectLabel: "SUM32 | suma aditiva 32-bit | No criptografico", family: "checksum", bits: 32 },
+    { value: "BSDSUM", label: "BSD sum -r", selectLabel: "BSDSUM | sum -r | No criptografico", family: "checksum", bits: 16 },
+    { value: "SYSVSUM", label: "System V sum -s", selectLabel: "SYSVSUM | sum -s | No criptografico", family: "checksum", bits: 16 },
+    { value: "ADLER32", label: "Adler-32", selectLabel: "Adler32 | adler32 | No criptografico", family: "checksum", bits: 32 },
+    { value: "FLETCHER16", label: "Fletcher-16", selectLabel: "Fletcher16 | fletcher16 | No criptografico", family: "checksum", bits: 16 },
+    { value: "CRC32", label: "CRC-32 IEEE", selectLabel: "CRC32 | cksum / crc32 | No criptografico", family: "checksum", bits: 32 }
+];
+
+const hashAlgorithms = [...hashDigestAlgorithms, ...hashChecksumAlgorithms];
+const hashChecksumAlgorithmValues = new Set(hashChecksumAlgorithms.map(item => item.value));
+const hashSumCommandAlgorithms = [
+    { algorithm: "MD5", command: "md5sum" },
+    { algorithm: "SHA1", command: "sha1sum" },
+    { algorithm: "SHA256", command: "sha256sum" },
+    { algorithm: "SHA512", command: "sha512sum" }
+];
+const hashSumLineAlgorithmValues = new Set(hashSumCommandAlgorithms.map(item => item.algorithm));
+
+const hashDigestEncodings = [
     { label: "Hex", value: "hex" },
     { label: "Base64", value: "base64" }
 ];
+const hashDigestSumEncodings = [
+    ...hashDigestEncodings,
+    { label: "Linea *sum", value: "sumline" }
+];
+const hashChecksumEncodings = [
+    { label: "Hex", value: "hex" },
+    { label: "Decimal / sum", value: "decimal" },
+    { label: "Base64", value: "base64" }
+];
+const hashLookupAlgorithmOptions = [
+    { value: "auto", label: "Auto detectar", selectLabel: "AUTO | patron/longitud | Analisis" },
+    { value: "MD5", label: "MD5", selectLabel: "MD5 | md5sum | Inseguro" },
+    { value: "SHA1", label: "SHA1", selectLabel: "SHA1 | sha1sum | Inseguro" },
+    { value: "SHA224", label: "SHA224", selectLabel: "SHA224 | openssl dgst -sha224 | Legacy" },
+    { value: "SHA256", label: "SHA256", selectLabel: "SHA256 | sha256sum | Recomendado" },
+    { value: "SHA384", label: "SHA384", selectLabel: "SHA384 | openssl dgst -sha384 | Recomendado" },
+    { value: "SHA512", label: "SHA512", selectLabel: "SHA512 | sha512sum | Recomendado" },
+    { value: "SHA3_256", label: "SHA3-256", selectLabel: "SHA3-256 | cksum -a sha3 -l 256 | Recomendado" },
+    { value: "RIPEMD160", label: "RIPEMD-160", selectLabel: "RIPEMD160 | openssl dgst -ripemd160 | Legacy" },
+    { value: "MYSQL5", label: "MySQL 4.1+/5", selectLabel: "MYSQL5 | SHA1(SHA1_bin) | Legacy" }
+];
+const passwordCrackerAlgorithmOptions = hashLookupAlgorithmOptions.map(item =>
+    item.value === "auto" ? { ...item, selectLabel: "AUTO | identificar y probar | Auditoria" } : item
+);
+const passwordCrackerAttackModes = redTeamAttackModes.filter(item =>
+    ["straight", "rules", "mask", "hybridWordMask", "hybridMaskWord", "combinator"].includes(item.value)
+);
+const passwordCrackerRuleModes = redTeamRulePresets;
+const hashLookupSaltModes = [
+    { value: "auto", label: "Auto: plain, plain+salt y salt+plain" },
+    { value: "none", label: "Sin salt: hash(plain)" },
+    { value: "plain-salt", label: "hash(plain + salt)" },
+    { value: "salt-plain", label: "hash(salt + plain)" }
+];
+const rainbowSaltModes = hashLookupSaltModes.filter(item => item.value !== "auto");
+const rainbowAlgorithmOptions = hashLookupAlgorithmOptions
+    .filter(item => ["MD5", "SHA1", "SHA224", "SHA256", "SHA384", "SHA512", "SHA3_256", "RIPEMD160", "MYSQL5"].includes(item.value))
+    .map(item => item.value === "SHA256"
+        ? { ...item, selectLabel: "SHA256 | sha256sum | Rapido/sin salt" }
+        : item.value === "SHA512"
+            ? { ...item, selectLabel: "SHA512 | sha512sum | Rapido/sin salt" }
+            : item
+    );
+const rainbowAlphabetOptions = [
+    { value: "lower", label: "minusculas a-z" },
+    { value: "lowernum", label: "minusculas + numeros" },
+    { value: "alnum", label: "a-z A-Z 0-9" },
+    { value: "hex", label: "hexadecimal 0-9a-f" },
+    { value: "custom", label: "personalizado" }
+];
+const hashLookupLocalAlgorithms = hashLookupAlgorithmOptions
+    .filter(item => item.value !== "auto")
+    .map(item => item.value);
 
 const kdfToolConfigs = {
     kdf: {
         title: "Derivacion de claves",
-        copy: "Laboratorio legacy para alternar PBKDF2 y HKDF. Las vistas principales separan ambos flujos.",
+        copy: "Laboratorio para alternar PBKDF2, HKDF, Argon2, scrypt, yescrypt y bcrypt con parametros de coste visibles.",
         mode: "PBKDF2",
         showMode: true
     },
@@ -2456,17 +3260,131 @@ const kdfToolConfigs = {
         copy: "Extrae y expande material de alta entropia usando salt e info de contexto para separar usos de clave.",
         mode: "HKDF",
         showMode: false
+    },
+    argon2: {
+        title: "Argon2",
+        copy: "Password hashing moderno y resistente a memoria con variantes Argon2id, Argon2i y Argon2d ejecutadas en WebAssembly.",
+        mode: "ARGON2",
+        algorithm: "ARGON2ID",
+        showMode: false
+    },
+    scrypt: {
+        title: "scrypt",
+        copy: "Derivacion de claves resistente a memoria con parametros N, r y p para elevar el coste de ataques offline.",
+        mode: "SCRYPT",
+        algorithm: "SCRYPT",
+        showMode: false
+    },
+    yescrypt: {
+        title: "yescrypt",
+        copy: "Password hashing y KDF resistente a memoria, basado en scrypt y usado en sistemas Linux modernos con formato modular $y$.",
+        mode: "YESCRYPT",
+        algorithm: "YESCRYPT",
+        showMode: false
+    },
+    bcrypt: {
+        title: "bcrypt",
+        copy: "Hash de passwords adaptativo con coste logaritmico, salt modular crypt y limite practico de 72 bytes.",
+        mode: "BCRYPT",
+        algorithm: "BCRYPT",
+        showMode: false
     }
 };
 
-const cipherAlgorithms = ["AES", "DES", "TripleDES", "RC4", "Rabbit"];
+const cipherAlgorithms = [
+    { value: "AES", label: "AES / Rijndael", selectLabel: "AES | openssl enc -aes-256-* | Recomendado", family: "block", blockBytes: 16, recommendedKeyBytes: 32, modern: true },
+    { value: "DES", label: "DES", selectLabel: "DES | openssl enc -des | Inseguro", family: "block", blockBytes: 8, recommendedKeyBytes: 8, legacy: true },
+    { value: "TripleDES", label: "TripleDES / 3DES", selectLabel: "TripleDES | openssl enc -des-ede3 | Legacy", family: "block", blockBytes: 8, recommendedKeyBytes: 24, legacy: true },
+    { value: "RC4", label: "RC4", selectLabel: "RC4 | openssl enc -rc4 | Inseguro", family: "stream", recommendedKeyBytes: 16, legacy: true },
+    { value: "RC4Drop", label: "RC4Drop", selectLabel: "RC4Drop | CryptoJS.RC4Drop | Inseguro", family: "stream", recommendedKeyBytes: 16, legacy: true },
+    { value: "Rabbit", label: "Rabbit", selectLabel: "Rabbit | CryptoJS.Rabbit | Legacy", family: "stream", recommendedKeyBytes: 16 },
+    { value: "RabbitLegacy", label: "RabbitLegacy", selectLabel: "RabbitLegacy | CryptoJS.RabbitLegacy | Legacy", family: "stream", recommendedKeyBytes: 16, legacy: true }
+];
+const cipherModes = [
+    { value: "CBC", label: "CBC" },
+    { value: "CFB", label: "CFB" },
+    { value: "CTR", label: "CTR" },
+    { value: "CTRGladman", label: "CTR Gladman" },
+    { value: "OFB", label: "OFB" },
+    { value: "ECB", label: "ECB legacy" }
+];
+const cipherPaddings = [
+    { value: "Pkcs7", label: "Pkcs7" },
+    { value: "AnsiX923", label: "AnsiX923" },
+    { value: "Iso10126", label: "Iso10126" },
+    { value: "Iso97971", label: "Iso97971" },
+    { value: "ZeroPadding", label: "ZeroPadding" },
+    { value: "NoPadding", label: "NoPadding" }
+];
 const asymmetricKeySizes = [2048, 3072, 4096];
-const asymmetricHashes = ["SHA-256", "SHA-384", "SHA-512"];
+const asymmetricHashOptions = [
+    { value: "SHA-256", label: "SHA-256", selectLabel: "SHA256 | rsa_oaep_md:sha256 | Recomendado" },
+    { value: "SHA-384", label: "SHA-384", selectLabel: "SHA384 | rsa_oaep_md:sha384 | Recomendado" },
+    { value: "SHA-512", label: "SHA-512", selectLabel: "SHA512 | rsa_oaep_md:sha512 | Recomendado" }
+];
 const asymmetricHashBytes = {
     "SHA-256": 32,
     "SHA-384": 48,
     "SHA-512": 64
 };
+const kdfHashOptions = [
+    { value: "SHA-256", label: "SHA-256", selectLabel: "SHA256 | openssl kdf digest:SHA2-256 | Recomendado" },
+    { value: "SHA-384", label: "SHA-384", selectLabel: "SHA384 | openssl kdf digest:SHA2-384 | Recomendado" },
+    { value: "SHA-512", label: "SHA-512", selectLabel: "SHA512 | openssl kdf digest:SHA2-512 | Recomendado" }
+];
+const argon2AlgorithmOptions = [
+    { value: "ARGON2ID", label: "Argon2id", selectLabel: "Argon2id | argon2id / hashcat -m 8200 | Recomendado" },
+    { value: "ARGON2I", label: "Argon2i", selectLabel: "Argon2i | argon2i / hashcat -m 8200 | Contextual" },
+    { value: "ARGON2D", label: "Argon2d", selectLabel: "Argon2d | argon2d / hashcat -m 8200 | GPU-hard" }
+];
+const scryptAlgorithmOptions = [
+    { value: "SCRYPT", label: "scrypt", selectLabel: "scrypt | openssl kdf SCRYPT | Recomendado" }
+];
+const yescryptAlgorithmOptions = [
+    { value: "YESCRYPT", label: "yescrypt", selectLabel: "yescrypt | $y$ / john --format=crypt | Recomendado" }
+];
+const bcryptAlgorithmOptions = [
+    { value: "BCRYPT", label: "bcrypt", selectLabel: "bcrypt | htpasswd -B / hashcat -m 3200 | Recomendado" }
+];
+const kdfModeOptions = [
+    { value: "PBKDF2", label: "PBKDF2" },
+    { value: "HKDF", label: "HKDF" },
+    { value: "ARGON2", label: "Argon2" },
+    { value: "SCRYPT", label: "scrypt" },
+    { value: "YESCRYPT", label: "yescrypt" },
+    { value: "BCRYPT", label: "bcrypt" }
+];
+const kdfAlgorithmOptionsByMode = {
+    PBKDF2: kdfHashOptions,
+    HKDF: kdfHashOptions,
+    ARGON2: argon2AlgorithmOptions,
+    SCRYPT: scryptAlgorithmOptions,
+    YESCRYPT: yescryptAlgorithmOptions,
+    BCRYPT: bcryptAlgorithmOptions
+};
+const signatureAlgorithmOptions = [
+    { value: "RSA-PSS", label: "RSA-PSS SHA-256", selectLabel: "RSA-PSS SHA256 | openssl dgst -sha256 | Recomendado" },
+    { value: "ECDSA-P256", label: "ECDSA P-256 SHA-256", selectLabel: "ECDSA P-256 SHA256 | openssl dgst -sha256 | Recomendado" }
+];
+const keyConverterAlgorithmOptions = [
+    { value: "RSA-OAEP", label: "RSA-OAEP", selectLabel: "RSA-OAEP | openssl pkeyutl | Recomendado" },
+    { value: "RSA-PSS", label: "RSA-PSS", selectLabel: "RSA-PSS | openssl dgst -sha256 | Recomendado" },
+    { value: "ECDSA", label: "ECDSA P-256", selectLabel: "ECDSA P-256 | openssl dgst -sha256 | Recomendado" },
+    { value: "ECDH", label: "ECDH P-256", selectLabel: "ECDH P-256 | openssl pkeyutl -derive | Recomendado" }
+];
+const steghideEncryptionOptions = [
+    { value: "aes-gcm", label: "AES-GCM + PBKDF2", selectLabel: "AES-GCM | WebCrypto AES-GCM + PBKDF2 | Recomendado" },
+    { value: "none", label: "Sin cifrado", selectLabel: "Sin cifrado | steghide -e none | Inseguro" }
+];
+const jsonSignAlgorithmOptions = [
+    { value: "SHA256", label: "HMAC-SHA256", selectLabel: "HMAC-SHA256 | openssl dgst -sha256 -hmac | Recomendado" },
+    { value: "SHA512", label: "HMAC-SHA512", selectLabel: "HMAC-SHA512 | openssl dgst -sha512 -hmac | Recomendado" }
+];
+const otpAlgorithmOptions = [
+    { value: "SHA1", label: "SHA1", selectLabel: "SHA1 | oathtool --totp | Compatibilidad RFC" },
+    { value: "SHA256", label: "SHA256", selectLabel: "SHA256 | oathtool --totp=sha256 | Recomendado" },
+    { value: "SHA512", label: "SHA512", selectLabel: "SHA512 | oathtool --totp=sha512 | Recomendado" }
+];
 
 const transformOperations = [
     { label: "Base64 codificar", value: "base64-encode" },
@@ -2948,8 +3866,67 @@ const hashIterations = ref(120000);
 const hashKeySize = ref(32);
 const hashExpected = ref("");
 const hashResult = ref(null);
+const hashLookupInput = ref("");
+const hashLookupCandidates = ref("");
+const hashLookupAlgorithm = ref("auto");
+const hashLookupSaltMode = ref("auto");
+const hashLookupTextEncoding = ref("utf8");
+const hashLookupLimit = ref(20000);
+const hashLookupResult = ref(null);
+const redTeamWorkbenchInput = ref("");
+const redTeamWorkbenchHashMode = ref("auto");
+const redTeamWorkbenchAttackMode = ref("rules");
+const redTeamWorkbenchRulePreset = ref("best64-lite");
+const redTeamWorkbenchPrimaryWordlist = ref("");
+const redTeamWorkbenchSecondaryWordlist = ref("");
+const redTeamWorkbenchMask = ref("?l?l?l?l?d?d");
+const redTeamWorkbenchCharset1 = ref(redTeamDefaultCharsets["1"]);
+const redTeamWorkbenchCharset2 = ref(redTeamDefaultCharsets["2"]);
+const redTeamWorkbenchCharset3 = ref(redTeamDefaultCharsets["3"]);
+const redTeamWorkbenchCharset4 = ref(redTeamDefaultCharsets["4"]);
+const redTeamWorkbenchLimit = ref(25000);
+const redTeamWorkbenchWorkload = ref(3);
+const redTeamWorkbenchIncrement = ref(true);
+const redTeamWorkbenchOptimized = ref(true);
+const redTeamWorkbenchUsername = ref(false);
+const redTeamWorkbenchResult = ref(null);
+const passwordCrackerInput = ref("");
+const passwordCrackerCandidates = ref("");
+const passwordCrackerSecondaryCandidates = ref("");
+const passwordCrackerAlgorithm = ref("auto");
+const passwordCrackerSaltMode = ref("auto");
+const passwordCrackerTextEncoding = ref("utf8");
+const passwordCrackerAttackMode = ref("rules");
+const passwordCrackerRuleMode = ref("common");
+const passwordCrackerMask = ref("?d?d?d");
+const passwordCrackerCharset1 = ref(redTeamDefaultCharsets["1"]);
+const passwordCrackerCharset2 = ref(redTeamDefaultCharsets["2"]);
+const passwordCrackerCharset3 = ref(redTeamDefaultCharsets["3"]);
+const passwordCrackerCharset4 = ref(redTeamDefaultCharsets["4"]);
+const passwordCrackerLimit = ref(10000);
+const passwordCrackerAttemptBudget = ref(150000);
+const passwordCrackerResult = ref(null);
+const rainbowAlgorithm = ref("MD5");
+const rainbowSaltMode = ref("none");
+const rainbowTextEncoding = ref("utf8");
+const rainbowChainLength = ref(80);
+const rainbowMaxSeeds = ref(120);
+const rainbowPlainMin = ref(4);
+const rainbowPlainMax = ref(8);
+const rainbowAlphabetPreset = ref("lowernum");
+const rainbowCustomAlphabet = ref("abcdef0123456789");
+const rainbowSalt = ref("");
+const rainbowSeeds = ref("");
+const rainbowTargets = ref("");
+const rainbowSerializedTable = ref("");
+const rainbowTableCache = ref(null);
+const rainbowResult = ref(null);
 
 const cipherAlgorithm = ref("AES");
+const cipherMode = ref("CBC");
+const cipherPadding = ref("Pkcs7");
+const cipherDropWords = ref(192);
+const cipherTextEncoding = ref("utf8");
 const cipherInput = ref("");
 const cipherKey = ref("");
 const cipherResult = ref(null);
@@ -2998,6 +3975,14 @@ const kdfMode = ref("PBKDF2");
 const kdfHash = ref("SHA-256");
 const kdfLength = ref(32);
 const kdfIterations = ref(180000);
+const kdfArgonIterations = ref(2);
+const kdfArgonMemory = ref(19456);
+const kdfArgonParallelism = ref(1);
+const kdfScryptN = ref(16384);
+const kdfScryptR = ref(8);
+const kdfScryptP = ref(1);
+const kdfYescryptT = ref(0);
+const kdfBcryptRounds = ref(10);
 const kdfTextEncoding = ref("utf8");
 const kdfInput = ref("");
 const kdfSalt = ref("");
@@ -3190,6 +4175,15 @@ const digestMap = {
     SHA1: CryptoJS.SHA1,
     MD5: CryptoJS.MD5
 };
+const hashLookupDigestMap = {
+    MD5: CryptoJS.MD5,
+    SHA1: CryptoJS.SHA1,
+    SHA224: CryptoJS.SHA224,
+    SHA256: CryptoJS.SHA256,
+    SHA384: CryptoJS.SHA384,
+    SHA512: CryptoJS.SHA512,
+    RIPEMD160: CryptoJS.RIPEMD160
+};
 
 const hmacMap = {
     SHA256: CryptoJS.HmacSHA256,
@@ -3204,8 +4198,18 @@ const cipherMap = {
     DES: CryptoJS.DES,
     TripleDES: CryptoJS.TripleDES,
     RC4: CryptoJS.RC4,
-    Rabbit: CryptoJS.Rabbit
+    RC4Drop: CryptoJS.RC4Drop,
+    Rabbit: CryptoJS.Rabbit,
+    RabbitLegacy: CryptoJS.RabbitLegacy
 };
+
+const selectedCipherAlgorithmConfig = computed(() =>
+    cipherAlgorithms.find(item => item.value === cipherAlgorithm.value) || cipherAlgorithms[0]
+);
+
+const isCipherBlockAlgorithm = computed(() =>
+    selectedCipherAlgorithmConfig.value.family === "block"
+);
 
 const activeHashToolConfig = computed(() =>
     hashToolConfigs[props.toolModule] || hashToolConfigs.hash
@@ -3215,12 +4219,68 @@ const isHashToolVisible = computed(() =>
     Object.keys(hashToolConfigs).includes(props.toolModule)
 );
 
+const selectedHashAlgorithmConfig = computed(() =>
+    hashAlgorithms.find(item => item.value === hashAlgorithm.value) || hashDigestAlgorithms[0]
+);
+
+const visibleHashAlgorithms = computed(() =>
+    hashMode.value === "digest" ? hashAlgorithms : hashDigestAlgorithms
+);
+
+const isSelectedChecksumAlgorithm = computed(() =>
+    hashChecksumAlgorithmValues.has(hashAlgorithm.value)
+);
+
+const visibleHashEncodings = computed(() => {
+    if (isSelectedChecksumAlgorithm.value) return hashChecksumEncodings;
+    if (hashMode.value === "digest" && hashSumLineAlgorithmValues.has(hashAlgorithm.value)) {
+        return hashDigestSumEncodings;
+    }
+    return hashDigestEncodings;
+});
+
 const activeKdfToolConfig = computed(() =>
     kdfToolConfigs[props.toolModule] || kdfToolConfigs.kdf
 );
 
 const isKdfToolVisible = computed(() =>
     Object.keys(kdfToolConfigs).includes(props.toolModule)
+);
+
+const visibleKdfAlgorithmOptions = computed(() =>
+    kdfAlgorithmOptionsByMode[kdfMode.value] || kdfHashOptions
+);
+
+const selectedKdfAlgorithmConfig = computed(() =>
+    visibleKdfAlgorithmOptions.value.find(item => item.value === kdfHash.value)
+        || visibleKdfAlgorithmOptions.value[0]
+);
+
+const kdfAlgorithmLabel = computed(() =>
+    ["PBKDF2", "HKDF"].includes(kdfMode.value) ? "Hash / PRF" : "Algoritmo"
+);
+
+const isKdfLengthVisible = computed(() =>
+    ["PBKDF2", "HKDF", "ARGON2", "SCRYPT", "YESCRYPT"].includes(kdfMode.value)
+);
+
+const kdfInputLabel = computed(() =>
+    kdfMode.value === "HKDF" ? "Material de entrada" : "Password o material base"
+);
+
+const kdfInputPlaceholder = computed(() => {
+    if (kdfMode.value === "HKDF") return "Secreto de alta entropia o semilla ya fuerte";
+    if (kdfMode.value === "BCRYPT") return "Password; bcrypt solo usa de forma portable los primeros 72 bytes";
+    if (kdfMode.value === "YESCRYPT") return "Password para derivar KDF o generar formato $y$";
+    return "Password, passphrase o secreto base";
+});
+
+const kdfSaltLabel = computed(() =>
+    kdfMode.value === "BCRYPT" ? "Salt bcrypt opcional" : "Salt Base64"
+);
+
+const kdfSaltPlaceholder = computed(() =>
+    kdfMode.value === "BCRYPT" ? "$2b$10$... o vacio para generarlo" : "Salt aleatorio en Base64"
 );
 
 const currentTransformCategory = computed(() =>
@@ -3308,6 +4368,14 @@ watch(() => props.toolModule, () => {
     syncKdfToolDefaults();
 }, { immediate: true });
 
+watch([hashMode, hashAlgorithm], () => {
+    ensureHashSelection();
+});
+
+watch(kdfMode, () => {
+    ensureKdfSelection();
+});
+
 const STEGO_MAGIC_TEXT = "FEANOR_STEGO_V1";
 const STEGO_MAGIC_BYTES = new TextEncoder().encode(STEGO_MAGIC_TEXT);
 const STEGO_LENGTH_BYTES = 4;
@@ -3331,6 +4399,180 @@ function wordArrayToString(wordArray, encoding) {
     return encoding === "base64"
         ? wordArray.toString(CryptoJS.enc.Base64)
         : wordArray.toString(CryptoJS.enc.Hex);
+}
+
+function safeSumTargetName(value) {
+    const cleaned = String(value || "-").replace(/[\r\n\t]/g, " ").trim();
+    return cleaned || "-";
+}
+
+function hashSumTargetForInput(input) {
+    return input.kind === "file" ? safeSumTargetName(input.label) : "-";
+}
+
+function hashWordArrayForAlgorithm(bytes, algorithm) {
+    const digest = digestMap[algorithm];
+    if (!digest) throw new Error(`El algoritmo ${algorithm} no puede generar una linea *sum.`);
+    return digest(bytesToWordArray(bytes));
+}
+
+function hashHexForAlgorithm(bytes, algorithm) {
+    return hashWordArrayForAlgorithm(bytes, algorithm).toString(CryptoJS.enc.Hex);
+}
+
+function hashSumCommandLine(bytes, algorithm, targetName) {
+    return `${hashHexForAlgorithm(bytes, algorithm)}  ${safeSumTargetName(targetName)}`;
+}
+
+function buildHashSumLines(bytes, targetName) {
+    return hashSumCommandAlgorithms.map(item =>
+        `${item.command}: ${hashSumCommandLine(bytes, item.algorithm, targetName)}`
+    );
+}
+
+function numberToBytesBE(value, byteLength) {
+    let number = BigInt(Number(value) >>> 0);
+    const output = new Uint8Array(byteLength);
+    for (let index = byteLength - 1; index >= 0; index -= 1) {
+        output[index] = Number(number & 0xffn);
+        number >>= 8n;
+    }
+    return output;
+}
+
+function fixedHex(value, bits) {
+    const width = Math.ceil(bits / 4);
+    return BigInt(Number(value) >>> 0).toString(16).padStart(width, "0");
+}
+
+function additiveChecksum(bytes, bits) {
+    if (bits === 32) {
+        let checksum = 0;
+        bytes.forEach(byte => {
+            checksum = (checksum + byte) >>> 0;
+        });
+        return checksum >>> 0;
+    }
+    const modulus = 2 ** bits;
+    let checksum = 0;
+    bytes.forEach(byte => {
+        checksum = (checksum + byte) % modulus;
+    });
+    return checksum;
+}
+
+function bsdChecksum(bytes) {
+    let checksum = 0;
+    bytes.forEach(byte => {
+        checksum = (((checksum >>> 1) + ((checksum & 1) << 15) + byte) & 0xffff);
+    });
+    return {
+        value: checksum,
+        blocks: Math.ceil(bytes.length / 1024),
+        note: "Salida compatible con sum -r: checksum y bloques de 1024 bytes."
+    };
+}
+
+function sysvChecksum(bytes) {
+    let total = 0;
+    bytes.forEach(byte => {
+        total += byte;
+    });
+    let checksum = (total & 0xffff) + (total >>> 16);
+    checksum = (checksum & 0xffff) + (checksum >>> 16);
+    return {
+        value: checksum & 0xffff,
+        blocks: Math.ceil(bytes.length / 512),
+        note: "Salida compatible con sum -s: checksum y bloques de 512 bytes."
+    };
+}
+
+function adler32Checksum(bytes) {
+    const mod = 65521;
+    let a = 1;
+    let b = 0;
+    bytes.forEach(byte => {
+        a = (a + byte) % mod;
+        b = (b + a) % mod;
+    });
+    return ((b << 16) | a) >>> 0;
+}
+
+function fletcher16Checksum(bytes) {
+    let sum1 = 0;
+    let sum2 = 0;
+    bytes.forEach(byte => {
+        sum1 = (sum1 + byte) % 255;
+        sum2 = (sum2 + sum1) % 255;
+    });
+    return ((sum2 << 8) | sum1) & 0xffff;
+}
+
+function checksumBytesForValue(value, bits) {
+    return numberToBytesBE(value, Math.max(1, Math.ceil(bits / 8)));
+}
+
+function calculateChecksum(bytes, algorithm) {
+    const config = hashChecksumAlgorithms.find(item => item.value === algorithm);
+    if (!config) throw new Error(`Checksum no soportado: ${algorithm}`);
+    let value = 0;
+    let blocks = null;
+    let note = "Checksum local sobre bytes exactos.";
+
+    if (algorithm === "SUM8" || algorithm === "SUM16" || algorithm === "SUM32") {
+        value = additiveChecksum(bytes, config.bits);
+        note = `Suma aditiva modulo 2^${config.bits}. Detecta cambios simples, pero no resiste manipulacion.`;
+    } else if (algorithm === "BSDSUM") {
+        const result = bsdChecksum(bytes);
+        value = result.value;
+        blocks = result.blocks;
+        note = result.note;
+    } else if (algorithm === "SYSVSUM") {
+        const result = sysvChecksum(bytes);
+        value = result.value;
+        blocks = result.blocks;
+        note = result.note;
+    } else if (algorithm === "ADLER32") {
+        value = adler32Checksum(bytes);
+        note = "Adler-32 es rapido y comun en flujos zlib, pero no es criptografico.";
+    } else if (algorithm === "FLETCHER16") {
+        value = fletcher16Checksum(bytes);
+        note = "Fletcher-16 se usa como checksum ligero en protocolos y ejemplos didacticos.";
+    } else if (algorithm === "CRC32") {
+        value = pngCrc32(bytes);
+        note = "CRC-32 IEEE detecta errores accidentales y es comun en ZIP, PNG y contenedores binarios.";
+    }
+
+    const bits = config.bits;
+    const outputBytes = checksumBytesForValue(value, bits);
+    const decimal = String(value >>> 0);
+    return {
+        ...config,
+        value,
+        blocks,
+        decimal,
+        hex: fixedHex(value, bits),
+        bytes: outputBytes,
+        note
+    };
+}
+
+function formatChecksumOutput(checksum, encoding) {
+    if (encoding === "base64") return bytesToBase64(checksum.bytes);
+    if (encoding === "decimal") {
+        return checksum.blocks === null ? checksum.decimal : `${checksum.decimal} ${checksum.blocks}`;
+    }
+    return checksum.hex;
+}
+
+function buildChecksumSuiteLines(bytes) {
+    return hashChecksumAlgorithms.map(item => {
+        const checksum = calculateChecksum(bytes, item.value);
+        const value = checksum.blocks === null
+            ? `${checksum.decimal} / 0x${checksum.hex}`
+            : `${checksum.decimal} ${checksum.blocks} / 0x${checksum.hex}`;
+        return `${item.label}: ${value}`;
+    });
 }
 
 function safeJson(value) {
@@ -4005,6 +5247,80 @@ function isModuleVisible(module) {
     return props.toolModule === module;
 }
 
+function isFeanorFieldRequired(fieldId) {
+    if (requiredFeanorFieldIds.has(fieldId)) return true;
+    if (fieldId === "boolean-right") return booleanOperation.value !== "NOT";
+    if (fieldId === "modular-exponent") return modularOperation.value === "pow";
+    if (fieldId === "hash-file") return hashInputKind.value === "file";
+    if (fieldId === "hash-input") return hashInputKind.value === "text";
+    if (fieldId === "hash-secret" || fieldId === "hash-secret-encoding") return hashMode.value === "hmac";
+    if (["hash-salt", "hash-iterations", "hash-key-size"].includes(fieldId)) return hashMode.value === "pbkdf2";
+    if (fieldId === "redteam-mask") return ["mask", "hybridWordMask", "hybridMaskWord"].includes(redTeamWorkbenchAttackMode.value);
+    if (fieldId === "redteam-primary-wordlist") {
+        return ["straight", "rules", "hybridWordMask", "hybridMaskWord", "combinator"].includes(redTeamWorkbenchAttackMode.value);
+    }
+    if (fieldId === "redteam-secondary-wordlist") return redTeamWorkbenchAttackMode.value === "combinator";
+    if (fieldId === "password-cracker-mask") return ["mask", "hybridWordMask", "hybridMaskWord"].includes(passwordCrackerAttackMode.value);
+    if (fieldId === "password-cracker-candidates") {
+        return ["straight", "rules", "hybridWordMask", "hybridMaskWord", "combinator"].includes(passwordCrackerAttackMode.value);
+    }
+    if (fieldId === "password-cracker-secondary-candidates") return passwordCrackerAttackMode.value === "combinator";
+    if (fieldId === "rainbow-salt") return rainbowSaltMode.value !== "none";
+    if (fieldId === "rainbow-custom-alphabet") return rainbowAlphabetPreset.value === "custom";
+    if (fieldId === "cipher-mode" || fieldId === "cipher-padding") return isCipherBlockAlgorithm.value;
+    if (fieldId === "cipher-drop") return cipherAlgorithm.value === "RC4Drop";
+    if (fieldId === "kdf-iterations") return kdfMode.value === "PBKDF2";
+    if (["kdf-argon-iterations", "kdf-argon-memory", "kdf-argon-parallelism"].includes(fieldId)) return kdfMode.value === "ARGON2";
+    if (["kdf-scrypt-n", "kdf-scrypt-r", "kdf-scrypt-p"].includes(fieldId)) return kdfMode.value === "SCRYPT" || kdfMode.value === "YESCRYPT";
+    if (fieldId === "kdf-yescrypt-t") return kdfMode.value === "YESCRYPT";
+    if (fieldId === "kdf-bcrypt-rounds") return kdfMode.value === "BCRYPT";
+    if (fieldId === "jwt-jwks") return true;
+    if (fieldId === "jwt-hmac-secret") return true;
+    if (fieldId === "transform-file") return isTransformFileCategory.value && transformDirection.value === "encode";
+    if (fieldId === "transform-input") return isTransformTextInputVisible.value;
+    if (fieldId === "json-doc-a" || fieldId === "json-doc-b") return true;
+    if (fieldId === "stego-payload-encoding") return ["text", "json"].includes(stegoEmbedPayloadSource.value);
+    if (fieldId === "stego-payload-file") return stegoEmbedPayloadSource.value === "file";
+    if (fieldId === "stego-embed-payload") return stegoEmbedPayloadSource.value !== "file";
+    if (fieldId === "steghide-secret-file") return steghideOperation.value === "embed";
+    if (fieldId === "steghide-passphrase") return ["embed", "extract"].includes(steghideOperation.value);
+    if (fieldId === "steghide-compression" || fieldId === "steghide-compression-level" || fieldId === "steghide-crc") {
+        return steghideOperation.value === "embed";
+    }
+    if (fieldId === "steghide-wordlist-file" || fieldId === "steghide-max-guesses" || fieldId === "steghide-default-guesses") {
+        return steghideOperation.value === "crack";
+    }
+    if (fieldId === "otp-counter") return otpMode.value === "HOTP";
+    if (fieldId === "otp-code") return true;
+    return false;
+}
+
+function syncRequiredFieldMarkers() {
+    nextTick(() => {
+        if (typeof document === "undefined") return;
+        const page = document.querySelector(".feanor-page");
+        if (!page) return;
+        page.querySelectorAll(".field-label[for]").forEach(label => {
+            const fieldId = label.getAttribute("for");
+            if (!fieldId) return;
+            const required = isFeanorFieldRequired(fieldId);
+            label.classList.toggle("field-label-required", required);
+            const control = document.getElementById(fieldId);
+            if (!control) return;
+            if (required) {
+                control.setAttribute("aria-required", "true");
+                control.setAttribute("data-required-field", "true");
+            } else {
+                control.removeAttribute("aria-required");
+                control.removeAttribute("data-required-field");
+            }
+        });
+    });
+}
+
+onMounted(syncRequiredFieldMarkers);
+onUpdated(syncRequiredFieldMarkers);
+
 async function copyText(value) {
     try {
         await navigator.clipboard.writeText(String(value ?? ""));
@@ -4054,11 +5370,49 @@ function useLastSecretAsHashSecret() {
 function syncHashToolDefaults() {
     if (!isHashToolVisible.value) return;
     hashMode.value = activeHashToolConfig.value.mode;
+    ensureHashSelection();
+}
+
+function ensureHashSelection() {
+    if (!visibleHashAlgorithms.value.some(item => item.value === hashAlgorithm.value)) {
+        hashAlgorithm.value = "SHA256";
+    }
+    if (!visibleHashEncodings.value.some(item => item.value === hashEncoding.value)) {
+        hashEncoding.value = "hex";
+    }
 }
 
 function syncKdfToolDefaults() {
     if (!isKdfToolVisible.value) return;
     kdfMode.value = activeKdfToolConfig.value.mode;
+    ensureKdfSelection();
+    applyKdfCostDefaults(kdfMode.value);
+}
+
+function applyKdfCostDefaults(mode) {
+    if (mode === "SCRYPT") {
+        kdfScryptN.value = 16384;
+        kdfScryptR.value = 8;
+        kdfScryptP.value = 1;
+    } else if (mode === "YESCRYPT") {
+        kdfScryptN.value = 4096;
+        kdfScryptR.value = 32;
+        kdfScryptP.value = 1;
+        kdfYescryptT.value = 0;
+    } else if (mode === "BCRYPT") {
+        kdfBcryptRounds.value = 10;
+    }
+}
+
+function ensureKdfSelection() {
+    const configuredAlgorithm = activeKdfToolConfig.value.algorithm;
+    if (configuredAlgorithm && visibleKdfAlgorithmOptions.value.some(item => item.value === configuredAlgorithm)) {
+        kdfHash.value = configuredAlgorithm;
+        return;
+    }
+    if (!visibleKdfAlgorithmOptions.value.some(item => item.value === kdfHash.value)) {
+        kdfHash.value = visibleKdfAlgorithmOptions.value[0]?.value || "SHA-256";
+    }
 }
 
 function useCipherOutputAsInput() {
@@ -4128,7 +5482,7 @@ function generateHashSalt() {
 }
 
 function fillHashExample() {
-    hashMode.value = "pbkdf2";
+    hashMode.value = activeHashToolConfig.value.mode;
     hashAlgorithm.value = "SHA256";
     hashEncoding.value = "hex";
     hashInputKind.value = "text";
@@ -4136,10 +5490,25 @@ function fillHashExample() {
     hashTextEncoding.value = "utf8";
     hashSecretEncoding.value = "utf8";
     hashInput.value = "Mithril-Forge-2026";
+    hashSecret.value = hashMode.value === "hmac" ? "clave-compartida-feanor" : "";
     hashSalt.value = randomHex(16);
     hashIterations.value = 180000;
     hashKeySize.value = 32;
     hashExpected.value = "";
+    ensureHashSelection();
+}
+
+function fillHashSumExample() {
+    hashMode.value = "digest";
+    hashAlgorithm.value = "SHA256";
+    hashEncoding.value = "sumline";
+    hashInputKind.value = "text";
+    hashFile.value = null;
+    hashTextEncoding.value = "utf8";
+    hashInput.value = "Mithril-Forge-2026\n";
+    hashSecret.value = "";
+    hashExpected.value = "";
+    ensureHashSelection();
 }
 
 async function getHashInputBytes() {
@@ -4158,6 +5527,1308 @@ async function getHashInputBytes() {
         kind: "text",
         note: `${hashInput.value.length} chars / ${encodingDisplayLabel(hashTextEncoding.value)}`
     };
+}
+
+function normalizeHashForLookup(value) {
+    return normalizeValue(value).replace(/^0x/i, "").toLowerCase();
+}
+
+function parseHashLookupSearchEntries(raw) {
+    return String(raw || "")
+        .split(/\r?\n/)
+        .map((line, index) => ({ line: line.trim(), lineNumber: index + 1 }))
+        .filter(item => item.line)
+        .map(item => {
+            const parts = item.line.split(":");
+            return {
+                ...item,
+                hash: (parts[0] || "").trim(),
+                salt: parts.length >= 2 ? (parts[1] || "").trim() : "",
+                plain: parts.length >= 3 ? parts.slice(2).join(":") : ""
+            };
+        });
+}
+
+function parseHashLookupVerifyEntries(raw) {
+    return String(raw || "")
+        .split(/\r?\n/)
+        .map((line, index) => ({ line: line.trim(), lineNumber: index + 1 }))
+        .filter(item => item.line)
+        .map(item => {
+            const parts = item.line.split(":");
+            return {
+                ...item,
+                hash: (parts[0] || "").trim(),
+                salt: parts.length >= 3 ? (parts[1] || "").trim() : "",
+                plain: parts.length >= 3 ? parts.slice(2).join(":") : (parts[1] || "")
+            };
+        });
+}
+
+function hashLookupCandidateLines() {
+    const limit = Math.max(1, Math.min(100000, Number(hashLookupLimit.value) || 20000));
+    const seen = new Set();
+    const candidates = [];
+    String(hashLookupCandidates.value || "").split(/\r?\n/).forEach(line => {
+        const value = line.trim();
+        if (!value || seen.has(value) || candidates.length >= limit) return;
+        seen.add(value);
+        candidates.push(value);
+    });
+    return candidates;
+}
+
+function addHashLookupCandidate(candidates, candidate) {
+    if (!candidate || candidates.some(item => item.name === candidate.name)) return;
+    candidates.push(candidate);
+}
+
+function identifyHashLookupCandidates(hashValue) {
+    const hash = normalizeValue(hashValue);
+    const lower = hash.toLowerCase();
+    const candidates = [];
+
+    detectRedTeamHashModes(hash).forEach(mode => {
+        addHashLookupCandidate(candidates, {
+            name: mode.label,
+            algorithm: mode.localAlgorithm || undefined,
+            status: mode.status,
+            local: Boolean(mode.local && mode.localAlgorithm),
+            note: `${mode.note} Hashcat: ${mode.hashcatMode ? `-m ${mode.hashcatMode}` : "N/D"}. John: ${mode.johnFormat || "N/D"}.`
+        });
+    });
+
+    if (/^\$2[aby]\$\d{2}\$[./A-Za-z0-9]{53}$/.test(hash)) {
+        addHashLookupCandidate(candidates, { name: "bcrypt", status: "Lento", local: false, note: "Hash de password adaptativo con salt y coste embebidos." });
+    }
+    if (/^\$argon2(id|i|d)\$/i.test(hash)) {
+        addHashLookupCandidate(candidates, { name: "Argon2", status: "Recomendado", local: false, note: "Formato PHC con memoria, iteraciones, paralelismo y salt." });
+    }
+    if (/^\$y\$/.test(hash)) {
+        addHashLookupCandidate(candidates, { name: "yescrypt", status: "Recomendado", local: false, note: "Formato libxcrypt/shadow $y$ resistente a memoria. Generable en el modulo yescrypt; cracking real con John/crypt o formato hashcat convertido." });
+    }
+    if (/^\$gy\$/.test(hash)) {
+        addHashLookupCandidate(candidates, { name: "gost-yescrypt", status: "Contextual", local: false, note: "Variante gost-yescrypt con prefijo $gy$ usada por algunos crypt(5)." });
+    }
+    if (/^\$scrypt\$/i.test(hash) || /^\$7\$/.test(hash)) {
+        addHashLookupCandidate(candidates, { name: "scrypt", status: "Recomendado", local: false, note: "Password hashing resistente a memoria; revisa N/r/p o formato crypt." });
+    }
+    if (/^\$1\$/.test(hash)) addHashLookupCandidate(candidates, { name: "md5crypt", status: "Legacy", local: false, note: "Formato Unix/Cisco $1$." });
+    if (/^\$5\$/.test(hash)) addHashLookupCandidate(candidates, { name: "sha256crypt", status: "Legacy", local: false, note: "Formato Unix $5$." });
+    if (/^\$6\$/.test(hash)) addHashLookupCandidate(candidates, { name: "sha512crypt", status: "Legacy", local: false, note: "Formato Unix $6$." });
+    if (/^\$[PH]\$/.test(hash)) addHashLookupCandidate(candidates, { name: "phpass / WordPress", status: "Legacy", local: false, note: "Formato portable PHPass." });
+    if (/^\*[0-9a-f]{40}$/i.test(hash)) {
+        addHashLookupCandidate(candidates, { name: "MySQL 4.1+/5", algorithm: "MYSQL5", status: "Legacy", local: true, note: "SHA1(SHA1_bin(plain)) con prefijo *." });
+    }
+    if (/^\{SSHA\}/i.test(hash)) addHashLookupCandidate(candidates, { name: "LDAP SSHA", status: "Salted", local: false, note: "SHA-1 + salt en Base64." });
+    if (/^\{SHA\}/i.test(hash)) addHashLookupCandidate(candidates, { name: "LDAP SHA", status: "Legacy", local: false, note: "SHA-1 en Base64." });
+
+    if (/^[0-9a-f]+$/i.test(hash)) {
+        if (hash.length === 16) {
+            addHashLookupCandidate(candidates, { name: "Half MD5 / MySQL323", status: "Legacy", local: false, note: "64 bits hexadecimales; demasiado corto para seguridad." });
+        }
+        if (hash.length === 32) {
+            addHashLookupCandidate(candidates, { name: "MD5", algorithm: "MD5", status: "Inseguro", local: true, note: "128 bits hex. Tambien puede confundirse con NTLM/MD4/LM." });
+            addHashLookupCandidate(candidates, { name: "NTLM", status: "Inseguro", local: false, note: "MD4(UTF-16LE). Identificable por longitud, no distinguible solo por forma." });
+            addHashLookupCandidate(candidates, { name: "MD4 / LM", status: "Inseguro", local: false, note: "Misma longitud que MD5; requiere contexto." });
+        }
+        if (hash.length === 40) {
+            addHashLookupCandidate(candidates, { name: "SHA1", algorithm: "SHA1", status: "Inseguro", local: true, note: "160 bits hex." });
+            addHashLookupCandidate(candidates, { name: "RIPEMD-160", algorithm: "RIPEMD160", status: "Legacy", local: true, note: "160 bits hex; indistinguible de SHA1 sin contexto." });
+        }
+        if (hash.length === 56) {
+            addHashLookupCandidate(candidates, { name: "SHA224", algorithm: "SHA224", status: "Legacy", local: true, note: "224 bits hex." });
+        }
+        if (hash.length === 64) {
+            addHashLookupCandidate(candidates, { name: "SHA256", algorithm: "SHA256", status: "Recomendado", local: true, note: "256 bits hex." });
+            addHashLookupCandidate(candidates, { name: "SHA3-256 / Keccak-256", algorithm: "SHA3_256", status: "Recomendado", local: true, note: "Misma longitud que SHA-256; requiere contexto." });
+        }
+        if (hash.length === 96) {
+            addHashLookupCandidate(candidates, { name: "SHA384", algorithm: "SHA384", status: "Recomendado", local: true, note: "384 bits hex." });
+        }
+        if (hash.length === 128) {
+            addHashLookupCandidate(candidates, { name: "SHA512", algorithm: "SHA512", status: "Recomendado", local: true, note: "512 bits hex. Tambien puede coincidir en longitud con Whirlpool/SHA3-512." });
+        }
+    }
+
+    if (!candidates.length && /^[A-Za-z0-9+/=]{20,}$/.test(hash)) {
+        addHashLookupCandidate(candidates, { name: "Base64 digest / token", status: "Analisis", local: false, note: "Puede ser digest binario codificado o material no hash." });
+    }
+
+    return candidates;
+}
+
+function hashLookupAlgorithmsForEntry(entry) {
+    if (hashLookupAlgorithm.value !== "auto") return [hashLookupAlgorithm.value];
+    const detected = identifyHashLookupCandidates(entry.hash)
+        .filter(item => item.local && item.algorithm)
+        .map(item => item.algorithm);
+    return [...new Set(detected)];
+}
+
+function hashLookupSaltModesForEntry(entry) {
+    if (hashLookupSaltMode.value !== "auto") return [hashLookupSaltMode.value];
+    return entry.salt ? ["none", "plain-salt", "salt-plain"] : ["none"];
+}
+
+function hashLookupMaterial(plain, salt, mode) {
+    if (mode === "plain-salt") return `${plain}${salt}`;
+    if (mode === "salt-plain") return `${salt}${plain}`;
+    return plain;
+}
+
+function calculateHashLookupDigest(plain, algorithm, salt = "", saltMode = "none", textEncoding = hashLookupTextEncoding.value) {
+    const material = hashLookupMaterial(plain, salt, saltMode);
+    const inputWordArray = encodedTextWordArray(material, textEncoding);
+    if (algorithm === "MYSQL5") {
+        const inner = CryptoJS.SHA1(inputWordArray);
+        return `*${CryptoJS.SHA1(inner).toString(CryptoJS.enc.Hex).toUpperCase()}`;
+    }
+    if (algorithm === "SHA3_256") {
+        return CryptoJS.SHA3(inputWordArray, { outputLength: 256 }).toString(CryptoJS.enc.Hex);
+    }
+    const digest = hashLookupDigestMap[algorithm];
+    if (typeof digest !== "function") throw new Error(`Algoritmo no soportado en frontend: ${algorithm}`);
+    return digest(inputWordArray).toString(CryptoJS.enc.Hex);
+}
+
+function findHashLookupMatch(entry, plain) {
+    const algorithms = hashLookupAlgorithmsForEntry(entry);
+    const saltModes = hashLookupSaltModesForEntry(entry);
+    const target = normalizeHashForLookup(entry.hash);
+
+    for (const algorithm of algorithms) {
+        for (const saltMode of saltModes) {
+            const digest = calculateHashLookupDigest(plain, algorithm, entry.salt, saltMode);
+            if (normalizeHashForLookup(digest) === target) {
+                return { algorithm, saltMode, digest };
+            }
+        }
+    }
+    return null;
+}
+
+function formatHashLookupSaltSuffix(entry, match) {
+    return entry.salt && match?.saltMode && match.saltMode !== "none" ? ` | salt="${entry.salt}"` : "";
+}
+
+function buildHashLookupResult({ title, body, tone, rows, entries, checked = 0, found = 0, extraPanels = [] }) {
+    const content = rows.length ? rows.join("\n") : "Sin resultados.";
+    return {
+        primaryValue: content,
+        verdictTone: tone,
+        verdictTitle: title,
+        verdictBody: body,
+        summaryCards: [
+            { label: "Entradas", value: String(entries.length), tone: "tone-neutral", note: "Lineas utiles" },
+            { label: "Probadas", value: checked.toLocaleString("es-ES"), tone: checked ? "tone-success" : "tone-neutral", note: "Combinaciones locales" },
+            { label: "Encontradas", value: String(found), tone: found ? "tone-success" : "tone-warning", note: "Matches exactos" },
+            { label: "Encoding", value: encodingDisplayLabel(hashLookupTextEncoding.value), tone: "tone-neutral", note: "Plain y salt" }
+        ],
+        signalCards: [
+            { label: "Algoritmo", value: hashLookupAlgorithm.value === "auto" ? "Auto" : hashLookupAlgorithm.value, tone: "tone-neutral", note: "Selector activo" },
+            { label: "Salt", value: hashLookupSaltMode.value, tone: "tone-neutral", note: "Estrategia" },
+            { label: "Privacidad", value: "Local", tone: "tone-success", note: "Sin consultas externas" },
+            { label: "Limite", value: Number(hashLookupLimit.value).toLocaleString("es-ES"), tone: "tone-neutral", note: "Wordlist" }
+        ],
+        panels: [
+            { title: "Resultado", badge: "hash", content, copyValue: content },
+            ...extraPanels
+        ]
+    };
+}
+
+function identifyHashLookupInput() {
+    const entries = parseHashLookupSearchEntries(hashLookupInput.value);
+    if (!entries.length) {
+        hashLookupResult.value = buildErrorResult("HASH_LOOKUP_EMPTY", "No hay hashes", "Pega uno o varios hashes antes de identificar.");
+        return;
+    }
+
+    const rows = [];
+    let localCount = 0;
+    entries.slice(0, 25).forEach(entry => {
+        const candidates = identifyHashLookupCandidates(entry.hash);
+        const local = candidates.filter(item => item.local);
+        localCount += local.length ? 1 : 0;
+        rows.push(`Linea ${entry.lineNumber}: ${entry.hash}${entry.salt ? `:${entry.salt}` : ""}`);
+        if (!candidates.length) {
+            rows.push("  - Sin patron reconocido. Puede no ser un hash o estar truncado/codificado.");
+            return;
+        }
+        candidates.forEach(candidate => {
+            rows.push(`  - ${candidate.name} | ${candidate.status} | ${candidate.local ? "verificable local" : "requiere herramienta externa"} | ${candidate.note}`);
+        });
+    });
+
+    hashLookupResult.value = buildHashLookupResult({
+        title: localCount ? "Identificacion completada" : "Identificacion sin algoritmo local claro",
+        body: "La identificacion usa patrones, longitud y prefijos. No prueba criptograficamente el algoritmo salvo cuando verificas con plaintext.",
+        tone: localCount ? "verdict-success" : "verdict-warning",
+        rows,
+        entries,
+        found: localCount,
+        extraPanels: [{
+            title: "Comandos sugeridos",
+            badge: "cli",
+            content: buildTextList("Siguiente paso", [
+                "hashid hashes.txt",
+                "hashcat --identify hashes.txt",
+                "john --list=formats",
+                "john --format=crypt shadow-yescrypt.txt --wordlist=wordlist.txt",
+                "hashcat -m <modo> hashes.txt wordlist.txt"
+            ])
+        }]
+    });
+}
+
+function verifyHashLookupFounds() {
+    const entries = parseHashLookupVerifyEntries(hashLookupInput.value).slice(0, 25);
+    if (!entries.length) {
+        hashLookupResult.value = buildErrorResult("HASH_VERIFY_EMPTY", "No hay founds", "Usa formato hash:plain o hash:salt:plain para verificar.");
+        return;
+    }
+
+    const rows = [];
+    let checked = 0;
+    let found = 0;
+    entries.forEach(entry => {
+        if (!entry.hash || !entry.plain) {
+            rows.push(`FAIL linea ${entry.lineNumber} | formato invalido | usa hash:plain o hash:salt:plain`);
+            return;
+        }
+        try {
+            const match = findHashLookupMatch(entry, entry.plain);
+            checked += hashLookupAlgorithmsForEntry(entry).length * hashLookupSaltModesForEntry(entry).length;
+            if (match) {
+                found += 1;
+                rows.push(`OK linea ${entry.lineNumber} | ${match.algorithm} | ${match.saltMode} | plain="${entry.plain}"${formatHashLookupSaltSuffix(entry, match)}`);
+            } else {
+                rows.push(`FAIL linea ${entry.lineNumber} | sin coincidencia local | ${entry.hash}`);
+            }
+        } catch (error) {
+            rows.push(`FAIL linea ${entry.lineNumber} | ${error.message}`);
+        }
+    });
+
+    const tone = found === entries.length ? "verdict-success" : found ? "verdict-warning" : "verdict-danger";
+    hashLookupResult.value = buildHashLookupResult({
+        title: found === entries.length ? "Todos los founds verifican" : found ? "Verificacion parcial" : "Ningun found verifica",
+        body: found
+            ? "Al menos un plaintext genera exactamente el hash indicado con la configuracion local."
+            : "No se ha podido demostrar ningun found con los algoritmos y modos seleccionados.",
+        tone,
+        rows,
+        entries,
+        checked,
+        found
+    });
+}
+
+function crackHashLookupWithWordlist() {
+    const entries = parseHashLookupSearchEntries(hashLookupInput.value).slice(0, 25);
+    const candidates = hashLookupCandidateLines();
+    if (!entries.length) {
+        hashLookupResult.value = buildErrorResult("HASH_CRACK_EMPTY", "No hay hashes", "Pega hashes en formato hash o hash:salt antes de probar una wordlist.");
+        return;
+    }
+    if (!candidates.length) {
+        hashLookupResult.value = buildErrorResult("HASH_WORDLIST_EMPTY", "No hay wordlist", "Pega candidatos, uno por linea. Este laboratorio no consulta bases externas.");
+        return;
+    }
+
+    const rows = [];
+    let checked = 0;
+    let found = 0;
+    entries.forEach(entry => {
+        let match = null;
+        for (const candidate of candidates) {
+            checked += hashLookupAlgorithmsForEntry(entry).length * hashLookupSaltModesForEntry(entry).length;
+            match = findHashLookupMatch(entry, candidate);
+            if (match) {
+                found += 1;
+                rows.push(`FOUND linea ${entry.lineNumber} | ${entry.hash} | ${match.algorithm} | ${match.saltMode} | plain="${candidate}"${formatHashLookupSaltSuffix(entry, match)}`);
+                break;
+            }
+        }
+        if (!match) rows.push(`MISS linea ${entry.lineNumber} | ${entry.hash} | ${candidates.length} candidatos probados`);
+    });
+
+    const tone = found === entries.length ? "verdict-success" : found ? "verdict-warning" : "verdict-warning";
+    hashLookupResult.value = buildHashLookupResult({
+        title: found === entries.length ? "Wordlist resolvio todos los hashes" : found ? "Wordlist con coincidencias parciales" : "Sin coincidencias en wordlist",
+        body: found
+            ? "Se encontraron plaintexts usando solo candidatos locales. Revisa si esos secretos siguen en uso."
+            : "No hubo match; eso no demuestra fortaleza, solo que esta lista local no contenia el plaintext.",
+        tone,
+        rows,
+        entries,
+        checked,
+        found,
+        extraPanels: [{
+            title: "Resumen wordlist",
+            badge: "dict",
+            content: buildTextList("Candidatos", [
+                `${candidates.length.toLocaleString("es-ES")} candidatos unicos cargados.`,
+                "No se aplican reglas de mangling ni fuerza bruta para evitar bloquear el navegador.",
+                "Para auditoria pesada usa hashcat o John con reglas y GPU/CPU dedicadas."
+            ])
+        }]
+    });
+}
+
+function fillHashLookupExample() {
+    hashLookupAlgorithm.value = "auto";
+    hashLookupSaltMode.value = "auto";
+    hashLookupTextEncoding.value = "utf8";
+    hashLookupLimit.value = 20000;
+    hashLookupInput.value = [
+        "5f4dcc3b5aa765d61d8327deb882cf99",
+        "269605a3bc8120778244c5dc4101dce958b1e531:mithril",
+        "5f4dcc3b5aa765d61d8327deb882cf99:password"
+    ].join("\n");
+    hashLookupCandidates.value = [
+        "123456",
+        "password",
+        "admin",
+        "Mithril-Forge-2026",
+        "secret",
+        "dragon"
+    ].join("\n");
+    hashLookupResult.value = null;
+}
+
+function sendHashResultToLookup() {
+    if (!hashResult.value?.primaryValue) {
+        hashLookupResult.value = buildErrorResult("HASH_RESULT_EMPTY", "No hay ultimo hash", "Calcula primero una huella en el modulo Hash digest.");
+        return;
+    }
+    const source = String(hashResult.value.primaryValue);
+    const match = source.match(/\*[0-9a-f]{40}|[0-9a-f]{32,128}/i);
+    if (!match) {
+        hashLookupResult.value = buildErrorResult("HASH_RESULT_UNSUPPORTED", "Salida no reconocida", "La salida actual no parece un hash hexadecimal compatible.");
+        return;
+    }
+    hashLookupInput.value = match[0];
+    hashLookupResult.value = null;
+}
+
+function redTeamWorkbenchCharsets() {
+    return {
+        1: redTeamWorkbenchCharset1.value,
+        2: redTeamWorkbenchCharset2.value,
+        3: redTeamWorkbenchCharset3.value,
+        4: redTeamWorkbenchCharset4.value
+    };
+}
+
+function passwordCrackerCharsets() {
+    return {
+        1: passwordCrackerCharset1.value,
+        2: passwordCrackerCharset2.value,
+        3: passwordCrackerCharset3.value,
+        4: passwordCrackerCharset4.value
+    };
+}
+
+function redTeamInputLines(raw, limit = 50) {
+    return String(raw || "")
+        .split(/\r?\n/)
+        .map((line, index) => ({ line: line.trim(), lineNumber: index + 1 }))
+        .filter(item => item.line)
+        .slice(0, limit);
+}
+
+function detectRedTeamWorkbenchModes() {
+    const lines = redTeamInputLines(redTeamWorkbenchInput.value, 10);
+    const modes = [];
+    lines.forEach(item => {
+        const parts = item.line.split(":").map(part => part.trim()).filter(Boolean);
+        const hashPart = parts.find(part => detectRedTeamHashModes(part).length) || parts[0] || item.line;
+        detectRedTeamHashModes(hashPart).forEach(mode => {
+            if (!modes.some(existing => existing.id === mode.id)) modes.push(mode);
+        });
+    });
+    return modes;
+}
+
+function selectedRedTeamWorkbenchHashMode(detectedModes = []) {
+    if (redTeamWorkbenchHashMode.value === "auto") return detectedModes[0] || null;
+    return findRedTeamHashMode(redTeamWorkbenchHashMode.value);
+}
+
+function buildRedTeamWorkbenchResult({ title, body, tone, detectedModes, selectedMode, candidatePlan, hashcatCommand, johnCommand }) {
+    const preview = candidatePlan.candidates.slice(0, 180).join("\n") || "Sin candidatos locales generados para este modo.";
+    const workflowLines = buildRedTeamWorkflowLines({
+        hashMode: selectedMode,
+        attackMode: redTeamWorkbenchAttackMode.value,
+        candidatePlan,
+        detectedModes
+    });
+    const warnings = candidatePlan.warnings.length
+        ? buildTextList("Avisos", candidatePlan.warnings)
+        : "Avisos\n- Configuracion lista para laboratorio local.";
+
+    return {
+        primaryValue: [hashcatCommand, johnCommand].join("\n"),
+        verdictTone: tone,
+        verdictTitle: title,
+        verdictBody: body,
+        summaryCards: [
+            { label: "Formatos", value: detectedModes.length ? String(detectedModes.length) : "Auto", tone: detectedModes.length ? "tone-success" : "tone-warning", note: selectedMode?.label || "Sin seleccion" },
+            { label: "Keyspace", value: candidatePlan.keyspaceLabel || "N/D", tone: "tone-neutral", note: "Estimado" },
+            { label: "Preview", value: candidatePlan.candidates.length.toLocaleString("es-ES"), tone: candidatePlan.candidates.length ? "tone-success" : "tone-warning", note: "Candidatos locales" },
+            { label: "Modo", value: redTeamWorkbenchAttackMode.value, tone: "tone-neutral", note: "Ataque" }
+        ],
+        signalCards: [
+            { label: "Hashcat", value: selectedMode?.hashcatMode ? `-m ${selectedMode.hashcatMode}` : "N/D", tone: selectedMode?.hashcatMode ? "tone-success" : "tone-warning", note: "Modo" },
+            { label: "John", value: selectedMode?.johnFormat || "N/D", tone: selectedMode?.johnFormat ? "tone-success" : "tone-warning", note: "Formato" },
+            { label: "Reglas", value: redTeamWorkbenchRulePreset.value, tone: "tone-neutral", note: "Preset" },
+            { label: "Mascara", value: redTeamWorkbenchMask.value || "N/D", tone: "tone-neutral", note: candidatePlan.maskSummary || "No usada" }
+        ],
+        panels: [
+            { title: "Comandos", badge: "cli", content: [hashcatCommand, johnCommand].join("\n"), copyValue: [hashcatCommand, johnCommand].join("\n") },
+            { title: "Preview candidatos", badge: "dict", content: preview, copyValue: preview },
+            { title: "Plan tecnico", badge: "plan", content: buildTextList("Flujo", workflowLines), copyValue: workflowLines.join("\n") },
+            { title: "Avisos", badge: "scope", content: warnings, copyValue: candidatePlan.warnings.join("\n") }
+        ]
+    };
+}
+
+function runRedTeamWorkbench() {
+    const detectedModes = detectRedTeamWorkbenchModes();
+    const selectedMode = selectedRedTeamWorkbenchHashMode(detectedModes);
+    const candidatePlan = generateRedTeamCandidates({
+        attackMode: redTeamWorkbenchAttackMode.value,
+        primaryWordlist: redTeamWorkbenchPrimaryWordlist.value,
+        secondaryWordlist: redTeamWorkbenchSecondaryWordlist.value,
+        mask: redTeamWorkbenchMask.value,
+        customCharsets: redTeamWorkbenchCharsets(),
+        rulePreset: redTeamWorkbenchRulePreset.value,
+        limit: redTeamWorkbenchLimit.value
+    });
+    const commandConfig = {
+        hashModeId: redTeamWorkbenchHashMode.value,
+        detectedModes,
+        attackMode: redTeamWorkbenchAttackMode.value,
+        rulePreset: redTeamWorkbenchRulePreset.value,
+        mask: redTeamWorkbenchMask.value,
+        customCharsets: redTeamWorkbenchCharsets(),
+        optimized: redTeamWorkbenchOptimized.value,
+        username: redTeamWorkbenchUsername.value,
+        workload: redTeamWorkbenchWorkload.value,
+        increment: redTeamWorkbenchIncrement.value
+    };
+    const hashcatCommand = buildHashcatCommand(commandConfig);
+    const johnCommand = buildJohnCommand(commandConfig);
+    const hasPlan = Boolean(selectedMode || candidatePlan.candidates.length || candidatePlan.keyspace > 0n);
+
+    redTeamWorkbenchResult.value = buildRedTeamWorkbenchResult({
+        title: hasPlan ? "Plan Red Team generado" : "Plan incompleto",
+        body: hasPlan
+            ? "Se ha generado una estrategia reproducible con comandos, keyspace y preview local."
+            : "Faltan hashes, wordlist o mascara para cerrar el plan.",
+        tone: hasPlan ? "verdict-success" : "verdict-warning",
+        detectedModes,
+        selectedMode,
+        candidatePlan,
+        hashcatCommand,
+        johnCommand
+    });
+}
+
+function fillRedTeamWorkbenchExample() {
+    redTeamWorkbenchInput.value = [
+        "5f4dcc3b5aa765d61d8327deb882cf99",
+        "$2b$10$abcdefghijklmnopqrstuuJ4xkQG8nYDyf1x0Wl4nY9a7e9YzYxWm",
+        "$y$j9T$SALTSTRING22CHARS$hashmaterial"
+    ].join("\n");
+    redTeamWorkbenchHashMode.value = "auto";
+    redTeamWorkbenchAttackMode.value = "rules";
+    redTeamWorkbenchRulePreset.value = "best64-lite";
+    redTeamWorkbenchPrimaryWordlist.value = [
+        "password",
+        "admin",
+        "empresa",
+        "Mithril",
+        "Feanor",
+        "verano"
+    ].join("\n");
+    redTeamWorkbenchSecondaryWordlist.value = ["2026", "!", "prod", "dev", "01"].join("\n");
+    redTeamWorkbenchMask.value = "?l?l?l?l?d?d";
+    redTeamWorkbenchCharset1.value = redTeamDefaultCharsets["1"];
+    redTeamWorkbenchCharset2.value = redTeamDefaultCharsets["2"];
+    redTeamWorkbenchCharset3.value = redTeamDefaultCharsets["3"];
+    redTeamWorkbenchCharset4.value = redTeamDefaultCharsets["4"];
+    redTeamWorkbenchLimit.value = 25000;
+    redTeamWorkbenchWorkload.value = 3;
+    redTeamWorkbenchIncrement.value = true;
+    redTeamWorkbenchOptimized.value = true;
+    redTeamWorkbenchUsername.value = false;
+    redTeamWorkbenchResult.value = null;
+}
+
+function sendHashResultToRedTeamWorkbench() {
+    if (!hashResult.value?.primaryValue) {
+        redTeamWorkbenchResult.value = buildErrorResult("REDTEAM_HASH_RESULT_EMPTY", "No hay ultimo hash", "Calcula primero una huella en el modulo Hash digest.");
+        return;
+    }
+    const source = String(hashResult.value.primaryValue);
+    const match = source.match(/\*[0-9a-f]{40}|[0-9a-f]{32,128}/i);
+    if (!match) {
+        redTeamWorkbenchResult.value = buildErrorResult("REDTEAM_HASH_UNSUPPORTED", "Salida no reconocida", "La salida actual no parece un hash compatible con el workbench.");
+        return;
+    }
+    redTeamWorkbenchInput.value = match[0];
+    redTeamWorkbenchResult.value = null;
+}
+
+function clearRedTeamWorkbench() {
+    redTeamWorkbenchInput.value = "";
+    redTeamWorkbenchPrimaryWordlist.value = "";
+    redTeamWorkbenchSecondaryWordlist.value = "";
+    redTeamWorkbenchResult.value = null;
+}
+
+function uniqueStringChars(value) {
+    return [...new Set(String(value || "").split(""))].join("");
+}
+
+function rainbowAlphabetChars() {
+    const presets = {
+        lower: "abcdefghijklmnopqrstuvwxyz",
+        lowernum: "abcdefghijklmnopqrstuvwxyz0123456789",
+        alnum: "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789",
+        hex: "0123456789abcdef",
+        custom: rainbowCustomAlphabet.value
+    };
+    return uniqueStringChars(presets[rainbowAlphabetPreset.value] || presets.lowernum) || presets.lowernum;
+}
+
+function rainbowSeedLines() {
+    const limit = boundedInteger(rainbowMaxSeeds.value, 120, 1, 1000);
+    const seen = new Set();
+    const seeds = [];
+    String(rainbowSeeds.value || "").split(/\r?\n/).forEach(line => {
+        const value = line.trim();
+        if (!value || seen.has(value) || seeds.length >= limit) return;
+        seen.add(value);
+        seeds.push(value);
+    });
+    return seeds;
+}
+
+function normalizeRainbowConfig(source = {}) {
+    const algorithm = rainbowAlgorithmOptions.some(item => item.value === source.algorithm) ? source.algorithm : "MD5";
+    const saltMode = rainbowSaltModes.some(item => item.value === source.saltMode) ? source.saltMode : "none";
+    const textEncoding = textEncodingOptions.some(item => item.value === source.textEncoding) ? source.textEncoding : "utf8";
+    const minLength = boundedInteger(source.minLength ?? rainbowPlainMin.value, 4, 1, 16);
+    const maxLength = Math.max(minLength, boundedInteger(source.maxLength ?? rainbowPlainMax.value, 8, 1, 16));
+    const alphabet = uniqueStringChars(source.alphabet || rainbowAlphabetChars());
+
+    if (alphabet.length < 2) {
+        throw new Error("El alfabeto de reduccion necesita al menos dos caracteres distintos.");
+    }
+
+    return {
+        algorithm,
+        saltMode,
+        salt: String(source.salt ?? rainbowSalt.value ?? ""),
+        textEncoding,
+        chainLength: boundedInteger(source.chainLength ?? rainbowChainLength.value, 80, 1, 1000),
+        minLength,
+        maxLength,
+        alphabet
+    };
+}
+
+function currentRainbowConfig() {
+    return normalizeRainbowConfig({
+        algorithm: rainbowAlgorithm.value,
+        saltMode: rainbowSaltMode.value,
+        salt: rainbowSalt.value,
+        textEncoding: rainbowTextEncoding.value,
+        chainLength: rainbowChainLength.value,
+        minLength: rainbowPlainMin.value,
+        maxLength: rainbowPlainMax.value,
+        alphabet: rainbowAlphabetChars()
+    });
+}
+
+function applyRainbowConfig(config) {
+    rainbowAlgorithm.value = config.algorithm;
+    rainbowSaltMode.value = config.saltMode;
+    rainbowSalt.value = config.salt;
+    rainbowTextEncoding.value = config.textEncoding;
+    rainbowChainLength.value = config.chainLength;
+    rainbowPlainMin.value = config.minLength;
+    rainbowPlainMax.value = config.maxLength;
+    rainbowAlphabetPreset.value = "custom";
+    rainbowCustomAlphabet.value = config.alphabet;
+}
+
+function rainbowTotalSpace(config) {
+    const base = BigInt(config.alphabet.length);
+    let total = 0n;
+    for (let length = config.minLength; length <= config.maxLength; length += 1) {
+        total += base ** BigInt(length);
+    }
+    return total;
+}
+
+function rainbowCandidateFromIndex(index, config) {
+    const base = BigInt(config.alphabet.length);
+    let cursor = BigInt(index);
+    for (let length = config.minLength; length <= config.maxLength; length += 1) {
+        const span = base ** BigInt(length);
+        if (cursor < span) {
+            const chars = Array(length).fill(config.alphabet[0]);
+            for (let position = length - 1; position >= 0; position -= 1) {
+                chars[position] = config.alphabet[Number(cursor % base)];
+                cursor /= base;
+            }
+            return chars.join("");
+        }
+        cursor -= span;
+    }
+    return config.alphabet[0].repeat(config.minLength);
+}
+
+function rainbowReduceDigest(hash, step, config) {
+    const space = rainbowTotalSpace(config);
+    const material = `${normalizeHashForLookup(hash)}|${config.algorithm}|${config.saltMode}|${config.salt}|${step}`;
+    let accumulator = BigInt(step + 1);
+    for (let index = 0; index < material.length; index += 1) {
+        accumulator = (accumulator * 131n + BigInt(material.charCodeAt(index))) % space;
+    }
+    return rainbowCandidateFromIndex(accumulator, config);
+}
+
+function rainbowDigestCandidate(plain, config) {
+    return calculateHashLookupDigest(plain, config.algorithm, config.salt, config.saltMode, config.textEncoding);
+}
+
+function buildRainbowChain(start, config) {
+    let current = start;
+    for (let step = 0; step < config.chainLength; step += 1) {
+        const digest = rainbowDigestCandidate(current, config);
+        current = rainbowReduceDigest(digest, step, config);
+    }
+    return { start, end: current, steps: config.chainLength };
+}
+
+function buildRainbowEndpointMap(chains) {
+    const endpointMap = new Map();
+    chains.forEach(chain => {
+        const bucket = endpointMap.get(chain.end) || [];
+        bucket.push(chain);
+        endpointMap.set(chain.end, bucket);
+    });
+    return endpointMap;
+}
+
+function makeRainbowCache(config, chains, startedAt, collisions = 0) {
+    return {
+        version: "feanor-rainbow-v1",
+        generatedAt: new Date().toISOString(),
+        elapsedMs: Math.max(0, Math.round(performance.now() - startedAt)),
+        config,
+        chains,
+        collisions,
+        endpointMap: buildRainbowEndpointMap(chains)
+    };
+}
+
+function serializeRainbowTable(cache = rainbowTableCache.value) {
+    if (!cache) return "";
+    return safeJson({
+        version: cache.version,
+        generatedAt: cache.generatedAt,
+        config: cache.config,
+        chains: cache.chains.map(chain => ({
+            start: chain.start,
+            end: chain.end,
+            steps: chain.steps
+        }))
+    });
+}
+
+function formatRainbowCoverage(cache) {
+    const attempts = BigInt(cache.chains.length) * BigInt(cache.config.chainLength);
+    const space = rainbowTotalSpace(cache.config);
+    if (!space) return "N/D";
+    if (attempts >= space) return ">=100% teorico";
+    const percent = Number((attempts * 10000n) / space) / 100;
+    return percent > 0 ? `${percent.toFixed(2)}% teorico` : "<0.01% teorico";
+}
+
+function rainbowStatsLines(cache) {
+    const config = cache.config;
+    return [
+        `Algoritmo: ${config.algorithm}`,
+        `Salt: ${config.saltMode === "none" ? "sin salt" : `${config.saltMode} / "${config.salt}"`}`,
+        `Encoding: ${encodingDisplayLabel(config.textEncoding)}`,
+        `Alfabeto: ${config.alphabet}`,
+        `Longitud dominio: ${config.minLength}-${config.maxLength}`,
+        `Cadenas: ${cache.chains.length.toLocaleString("es-ES")}`,
+        `Longitud cadena: ${config.chainLength.toLocaleString("es-ES")}`,
+        `Cobertura aproximada: ${formatRainbowCoverage(cache)}`,
+        `Colisiones de endpoint: ${cache.collisions.toLocaleString("es-ES")}`,
+        `Tiempo generacion: ${cache.elapsedMs.toLocaleString("es-ES")} ms`
+    ];
+}
+
+function rainbowPreviewRows(cache, limit = 120) {
+    const rows = cache.chains.slice(0, limit).map((chain, index) =>
+        `${String(index + 1).padStart(4, "0")} | ${chain.start} -> ${chain.end} | ${chain.steps} pasos`
+    );
+    if (cache.chains.length > limit) {
+        rows.push(`... ${cache.chains.length - limit} cadenas mas en la tabla exportada.`);
+    }
+    return rows;
+}
+
+function buildRainbowResult({ title, body, tone, rows, cache, targets = 0, found = 0, checked = 0, extraPanels = [] }) {
+    const content = rows.length ? rows.join("\n") : "Sin resultados.";
+    const config = cache?.config || currentRainbowConfig();
+    return {
+        primaryValue: content,
+        verdictTone: tone,
+        verdictTitle: title,
+        verdictBody: body,
+        summaryCards: [
+            { label: "Cadenas", value: cache ? cache.chains.length.toLocaleString("es-ES") : "0", tone: cache?.chains.length ? "tone-success" : "tone-warning", note: "Endpoints" },
+            { label: "Longitud", value: config.chainLength.toLocaleString("es-ES"), tone: "tone-neutral", note: "Pasos por cadena" },
+            { label: "Objetivos", value: String(targets), tone: targets ? "tone-neutral" : "tone-warning", note: "Hashes" },
+            { label: "Encontrados", value: String(found), tone: found ? "tone-success" : "tone-warning", note: "Plaintexts" }
+        ],
+        signalCards: [
+            { label: "Algoritmo", value: config.algorithm, tone: "tone-neutral", note: "Hash rapido" },
+            { label: "Salt", value: config.saltMode === "none" ? "Sin salt" : config.saltMode, tone: config.saltMode === "none" ? "tone-warning" : "tone-neutral", note: config.salt || "Tabla generica" },
+            { label: "Cobertura", value: cache ? formatRainbowCoverage(cache) : "N/D", tone: "tone-neutral", note: "Estimacion" },
+            { label: "Comprobaciones", value: checked.toLocaleString("es-ES"), tone: checked ? "tone-success" : "tone-neutral", note: "Regeneracion" }
+        ],
+        panels: [
+            { title: "Resultado", badge: "rainbow", content, copyValue: content },
+            { title: "Parametros", badge: "json", content: safeJson({ config, stats: cache ? rainbowStatsLines(cache) : [] }), copyValue: cache ? serializeRainbowTable(cache) : safeJson({ config }) },
+            ...extraPanels
+        ]
+    };
+}
+
+function generateRainbowTable() {
+    let config;
+    try {
+        config = currentRainbowConfig();
+    } catch (error) {
+        rainbowResult.value = buildErrorResult("RAINBOW_CONFIG_INVALID", "Configuracion invalida", error.message);
+        return;
+    }
+
+    const seeds = rainbowSeedLines();
+    if (!seeds.length) {
+        rainbowResult.value = buildErrorResult("RAINBOW_SEEDS_EMPTY", "No hay semillas", "Introduce una lista de inicios de cadena para generar la tabla.");
+        return;
+    }
+
+    const startedAt = performance.now();
+    const chains = [];
+    const endpoints = new Set();
+    let collisions = 0;
+
+    try {
+        seeds.forEach(seed => {
+            const chain = buildRainbowChain(seed, config);
+            if (endpoints.has(chain.end)) collisions += 1;
+            endpoints.add(chain.end);
+            chains.push(chain);
+        });
+    } catch (error) {
+        rainbowResult.value = buildErrorResult("RAINBOW_GENERATE_FAILED", "No se pudo generar la tabla", error.message);
+        return;
+    }
+
+    const cache = makeRainbowCache(config, chains, startedAt, collisions);
+    rainbowTableCache.value = cache;
+    rainbowSerializedTable.value = serializeRainbowTable(cache);
+
+    rainbowResult.value = buildRainbowResult({
+        title: "Rainbow table generada",
+        body: "Se han creado cadenas start->endpoint. Para resolver un hash se regeneran cadenas candidatas hasta encontrar un endpoint compatible.",
+        tone: "verdict-success",
+        rows: rainbowPreviewRows(cache),
+        cache,
+        extraPanels: [{
+            title: "Lectura tecnica",
+            badge: "teoria",
+            content: buildTextList("Como interpretar la tabla", [
+                "Solo se guardan inicios y endpoints; no todos los hashes intermedios.",
+                "La reduccion no invierte el hash: convierte cada digest en otro candidato plausible.",
+                "Un salt unico por usuario invalida la reutilizacion de tablas entre usuarios.",
+                "Argon2id, scrypt, yescrypt y bcrypt elevan el coste y hacen poco practicas las tablas masivas."
+            ])
+        }]
+    });
+}
+
+function findRainbowMatch(targetHash, cache) {
+    const config = cache.config;
+    const target = normalizeHashForLookup(targetHash);
+    let endpointChecks = 0;
+    let regenerations = 0;
+
+    for (let position = config.chainLength - 1; position >= 0; position -= 1) {
+        let candidate = rainbowReduceDigest(target, position, config);
+        for (let step = position + 1; step < config.chainLength; step += 1) {
+            const digest = rainbowDigestCandidate(candidate, config);
+            candidate = rainbowReduceDigest(digest, step, config);
+        }
+        endpointChecks += 1;
+
+        const matchingChains = cache.endpointMap.get(candidate) || [];
+        for (const chain of matchingChains) {
+            let current = chain.start;
+            for (let step = 0; step < config.chainLength; step += 1) {
+                const digest = rainbowDigestCandidate(current, config);
+                regenerations += 1;
+                if (normalizeHashForLookup(digest) === target) {
+                    return {
+                        plain: current,
+                        digest,
+                        chain,
+                        step,
+                        position,
+                        endpointChecks,
+                        regenerations
+                    };
+                }
+                current = rainbowReduceDigest(digest, step, config);
+            }
+        }
+    }
+
+    return { endpointChecks, regenerations };
+}
+
+function lookupRainbowTargets() {
+    const cache = rainbowTableCache.value;
+    const entries = parseHashLookupSearchEntries(rainbowTargets.value).slice(0, 50);
+    if (!cache) {
+        rainbowResult.value = buildErrorResult("RAINBOW_TABLE_EMPTY", "No hay tabla rainbow", "Genera o importa una tabla antes de buscar hashes.");
+        return;
+    }
+    if (!entries.length) {
+        rainbowResult.value = buildErrorResult("RAINBOW_TARGETS_EMPTY", "No hay hashes objetivo", "Pega uno o varios hashes para buscarlos contra la tabla.");
+        return;
+    }
+
+    const rows = [];
+    let found = 0;
+    let checked = 0;
+
+    try {
+        entries.forEach(entry => {
+            if (cache.config.saltMode !== "none" && entry.salt && entry.salt !== cache.config.salt) {
+                rows.push(`MISS linea ${entry.lineNumber} | salt distinto | tabla="${cache.config.salt}" objetivo="${entry.salt}"`);
+                return;
+            }
+            const match = findRainbowMatch(entry.hash, cache);
+            checked += (match.endpointChecks || 0) + (match.regenerations || 0);
+            if (match.plain) {
+                found += 1;
+                rows.push(`FOUND linea ${entry.lineNumber} | ${cache.config.algorithm} | plain="${match.plain}" | cadena="${match.chain.start}->${match.chain.end}" | paso=${match.step}`);
+            } else {
+                rows.push(`MISS linea ${entry.lineNumber} | ${entry.hash} | fuera de cobertura local`);
+            }
+        });
+    } catch (error) {
+        rainbowResult.value = buildErrorResult("RAINBOW_LOOKUP_FAILED", "No se pudo buscar en la tabla", error.message);
+        return;
+    }
+
+    const tone = found === entries.length ? "verdict-success" : found ? "verdict-warning" : "verdict-danger";
+    rainbowResult.value = buildRainbowResult({
+        title: found === entries.length ? "Todos los hashes estan en la tabla" : found ? "Coincidencias parciales" : "Sin coincidencias",
+        body: found
+            ? "La tabla local contiene al menos una cadena que regenera el plaintext objetivo. Rota esas credenciales y elimina hashes rapidos si siguen en uso."
+            : "No se encontro plaintext. Eso solo mide la cobertura de esta tabla local, no la resistencia real del hash.",
+        tone,
+        rows,
+        cache,
+        targets: entries.length,
+        found,
+        checked,
+        extraPanels: [{
+            title: "Tabla usada",
+            badge: "rt",
+            content: buildTextList("Estadisticas", rainbowStatsLines(cache)),
+            copyValue: rainbowStatsLines(cache).join("\n")
+        }]
+    });
+}
+
+function exportRainbowTable() {
+    if (!rainbowTableCache.value) {
+        rainbowResult.value = buildErrorResult("RAINBOW_EXPORT_EMPTY", "No hay tabla para exportar", "Genera o importa una tabla antes de exportarla.");
+        return;
+    }
+    rainbowSerializedTable.value = serializeRainbowTable();
+    rainbowResult.value = buildRainbowResult({
+        title: "Tabla exportada",
+        body: "La tabla queda serializada como JSON local con configuracion, inicios y endpoints.",
+        tone: "verdict-success",
+        rows: ["Tabla exportada al textarea inferior."],
+        cache: rainbowTableCache.value,
+        extraPanels: [{
+            title: "JSON exportado",
+            badge: "json",
+            content: rainbowSerializedTable.value,
+            copyValue: rainbowSerializedTable.value
+        }]
+    });
+}
+
+function importRainbowTable() {
+    try {
+        const parsed = JSON.parse(rainbowSerializedTable.value || "{}");
+        if (!Array.isArray(parsed.chains) || !parsed.chains.length) {
+            throw new Error("El JSON debe contener un array chains con start/end.");
+        }
+        const config = normalizeRainbowConfig(parsed.config || {});
+        const chains = parsed.chains
+            .map(item => ({
+                start: String(item.start || "").trim(),
+                end: String(item.end || "").trim(),
+                steps: boundedInteger(item.steps ?? config.chainLength, config.chainLength, 1, 1000)
+            }))
+            .filter(item => item.start && item.end);
+        if (!chains.length) throw new Error("No hay cadenas validas despues de normalizar start/end.");
+        const endpointCounts = new Map();
+        let collisions = 0;
+        chains.forEach(chain => {
+            const count = endpointCounts.get(chain.end) || 0;
+            if (count) collisions += 1;
+            endpointCounts.set(chain.end, count + 1);
+        });
+        const cache = {
+            version: parsed.version || "feanor-rainbow-v1",
+            generatedAt: parsed.generatedAt || new Date().toISOString(),
+            elapsedMs: 0,
+            config,
+            chains,
+            collisions,
+            endpointMap: buildRainbowEndpointMap(chains)
+        };
+        rainbowTableCache.value = cache;
+        applyRainbowConfig(config);
+        rainbowResult.value = buildRainbowResult({
+            title: "Tabla importada",
+            body: "Se ha reconstruido el mapa de endpoints y la configuracion de reduccion desde el JSON.",
+            tone: "verdict-success",
+            rows: rainbowPreviewRows(cache),
+            cache
+        });
+    } catch (error) {
+        rainbowResult.value = buildErrorResult("RAINBOW_IMPORT_FAILED", "No se pudo importar la tabla", error.message);
+    }
+}
+
+function fillRainbowExample() {
+    rainbowAlgorithm.value = "MD5";
+    rainbowSaltMode.value = "none";
+    rainbowTextEncoding.value = "utf8";
+    rainbowChainLength.value = 80;
+    rainbowMaxSeeds.value = 120;
+    rainbowPlainMin.value = 4;
+    rainbowPlainMax.value = 8;
+    rainbowAlphabetPreset.value = "lowernum";
+    rainbowCustomAlphabet.value = "abcdefghijklmnopqrstuvwxyz0123456789";
+    rainbowSalt.value = "";
+    rainbowSeeds.value = [
+        "password",
+        "admin",
+        "dragon",
+        "secret",
+        "letmein",
+        "qwerty",
+        "feanor",
+        "mithril",
+        "shadow",
+        "summer",
+        "winter",
+        "welcome"
+    ].join("\n");
+    rainbowTargets.value = [
+        "5f4dcc3b5aa765d61d8327deb882cf99",
+        "21232f297a57a5a743894a0e4a801fc3",
+        "8621ffdbc5698829397d97767ac13db3"
+    ].join("\n");
+    rainbowSerializedTable.value = "";
+    rainbowTableCache.value = null;
+    rainbowResult.value = null;
+}
+
+function sendHashResultToRainbow() {
+    if (!hashResult.value?.primaryValue) {
+        rainbowResult.value = buildErrorResult("RAINBOW_HASH_RESULT_EMPTY", "No hay ultimo hash", "Calcula primero una huella en el modulo Hash digest.");
+        return;
+    }
+    const source = String(hashResult.value.primaryValue);
+    const match = source.match(/\*[0-9a-f]{40}|[0-9a-f]{32,128}/i);
+    if (!match) {
+        rainbowResult.value = buildErrorResult("RAINBOW_HASH_UNSUPPORTED", "Salida no reconocida", "La salida actual no parece un hash hexadecimal compatible con rainbow tables locales.");
+        return;
+    }
+    rainbowTargets.value = match[0];
+    rainbowResult.value = null;
+}
+
+function clearRainbowTables() {
+    rainbowSeeds.value = "";
+    rainbowTargets.value = "";
+    rainbowSerializedTable.value = "";
+    rainbowTableCache.value = null;
+    rainbowResult.value = null;
+}
+
+function passwordCrackerCandidatePlan() {
+    return generateRedTeamCandidates({
+        attackMode: passwordCrackerAttackMode.value,
+        primaryWordlist: passwordCrackerCandidates.value,
+        secondaryWordlist: passwordCrackerSecondaryCandidates.value,
+        mask: passwordCrackerMask.value,
+        customCharsets: passwordCrackerCharsets(),
+        rulePreset: passwordCrackerRuleMode.value,
+        limit: passwordCrackerLimit.value
+    });
+}
+
+function passwordCrackerCandidateLines() {
+    return passwordCrackerCandidatePlan().candidates;
+}
+
+function passwordCrackerAlgorithmsForEntry(entry) {
+    if (passwordCrackerAlgorithm.value !== "auto") return [passwordCrackerAlgorithm.value];
+    const detected = identifyHashLookupCandidates(entry.hash)
+        .filter(item => item.local && item.algorithm && hashLookupLocalAlgorithms.includes(item.algorithm))
+        .map(item => item.algorithm);
+    return [...new Set(detected)];
+}
+
+function passwordCrackerSaltModesForEntry(entry) {
+    if (passwordCrackerSaltMode.value !== "auto") return [passwordCrackerSaltMode.value];
+    return entry.salt ? ["none", "plain-salt", "salt-plain"] : ["none"];
+}
+
+function buildPasswordCrackerResult({ title, body, tone, rows, entries, candidates = [], checked = 0, found = 0, elapsedMs = 0, stopped = false, extraPanels = [] }) {
+    const content = rows.length ? rows.join("\n") : "Sin resultados.";
+    const ruleLabel = passwordCrackerRuleModes.find(item => item.value === passwordCrackerRuleMode.value)?.label || passwordCrackerRuleMode.value;
+    const attackLabel = passwordCrackerAttackModes.find(item => item.value === passwordCrackerAttackMode.value)?.label || passwordCrackerAttackMode.value;
+    return {
+        primaryValue: content,
+        verdictTone: tone,
+        verdictTitle: title,
+        verdictBody: stopped ? `${body} Se detuvo al alcanzar el presupuesto de intentos configurado.` : body,
+        summaryCards: [
+            { label: "Hashes", value: String(entries.length), tone: "tone-neutral", note: "Objetivos" },
+            { label: "Encontrados", value: String(found), tone: found ? "tone-success" : "tone-warning", note: "Matches" },
+            { label: "Intentos", value: checked.toLocaleString("es-ES"), tone: checked ? "tone-success" : "tone-neutral", note: `${elapsedMs.toLocaleString("es-ES")} ms` },
+            { label: "Wordlist", value: candidates.length.toLocaleString("es-ES"), tone: candidates.length ? "tone-neutral" : "tone-warning", note: "Candidatos efectivos" }
+        ],
+        signalCards: [
+            { label: "Algoritmo", value: passwordCrackerAlgorithm.value === "auto" ? "Auto" : passwordCrackerAlgorithm.value, tone: "tone-neutral", note: "Selector activo" },
+            { label: "Ataque", value: attackLabel, tone: "tone-neutral", note: passwordCrackerSaltMode.value },
+            { label: "Reglas", value: ruleLabel, tone: "tone-neutral", note: "Mangling local" },
+            { label: "Encoding", value: encodingDisplayLabel(passwordCrackerTextEncoding.value), tone: "tone-neutral", note: "Plain y salt" }
+        ],
+        panels: [
+            { title: "Resultado", badge: "redteam", content, copyValue: content },
+            ...extraPanels
+        ]
+    };
+}
+
+function analyzePasswordCrackerHashes() {
+    const entries = parseHashLookupSearchEntries(passwordCrackerInput.value).slice(0, 50);
+    if (!entries.length) {
+        passwordCrackerResult.value = buildErrorResult("PASSWORD_CRACKER_EMPTY", "No hay hashes", "Pega uno o varios hashes antes de analizarlos.");
+        return;
+    }
+
+    const rows = [];
+    let localCount = 0;
+    entries.forEach(entry => {
+        const candidates = identifyHashLookupCandidates(entry.hash);
+        const local = candidates.filter(item => item.local);
+        localCount += local.length ? 1 : 0;
+        rows.push(`Linea ${entry.lineNumber}: ${entry.hash}${entry.salt ? `:${entry.salt}` : ""}`);
+        if (!candidates.length) {
+            rows.push("  - Sin patron claro. Puede estar truncado, codificado o no ser una huella.");
+            return;
+        }
+        candidates.forEach(candidate => {
+            rows.push(`  - ${candidate.name} | ${candidate.status} | ${candidate.local ? "crack local posible" : "solo identificacion"} | ${candidate.note}`);
+        });
+    });
+
+    passwordCrackerResult.value = buildPasswordCrackerResult({
+        title: localCount ? "Hashes analizables localmente" : "Hashes identificados sin cracker local",
+        body: "La identificacion se basa en forma, longitud y prefijos. La confirmacion real llega al recalcular candidatos y comparar.",
+        tone: localCount ? "verdict-success" : "verdict-warning",
+        rows,
+        entries,
+        found: localCount,
+        extraPanels: [{
+            title: "Herramientas externas utiles",
+            badge: "cli",
+            content: buildTextList("Escalado profesional", [
+                "hashcat --identify hashes.txt",
+                "hashcat -m 0 hashes.txt wordlist.txt        # MD5",
+                "hashcat -m 100 hashes.txt wordlist.txt      # SHA1",
+                "hashcat -m 8900 yescrypt-kdf.hash wordlist.txt # yescrypt en formato KDF generico",
+                "john --format=crypt shadow-yescrypt.txt --wordlist=wordlist.txt # $y$ / crypt(5)",
+                "john --format=raw-md5 hashes.txt --wordlist=wordlist.txt"
+            ])
+        }]
+    });
+}
+
+function runPasswordCracker() {
+    const entries = parseHashLookupSearchEntries(passwordCrackerInput.value).slice(0, 50);
+    const candidatePlan = passwordCrackerCandidatePlan();
+    const candidates = candidatePlan.candidates;
+    const budget = Math.max(1000, Math.min(500000, Number(passwordCrackerAttemptBudget.value) || 150000));
+    if (!entries.length) {
+        passwordCrackerResult.value = buildErrorResult("PASSWORD_CRACKER_EMPTY", "No hay hashes", "Pega hashes en formato hash o hash:salt antes de crackear.");
+        return;
+    }
+    if (!candidates.length) {
+        passwordCrackerResult.value = buildErrorResult("PASSWORD_CRACKER_WORDLIST_EMPTY", "No hay wordlist", "Pega candidatos locales. El laboratorio no consulta bases externas.");
+        return;
+    }
+
+    const startedAt = performance.now();
+    const rows = [];
+    let checked = 0;
+    let found = 0;
+    let stopped = false;
+
+    for (const entry of entries) {
+        const algorithms = passwordCrackerAlgorithmsForEntry(entry);
+        const saltModes = passwordCrackerSaltModesForEntry(entry);
+        const target = normalizeHashForLookup(entry.hash);
+        let match = null;
+
+        if (!algorithms.length) {
+            rows.push(`SKIP linea ${entry.lineNumber} | ${entry.hash} | sin algoritmo local compatible`);
+            continue;
+        }
+
+        candidateLoop:
+        for (const candidate of candidates) {
+            for (const algorithm of algorithms) {
+                for (const saltMode of saltModes) {
+                    if (checked >= budget) {
+                        stopped = true;
+                        break candidateLoop;
+                    }
+                    checked += 1;
+                    const digest = calculateHashLookupDigest(candidate, algorithm, entry.salt, saltMode, passwordCrackerTextEncoding.value);
+                    if (normalizeHashForLookup(digest) === target) {
+                        match = { algorithm, saltMode, digest, candidate };
+                        break candidateLoop;
+                    }
+                }
+            }
+        }
+
+        if (match) {
+            found += 1;
+            rows.push(`FOUND linea ${entry.lineNumber} | ${match.algorithm} | ${match.saltMode} | plain="${match.candidate}"${formatHashLookupSaltSuffix(entry, match)}`);
+        } else if (stopped) {
+            rows.push(`STOP linea ${entry.lineNumber} | presupuesto agotado | ${checked.toLocaleString("es-ES")} intentos`);
+            break;
+        } else {
+            rows.push(`MISS linea ${entry.lineNumber} | ${entry.hash} | ${candidates.length.toLocaleString("es-ES")} candidatos`);
+        }
+    }
+
+    const elapsedMs = Math.max(0, Math.round(performance.now() - startedAt));
+    const tone = found === entries.length ? "verdict-success" : found ? "verdict-warning" : "verdict-danger";
+    passwordCrackerResult.value = buildPasswordCrackerResult({
+        title: found === entries.length ? "Todos los hashes resueltos" : found ? "Cracking parcial" : "Sin coincidencias",
+        body: found
+            ? "Se encontraron plaintexts con candidatos locales. Revisa rotacion de credenciales y elimina hashes rapidos si siguen en uso."
+            : "No hubo match. Eso no demuestra fortaleza; solo indica que esta wordlist y estas reglas no contenian el plaintext.",
+        tone,
+        rows,
+        entries,
+        candidates,
+        checked,
+        found,
+        elapsedMs,
+        stopped,
+        extraPanels: [{
+            title: "Plan de candidatos",
+            badge: "plan",
+            content: buildTextList("Generacion", [
+                `Modo: ${passwordCrackerAttackMode.value}`,
+                `Keyspace estimado: ${candidatePlan.keyspaceLabel}`,
+                `Mascara: ${passwordCrackerMask.value || "N/D"}`,
+                `Resumen mascara: ${candidatePlan.maskSummary || "No usada"}`,
+                ...candidatePlan.warnings
+            ]),
+            copyValue: candidatePlan.candidates.slice(0, 500).join("\n")
+        }, {
+            title: "Alcance del laboratorio",
+            badge: "scope",
+            content: buildTextList("Buenas practicas", [
+                "Usa este modulo con hashes propios, capturas autorizadas o laboratorios.",
+                "MD5/SHA1/SHA2 son hashes rapidos: para passwords reales migra a Argon2id, scrypt, yescrypt o bcrypt.",
+                "Para NTLM, bcrypt, Argon2, scrypt, yescrypt, reglas avanzadas o GPU, exporta a Hashcat/John."
+            ])
+        }]
+    });
+}
+
+function fillPasswordCrackerExample() {
+    passwordCrackerAlgorithm.value = "auto";
+    passwordCrackerSaltMode.value = "auto";
+    passwordCrackerTextEncoding.value = "utf8";
+    passwordCrackerAttackMode.value = "rules";
+    passwordCrackerRuleMode.value = "best64-lite";
+    passwordCrackerMask.value = "?d?d?d";
+    passwordCrackerCharset1.value = redTeamDefaultCharsets["1"];
+    passwordCrackerCharset2.value = redTeamDefaultCharsets["2"];
+    passwordCrackerCharset3.value = redTeamDefaultCharsets["3"];
+    passwordCrackerCharset4.value = redTeamDefaultCharsets["4"];
+    passwordCrackerLimit.value = 10000;
+    passwordCrackerAttemptBudget.value = 150000;
+    passwordCrackerInput.value = [
+        "5f4dcc3b5aa765d61d8327deb882cf99",
+        "5baa61e4c9b93f3f0682250b6cf8331b7ee68fd8",
+        "5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8",
+        "269605a3bc8120778244c5dc4101dce958b1e531:mithril"
+    ].join("\n");
+    passwordCrackerCandidates.value = [
+        "123456",
+        "password",
+        "admin",
+        "qwerty",
+        "letmein",
+        "welcome",
+        "feanor",
+        "mithril"
+    ].join("\n");
+    passwordCrackerSecondaryCandidates.value = ["2026", "!", "prod", "dev", "01"].join("\n");
+    passwordCrackerResult.value = null;
+}
+
+function clearPasswordCracker() {
+    passwordCrackerInput.value = "";
+    passwordCrackerCandidates.value = "";
+    passwordCrackerSecondaryCandidates.value = "";
+    passwordCrackerResult.value = null;
 }
 
 async function runHashLab() {
@@ -4188,12 +6859,23 @@ async function runHashLab() {
 
     try {
         let outputWordArray;
+        let outputBytes = new Uint8Array();
+        let outputHex = "";
+        let output = "";
+        let outputByteLength = 0;
+        let checksumResult = null;
         const mode = hashMode.value;
         const algorithm = hashAlgorithm.value;
+        const algorithmConfig = selectedHashAlgorithmConfig.value;
+        const isChecksumAlgorithm = hashChecksumAlgorithmValues.has(algorithm);
+        const isLegacyDigest = Boolean(algorithmConfig.legacy);
         const input = await getHashInputBytes();
         const inputBytes = input.bytes;
         const inputWordArray = bytesToWordArray(inputBytes);
         const inputEncodingLabel = input.kind === "file" ? "bytes de fichero" : encodingDisplayLabel(hashTextEncoding.value);
+        const sumTargetName = hashSumTargetForInput(input);
+        const sumLines = buildHashSumLines(inputBytes, sumTargetName);
+        const checksumLines = buildChecksumSuiteLines(inputBytes);
         const notes = [];
         let comparisonNote = "Sin referencia";
         let comparisonTone = "tone-neutral";
@@ -4202,10 +6884,34 @@ async function runHashLab() {
         let verdictBody = "La operacion se completo y la salida queda lista para contrastar o reutilizar.";
 
         if (mode === "digest") {
-            outputWordArray = digestMap[algorithm](inputWordArray);
-            notes.push(`Digest ${algorithm} calculado sobre ${inputBytes.length} bytes de ${input.label}.`);
-            if (["MD5", "SHA1"].includes(algorithm)) {
-                notes.push("Este algoritmo solo deberia mantenerse por compatibilidad o huellas heredadas.");
+            if (isChecksumAlgorithm) {
+                checksumResult = calculateChecksum(inputBytes, algorithm);
+                outputBytes = checksumResult.bytes;
+                outputHex = checksumResult.hex;
+                outputByteLength = outputBytes.length;
+                output = formatChecksumOutput(checksumResult, hashEncoding.value);
+                notes.push(`${checksumResult.label} calculado sobre ${inputBytes.length} bytes de ${input.label}.`);
+                notes.push(checksumResult.note);
+                notes.push("Los checksums tipo SUM/CRC ayudan a detectar errores accidentales, pero no sustituyen SHA-256 ni HMAC.");
+                verdictTone = "verdict-warning";
+                verdictTitle = "Checksum generado";
+                verdictBody = "La salida es util para compatibilidad, transporte y errores accidentales; no debe usarse como prueba criptografica.";
+            } else {
+                outputWordArray = digestMap[algorithm](inputWordArray);
+                outputBytes = wordArrayToBytes(outputWordArray);
+                outputHex = outputWordArray.toString(CryptoJS.enc.Hex);
+                outputByteLength = outputWordArray.sigBytes;
+                output = hashEncoding.value === "sumline"
+                    ? hashSumCommandLine(inputBytes, algorithm, sumTargetName)
+                    : wordArrayToString(outputWordArray, hashEncoding.value);
+                notes.push(`Digest ${algorithm} calculado sobre ${inputBytes.length} bytes de ${input.label}.`);
+                if (hashEncoding.value === "sumline") {
+                    const command = hashSumCommandAlgorithms.find(item => item.algorithm === algorithm)?.command || "sum";
+                    notes.push(`Salida compatible con ${command}: digest hexadecimal, dos espacios y nombre de fichero o '-' para stdin.`);
+                }
+                if (isLegacyDigest) {
+                    notes.push("Este algoritmo solo deberia mantenerse por compatibilidad o huellas heredadas.");
+                }
             }
         } else if (mode === "hmac") {
             if (!hashSecret.value) {
@@ -4213,6 +6919,10 @@ async function runHashLab() {
             }
             const secretBytes = textToEncodedBytes(hashSecret.value, hashSecretEncoding.value);
             outputWordArray = hmacMap[algorithm](inputWordArray, bytesToWordArray(secretBytes));
+            outputBytes = wordArrayToBytes(outputWordArray);
+            outputHex = outputWordArray.toString(CryptoJS.enc.Hex);
+            outputByteLength = outputWordArray.sigBytes;
+            output = wordArrayToString(outputWordArray, hashEncoding.value);
             notes.push(`HMAC ${algorithm} calculado con ${input.label} y clave ${encodingDisplayLabel(hashSecretEncoding.value)}.`);
             notes.push(`Clave efectiva: ${secretBytes.length} bytes.`);
             notes.push("Si compartes el mensaje sin la clave, la salida por si sola no permite recalcular el HMAC.");
@@ -4231,6 +6941,10 @@ async function runHashLab() {
                 iterations,
                 hasher: CryptoJS.algo[algorithm]
             });
+            outputBytes = wordArrayToBytes(outputWordArray);
+            outputHex = outputWordArray.toString(CryptoJS.enc.Hex);
+            outputByteLength = outputWordArray.sigBytes;
+            output = wordArrayToString(outputWordArray, hashEncoding.value);
             notes.push(`PBKDF2 usando ${algorithm}, ${iterations.toLocaleString("es-ES")} iteraciones, entrada ${input.label} (${inputEncodingLabel}) y ${keyBytes} bytes derivados.`);
             notes.push(iterations < 100000
                 ? "La derivacion funciona, pero subir iteraciones suele endurecer ataques offline."
@@ -4242,13 +6956,13 @@ async function runHashLab() {
                 : "La derivacion combina salt, iteraciones y longitud suficiente para una simulacion seria en cliente.";
         }
 
-        const output = wordArrayToString(outputWordArray, hashEncoding.value);
         const normalizedExpected = normalizeValue(hashExpected.value);
         const normalizedOutput = normalizeValue(output);
+        const normalizedOutputHex = normalizeValue(outputHex);
         const hasComparison = Boolean(normalizedExpected);
 
         if (hasComparison) {
-            const matches = normalizedExpected === normalizedOutput;
+            const matches = normalizedExpected === normalizedOutput || normalizedExpected === normalizedOutputHex;
             comparisonNote = matches ? "Coincide" : "No coincide";
             comparisonTone = matches ? "tone-success" : "tone-danger";
             verdictTone = matches ? "verdict-success" : "verdict-danger";
@@ -4265,15 +6979,15 @@ async function runHashLab() {
             verdictBody,
             summaryCards: [
                 { label: "Modo", value: mode.toUpperCase(), tone: "tone-neutral", note: "Operacion local" },
-                { label: "Algoritmo", value: algorithm, tone: ["MD5", "SHA1"].includes(algorithm) ? "tone-warning" : "tone-success", note: "Funcion activa" },
-                { label: "Bytes", value: String(outputWordArray.sigBytes), tone: "tone-neutral", note: hashEncoding.value.toUpperCase() },
+                { label: "Algoritmo", value: algorithm, tone: isLegacyDigest || isChecksumAlgorithm ? "tone-warning" : "tone-success", note: algorithmConfig.label },
+                { label: "Bytes", value: String(outputByteLength), tone: "tone-neutral", note: hashEncoding.value.toUpperCase() },
                 { label: "Comparacion", value: comparisonNote, tone: comparisonTone, note: hasComparison ? "Se uso referencia" : "Sin valor esperado" }
             ],
             signalCards: [
                 { label: "Entrada", value: `${inputBytes.length} bytes`, tone: "tone-neutral", note: input.note },
                 { label: "Formato", value: hashEncoding.value.toUpperCase(), tone: "tone-success", note: output.length + " caracteres de salida" },
-                { label: mode === "pbkdf2" ? "Iteraciones" : "Secreto", value: mode === "pbkdf2" ? `${Number(hashIterations.value).toLocaleString("es-ES")}` : (hashSecret.value ? `${hashSecret.value.length} chars` : "N/D"), tone: mode === "pbkdf2" ? toneFromBoolean(Number(hashIterations.value) >= 100000) : toneFromBoolean(Boolean(hashSecret.value)), note: mode === "pbkdf2" ? "Coste de derivacion" : "Clave del HMAC" },
-                { label: "Salt", value: mode === "pbkdf2" ? `${hashSalt.value.length / 2} bytes` : "No aplica", tone: mode === "pbkdf2" ? "tone-success" : "tone-neutral", note: mode === "pbkdf2" ? hashSalt.value.slice(0, 24) + "..." : "Solo en derivacion" }
+                { label: mode === "pbkdf2" ? "Iteraciones" : mode === "hmac" ? "Secreto" : isChecksumAlgorithm ? "Familia" : "*sum", value: mode === "pbkdf2" ? `${Number(hashIterations.value).toLocaleString("es-ES")}` : mode === "hmac" ? (hashSecret.value ? `${hashSecret.value.length} chars` : "N/D") : isChecksumAlgorithm ? "Checksum" : `${hashSumCommandAlgorithms.length} lineas`, tone: mode === "pbkdf2" ? toneFromBoolean(Number(hashIterations.value) >= 100000) : mode === "hmac" ? toneFromBoolean(Boolean(hashSecret.value)) : isChecksumAlgorithm ? "tone-warning" : "tone-success", note: mode === "pbkdf2" ? "Coste de derivacion" : mode === "hmac" ? "Clave del HMAC" : isChecksumAlgorithm ? "No criptografico" : "md5sum/sha*sum" },
+                { label: "Salt", value: mode === "pbkdf2" ? `${hashSalt.value.length / 2} bytes` : checksumResult?.blocks ? `${checksumResult.blocks} bloques` : "No aplica", tone: mode === "pbkdf2" ? "tone-success" : checksumResult?.blocks ? "tone-neutral" : "tone-neutral", note: mode === "pbkdf2" ? hashSalt.value.slice(0, 24) + "..." : checksumResult?.blocks ? "Formato sum" : "Solo en derivacion" }
             ],
             panels: [
                 {
@@ -4282,6 +6996,18 @@ async function runHashLab() {
                     content: output,
                     copyValue: output
                 },
+                ...(mode === "digest" && !isChecksumAlgorithm ? [{
+                    title: "Funciones *sum",
+                    badge: "sum",
+                    content: buildTextList("Compatibilidad CLI", sumLines),
+                    copyValue: sumLines.join("\n")
+                }] : []),
+                ...(mode === "digest" ? [{
+                    title: "Checksums SUM / CRC",
+                    badge: "sum",
+                    content: buildTextList("Checksums no criptograficos", checksumLines),
+                    copyValue: checksumLines.join("\n")
+                }] : []),
                 {
                     title: "Lectura tecnica",
                     badge: "notas",
@@ -4298,6 +7024,13 @@ async function runHashLab() {
                         inputKind: hashInputKind.value,
                         inputName: input.label,
                         inputEncoding: hashTextEncoding.value,
+                        outputHex,
+                        sumTarget: mode === "digest" ? sumTargetName : null,
+                        checksum: checksumResult ? {
+                            decimal: checksumResult.decimal,
+                            hex: checksumResult.hex,
+                            blocks: checksumResult.blocks
+                        } : null,
                         secretEncoding: mode === "hmac" ? hashSecretEncoding.value : null,
                         salt: mode === "pbkdf2" ? hashSalt.value : null,
                         iterations: mode === "pbkdf2" ? Number(hashIterations.value) : null,
@@ -4311,6 +7044,13 @@ async function runHashLab() {
                         inputKind: hashInputKind.value,
                         inputName: input.label,
                         inputEncoding: hashTextEncoding.value,
+                        outputHex,
+                        sumTarget: mode === "digest" ? sumTargetName : null,
+                        checksum: checksumResult ? {
+                            decimal: checksumResult.decimal,
+                            hex: checksumResult.hex,
+                            blocks: checksumResult.blocks
+                        } : null,
                         secretEncoding: mode === "hmac" ? hashSecretEncoding.value : null,
                         salt: mode === "pbkdf2" ? hashSalt.value : null,
                         iterations: mode === "pbkdf2" ? Number(hashIterations.value) : null,
@@ -4324,12 +7064,53 @@ async function runHashLab() {
     }
 }
 
+function cipherCryptoConfig(action = "encrypt", inputBytes = null) {
+    const config = {};
+    if (isCipherBlockAlgorithm.value) {
+        const mode = CryptoJS.mode[cipherMode.value];
+        const padding = CryptoJS.pad[cipherPadding.value];
+        if (!mode || !padding) throw new Error("Modo o padding no soportado por crypto-js.");
+        if (action === "encrypt" && cipherPadding.value === "NoPadding") {
+            const blockBytes = selectedCipherAlgorithmConfig.value.blockBytes || 16;
+            if (!inputBytes || inputBytes.length % blockBytes !== 0) {
+                throw new Error(`NoPadding exige que la entrada tenga longitud multiplo de ${blockBytes} bytes.`);
+            }
+        }
+        config.mode = mode;
+        config.padding = padding;
+    }
+    if (cipherAlgorithm.value === "RC4Drop") {
+        config.drop = Math.max(0, Number(cipherDropWords.value) || 0);
+    }
+    return config;
+}
+
+function cipherConfigNotes() {
+    const config = selectedCipherAlgorithmConfig.value;
+    const notes = [`Familia: ${config.family === "block" ? "cifrado de bloque" : "cifrado de flujo"}.`];
+    if (isCipherBlockAlgorithm.value) {
+        notes.push(`Modo: ${cipherMode.value}. Padding: ${cipherPadding.value}.`);
+        if (cipherMode.value === "ECB") {
+            notes.push("ECB es util para reconocer material legacy, pero filtra patrones y no deberia usarse en disenos nuevos.");
+        }
+    }
+    if (cipherAlgorithm.value === "RC4Drop") {
+        notes.push(`RC4Drop descarta ${Math.max(0, Number(cipherDropWords.value) || 0)} palabras iniciales del keystream.`);
+    }
+    notes.push(`Texto tratado como ${encodingDisplayLabel(cipherTextEncoding.value)} antes de cifrar o despues de descifrar.`);
+    return notes;
+}
+
 function generateCipherKey() {
-    cipherKey.value = randomHex(16);
+    cipherKey.value = randomHex(selectedCipherAlgorithmConfig.value.recommendedKeyBytes || 16);
 }
 
 function fillCipherExample() {
     cipherAlgorithm.value = "AES";
+    cipherMode.value = "CBC";
+    cipherPadding.value = "Pkcs7";
+    cipherDropWords.value = 192;
+    cipherTextEncoding.value = "utf8";
     cipherKey.value = randomHex(16);
     cipherInput.value = "Las puertas del oeste solo se abren para quien conoce la clave.";
 }
@@ -4346,7 +7127,11 @@ function runCipher(action) {
 
     try {
         const engine = cipherMap[cipherAlgorithm.value];
+        if (!engine) throw new Error(`Algoritmo no disponible: ${cipherAlgorithm.value}.`);
+        const config = selectedCipherAlgorithmConfig.value;
         let primaryValue = "";
+        let inputBytes = null;
+        let outputBytes = null;
         let verdictTone = action === "encrypt" ? "verdict-success" : "verdict-warning";
         let verdictTitle = action === "encrypt" ? "Texto cifrado" : "Intento de descifrado completado";
         let verdictBody = action === "encrypt"
@@ -4354,12 +7139,14 @@ function runCipher(action) {
             : "La cadena se ha procesado usando la clave indicada. Si el texto sale vacio, suele apuntar a clave o algoritmo incorrectos.";
 
         if (action === "encrypt") {
-            primaryValue = engine.encrypt(cipherInput.value, cipherKey.value).toString();
+            inputBytes = textToEncodedBytes(cipherInput.value, cipherTextEncoding.value);
+            primaryValue = engine.encrypt(bytesToWordArray(inputBytes), cipherKey.value, cipherCryptoConfig(action, inputBytes)).toString();
         } else {
-            const bytes = engine.decrypt(cipherInput.value, cipherKey.value);
-            primaryValue = bytes.toString(CryptoJS.enc.Utf8);
+            const bytes = engine.decrypt(cipherInput.value, cipherKey.value, cipherCryptoConfig(action));
+            outputBytes = wordArrayToBytes(bytes);
+            primaryValue = bytesToEncodedText(outputBytes, cipherTextEncoding.value);
             if (!primaryValue) {
-                throw new Error("No se obtuvo texto UTF-8. Probablemente la clave o el algoritmo no corresponden.");
+                throw new Error(`No se obtuvo texto ${encodingDisplayLabel(cipherTextEncoding.value)}. Probablemente la clave, algoritmo, modo o padding no corresponden.`);
             }
         }
 
@@ -4367,11 +7154,15 @@ function runCipher(action) {
             `${cipherAlgorithm.value} se ha ejecutado en modo local a traves de crypto-js.`,
             action === "encrypt"
                 ? "La salida incluye el formato esperado por la libreria para passphrases."
-                : "Un descifrado correcto depende de repetir la misma passphrase y algoritmo."
+                : "Un descifrado correcto depende de repetir la misma passphrase, algoritmo, modo, padding y codificacion.",
+            ...cipherConfigNotes()
         ];
 
-        if (["DES", "TripleDES", "RC4"].includes(cipherAlgorithm.value)) {
+        if (config.legacy) {
             notes.push("El algoritmo elegido sigue siendo util para compatibilidad o analisis, pero hoy no seria la primera opcion para un diseno nuevo.");
+        }
+        if (cipherAlgorithm.value === "AES") {
+            notes.push("AES en este modulo no autentica la salida; para integridad y manipulacion detectable usa el laboratorio AEAD AES-GCM.");
         }
 
         cipherResult.value = {
@@ -4381,15 +7172,15 @@ function runCipher(action) {
             verdictBody,
             summaryCards: [
                 { label: "Operacion", value: action === "encrypt" ? "Encrypt" : "Decrypt", tone: "tone-neutral", note: "Ejecucion local" },
-                { label: "Algoritmo", value: cipherAlgorithm.value, tone: ["AES", "Rabbit"].includes(cipherAlgorithm.value) ? "tone-success" : "tone-warning", note: "Motor seleccionado" },
+                { label: "Algoritmo", value: cipherAlgorithm.value, tone: config.legacy ? "tone-warning" : "tone-success", note: config.label },
                 { label: "Clave", value: `${cipherKey.value.length} chars`, tone: cipherKey.value.length >= 16 ? "tone-success" : "tone-warning", note: "Passphrase" },
                 { label: "Salida", value: `${primaryValue.length} chars`, tone: "tone-neutral", note: action === "encrypt" ? "Texto cifrado" : "Texto plano" }
             ],
             signalCards: [
-                { label: "Entrada", value: `${cipherInput.value.length} chars`, tone: "tone-neutral", note: "Material procesado" },
+                { label: "Entrada", value: action === "encrypt" ? `${inputBytes.length} bytes` : `${cipherInput.value.length} chars`, tone: "tone-neutral", note: action === "encrypt" ? encodingDisplayLabel(cipherTextEncoding.value) : "Ciphertext" },
                 { label: "Reutilizable", value: action === "encrypt" ? "Si" : "Si", tone: "tone-success", note: "Puedes mover la salida a otros modulos" },
-                { label: "Compatibilidad", value: ["DES", "TripleDES", "RC4"].includes(cipherAlgorithm.value) ? "Legacy" : "Actual", tone: ["DES", "TripleDES", "RC4"].includes(cipherAlgorithm.value) ? "tone-warning" : "tone-success", note: "Lectura orientativa" },
-                { label: "Riesgo", value: action === "encrypt" ? "Bajo" : "Depende de la clave", tone: action === "encrypt" ? "tone-success" : "tone-warning", note: "No hay verificacion de autenticidad" }
+                { label: "Compatibilidad", value: config.legacy ? "Legacy" : "Actual", tone: config.legacy ? "tone-warning" : "tone-success", note: isCipherBlockAlgorithm.value ? `${cipherMode.value}/${cipherPadding.value}` : config.family },
+                { label: "Riesgo", value: action === "encrypt" ? "Sin auth" : "Depende de parametros", tone: "tone-warning", note: "No hay tag AEAD" }
             ],
             panels: [
                 {
@@ -4398,6 +7189,12 @@ function runCipher(action) {
                     content: primaryValue,
                     copyValue: primaryValue
                 },
+                ...(action === "decrypt" ? [{
+                    title: "Bytes descifrados",
+                    badge: "hex",
+                    content: bytesToHex(outputBytes),
+                    copyValue: bytesToHex(outputBytes)
+                }] : []),
                 {
                     title: "Lectura tecnica",
                     badge: "notas",
@@ -5513,7 +8310,60 @@ async function fillEcdhExample() {
     await deriveEcdhSharedSecret();
 }
 
+function argon2Runtime() {
+    return argon2Browser?.default || argon2Browser;
+}
+
+function scryptRuntime() {
+    return scryptJs.scrypt || scryptJs.default?.scrypt;
+}
+
+let yescryptRuntimePromise = null;
+
+function yescryptRuntime() {
+    if (!yescryptRuntimePromise) {
+        yescryptRuntimePromise = Yescrypt.init();
+    }
+    return yescryptRuntimePromise;
+}
+
+function isPowerOfTwo(value) {
+    const number = Number(value);
+    return Number.isInteger(number) && number > 1 && (number & (number - 1)) === 0;
+}
+
+function boundedInteger(value, fallback, min, max) {
+    const number = Number(value);
+    if (!Number.isFinite(number)) return fallback;
+    return Math.max(min, Math.min(max, Math.trunc(number)));
+}
+
+function parseKdfSaltBytes() {
+    try {
+        return base64ToBytes(kdfSalt.value);
+    } catch {
+        throw new Error("El salt debe estar en Base64. Usa Generar salt para crear uno valido.");
+    }
+}
+
+function kdfModeName(value) {
+    return kdfModeOptions.find(item => item.value === value)?.label || value;
+}
+
+function scryptEncodedString(salt, derived, n, r, p) {
+    const logN = Math.log2(n);
+    return `$scrypt$ln=${logN},r=${r},p=${p}$${bytesToBase64(salt)}$${bytesToBase64(derived)}`;
+}
+
+function yescryptMemoryNote(n, r) {
+    return `${(128 * r * n / 1048576).toFixed(1)} MiB aprox.`;
+}
+
 function generateKdfSalt() {
+    if (kdfMode.value === "BCRYPT") {
+        kdfSalt.value = bcrypt.genSaltSync(boundedInteger(kdfBcryptRounds.value, 10, 4, 15));
+        return;
+    }
     const salt = new Uint8Array(16);
     globalThis.crypto.getRandomValues(salt);
     kdfSalt.value = bytesToBase64(salt);
@@ -5524,30 +8374,51 @@ async function deriveKdfMaterial() {
         kdfResult.value = buildErrorResult("KDF_INPUT_EMPTY", "Falta material de entrada", "Introduce una password, semilla o secreto base.");
         return;
     }
-    if (!kdfSalt.value.trim()) {
+    if (kdfMode.value !== "BCRYPT" && !kdfSalt.value.trim()) {
         kdfResult.value = buildErrorResult("KDF_SALT_EMPTY", "Falta salt", "Genera o pega un salt Base64.");
         return;
     }
 
     try {
-        const subtle = getSubtleCrypto();
-        const lengthBits = Math.max(16, Number(kdfLength.value) || 32) * 8;
-        const salt = base64ToBytes(kdfSalt.value);
+        const mode = kdfMode.value;
+        const algorithmConfig = selectedKdfAlgorithmConfig.value;
+        let lengthBytes = Math.max(16, Number(kdfLength.value) || 32);
+        if (mode === "YESCRYPT") {
+            lengthBytes = Math.min(64, lengthBytes);
+        }
+        const lengthBits = lengthBytes * 8;
         const inputBytes = textToEncodedBytes(kdfInput.value, kdfTextEncoding.value);
         const infoBytes = textToEncodedBytes(kdfInfo.value, kdfTextEncoding.value);
-        let derived;
-        if (kdfMode.value === "PBKDF2") {
-            if (Number(kdfIterations.value) < 1000) {
-                throw new Error("PBKDF2 necesita al menos 1000 iteraciones.");
-            }
+        let salt = mode === "BCRYPT" ? new Uint8Array() : parseKdfSaltBytes();
+        let derived = new Uint8Array();
+        let primaryValue = "";
+        let outputHex = "";
+        let outputBase64 = "";
+        let runtime = "WebCrypto";
+        let verdictBody = "La operacion se completo con parametros explicitos y salida reutilizable.";
+        const notes = [];
+        const panels = [];
+        let costValue = "No aplica";
+        let costNote = "Parametro";
+        let costTone = "tone-neutral";
+
+        if (mode === "PBKDF2") {
+            const subtle = getSubtleCrypto();
+            const iterations = boundedInteger(kdfIterations.value, 180000, 1000, 10000000);
             const baseKey = await subtle.importKey("raw", inputBytes, "PBKDF2", false, ["deriveBits"]);
             derived = new Uint8Array(await subtle.deriveBits({
                 name: "PBKDF2",
                 salt,
-                iterations: Number(kdfIterations.value),
+                iterations,
                 hash: kdfHash.value
             }, baseKey, lengthBits));
-        } else {
+            verdictBody = "PBKDF2 aplica hash iterado sobre material humano y salt para dificultar ataques offline.";
+            notes.push(`PBKDF2-${kdfHash.value} con ${iterations.toLocaleString("es-ES")} iteraciones.`);
+            costValue = iterations.toLocaleString("es-ES");
+            costNote = "Iteraciones";
+            costTone = toneFromBoolean(iterations >= 100000);
+        } else if (mode === "HKDF") {
+            const subtle = getSubtleCrypto();
             const baseKey = await subtle.importKey("raw", inputBytes, "HKDF", false, ["deriveBits"]);
             derived = new Uint8Array(await subtle.deriveBits({
                 name: "HKDF",
@@ -5555,33 +8426,160 @@ async function deriveKdfMaterial() {
                 info: infoBytes,
                 hash: kdfHash.value
             }, baseKey, lengthBits));
+            verdictBody = "HKDF extrae y expande material de alta entropia para un uso concreto definido por info.";
+            notes.push(`HKDF-${kdfHash.value} con info de ${infoBytes.length} bytes.`);
+            costValue = `${infoBytes.length} bytes`;
+            costNote = "Info HKDF";
+            costTone = "tone-success";
+        } else if (mode === "ARGON2") {
+            const argon = argon2Runtime();
+            const typeMap = {
+                ARGON2ID: argon.ArgonType.Argon2id,
+                ARGON2I: argon.ArgonType.Argon2i,
+                ARGON2D: argon.ArgonType.Argon2d
+            };
+            const time = boundedInteger(kdfArgonIterations.value, 2, 1, 10);
+            const mem = boundedInteger(kdfArgonMemory.value, 19456, 1024, 262144);
+            const parallelism = boundedInteger(kdfArgonParallelism.value, 1, 1, 8);
+            const result = await argon.hash({
+                pass: inputBytes,
+                salt,
+                time,
+                mem,
+                hashLen: lengthBytes,
+                parallelism,
+                type: typeMap[kdfHash.value] ?? argon.ArgonType.Argon2id
+            });
+            derived = result.hash;
+            primaryValue = result.encoded;
+            runtime = "argon2-browser WASM";
+            verdictBody = "Argon2 es un password hashing moderno resistente a memoria; Argon2id suele ser la eleccion general.";
+            notes.push(`${algorithmConfig.label} con ${mem.toLocaleString("es-ES")} KiB, ${time} iteraciones y paralelismo ${parallelism}.`);
+            costValue = `${mem.toLocaleString("es-ES")} KiB`;
+            costNote = `${time} iter / p=${parallelism}`;
+            costTone = toneFromBoolean(mem >= 16384 && time >= 2);
+            panels.push({ title: "Hash Argon2 codificado", badge: "phc", content: primaryValue, copyValue: primaryValue });
+        } else if (mode === "SCRYPT") {
+            const scrypt = scryptRuntime();
+            if (typeof scrypt !== "function") throw new Error("scrypt-js no esta disponible en el bundle.");
+            const n = boundedInteger(kdfScryptN.value, 16384, 1024, 1048576);
+            const r = boundedInteger(kdfScryptR.value, 8, 1, 32);
+            const p = boundedInteger(kdfScryptP.value, 1, 1, 16);
+            if (!isPowerOfTwo(n)) throw new Error("scrypt necesita que N sea potencia de 2.");
+            derived = await scrypt(inputBytes, salt, n, r, p, lengthBytes);
+            primaryValue = scryptEncodedString(salt, derived, n, r, p);
+            runtime = "scrypt-js";
+            verdictBody = "scrypt eleva coste de CPU y memoria con N, r y p; es util para passwords y claves derivadas.";
+            notes.push(`scrypt con N=${n.toLocaleString("es-ES")}, r=${r}, p=${p}. Memoria teorica aproximada: ${(128 * r * n / 1048576).toFixed(1)} MiB.`);
+            costValue = `N=${n.toLocaleString("es-ES")}`;
+            costNote = `r=${r}, p=${p}`;
+            costTone = toneFromBoolean(n >= 16384 && r >= 8);
+            panels.push({ title: "scrypt codificado", badge: "phc", content: primaryValue, copyValue: primaryValue });
+        } else if (mode === "YESCRYPT") {
+            const yescrypt = await yescryptRuntime();
+            const n = boundedInteger(kdfScryptN.value, 4096, 1024, 1048576);
+            const r = boundedInteger(kdfScryptR.value, 32, 1, 64);
+            const p = boundedInteger(kdfScryptP.value, 1, 1, 16);
+            const t = boundedInteger(kdfYescryptT.value, 0, 0, 16);
+            if (!isPowerOfTwo(n)) throw new Error("yescrypt necesita que N sea potencia de 2.");
+            const fullDerived = yescrypt.yescrypt_kdf(inputBytes, salt, n, r, p, t);
+            derived = fullDerived.slice(0, lengthBytes);
+            primaryValue = yescrypt.yescrypt_hash(inputBytes, salt, n, r, p, t);
+            runtime = "yescrypt-wasm";
+            verdictBody = "yescrypt combina resistencia a memoria con formato de password hashing $y$, muy usado en shadow/libxcrypt modernos.";
+            notes.push(`yescrypt con N=${n.toLocaleString("es-ES")}, r=${r}, p=${p}, t=${t}. Memoria teorica base: ${yescryptMemoryNote(n, r)}.`);
+            notes.push("La salida $y$ es adecuada para almacenamiento/verificacion de password; la clave derivada se muestra como bytes de laboratorio.");
+            costValue = `N=${n.toLocaleString("es-ES")}`;
+            costNote = `r=${r}, p=${p}, t=${t}`;
+            costTone = toneFromBoolean(n >= 4096 && r >= 16);
+            panels.push({ title: "Hash yescrypt", badge: "$y$", content: primaryValue, copyValue: primaryValue });
+        } else if (mode === "BCRYPT") {
+            const rounds = boundedInteger(kdfBcryptRounds.value, 10, 4, 15);
+            const password = bytesToEncodedText(inputBytes, kdfTextEncoding.value);
+            const saltText = kdfSalt.value.trim() || await bcrypt.genSalt(rounds);
+            primaryValue = await bcrypt.hash(password, saltText);
+            kdfSalt.value = bcrypt.getSalt(primaryValue);
+            derived = textToEncodedBytes(primaryValue, "utf8");
+            runtime = "bcryptjs";
+            verdictBody = "bcrypt genera un hash modular crypt con salt y coste adaptativo. No se usa como clave binaria directa.";
+            notes.push(`bcrypt con coste ${bcrypt.getRounds(primaryValue)}. La salida incluye algoritmo, coste y salt.`);
+            if (bcrypt.truncates(password)) {
+                notes.push("Atencion: bcrypt trunca de forma compatible entradas que superan 72 bytes UTF-8.");
+            }
+            costValue = String(bcrypt.getRounds(primaryValue));
+            costNote = "2^coste rondas";
+            costTone = toneFromBoolean(bcrypt.getRounds(primaryValue) >= 10);
+            salt = textToEncodedBytes(kdfSalt.value, "utf8");
+            panels.push({ title: "Hash bcrypt", badge: "bcrypt", content: primaryValue, copyValue: primaryValue });
+        } else {
+            throw new Error(`Modo KDF no soportado: ${mode}`);
         }
 
-        const outputHex = bytesToHex(derived);
-        const outputBase64 = bytesToBase64(derived);
+        outputHex = bytesToHex(derived);
+        outputBase64 = bytesToBase64(derived);
+        if (!primaryValue) primaryValue = outputHex;
+        if (mode !== "BCRYPT") {
+            panels.push(
+                { title: "Clave derivada Hex", badge: "hex", content: outputHex, copyValue: outputHex },
+                { title: "Clave derivada Base64", badge: "base64", content: outputBase64, copyValue: outputBase64 }
+            );
+        }
+        panels.push({
+            title: "Parametros",
+            badge: "json",
+            content: safeJson({
+                mode,
+                algorithm: kdfHash.value,
+                runtime,
+                inputEncoding: kdfTextEncoding.value,
+                outputBytes: derived.byteLength,
+                salt: kdfSalt.value,
+                iterations: mode === "PBKDF2" ? Number(kdfIterations.value) : null,
+                argon2: mode === "ARGON2" ? {
+                    memoryKiB: Number(kdfArgonMemory.value),
+                    iterations: Number(kdfArgonIterations.value),
+                    parallelism: Number(kdfArgonParallelism.value)
+                } : null,
+                scrypt: mode === "SCRYPT" ? {
+                    N: Number(kdfScryptN.value),
+                    r: Number(kdfScryptR.value),
+                    p: Number(kdfScryptP.value)
+                } : null,
+                yescrypt: mode === "YESCRYPT" ? {
+                    N: Number(kdfScryptN.value),
+                    r: Number(kdfScryptR.value),
+                    p: Number(kdfScryptP.value),
+                    t: Number(kdfYescryptT.value)
+                } : null,
+                bcrypt: mode === "BCRYPT" ? { rounds: Number(kdfBcryptRounds.value) } : null
+            }),
+            copyValue: safeJson({
+                mode,
+                algorithm: kdfHash.value,
+                runtime,
+                output: primaryValue
+            })
+        });
+        panels.push({ title: "Lectura tecnica", badge: "notas", content: buildTextList("Observaciones", notes), copyValue: notes.join("\n") });
+
         kdfResult.value = {
+            primaryValue,
             verdictTone: "verdict-success",
-            verdictTitle: "Clave derivada",
-            verdictBody: kdfMode.value === "PBKDF2"
-                ? "PBKDF2 aplica hash iterado sobre material humano y salt para dificultar ataques offline."
-                : "HKDF extrae y expande material de alta entropia para un uso concreto definido por info.",
+            verdictTitle: ["BCRYPT", "YESCRYPT"].includes(mode) ? "Password hash generado" : "Clave derivada",
+            verdictBody,
             summaryCards: [
-                { label: "Modo", value: kdfMode.value, tone: "tone-success", note: "WebCrypto" },
-                { label: "Hash", value: kdfHash.value, tone: "tone-success", note: "PRF" },
-                { label: "Salida", value: `${derived.byteLength} bytes`, tone: "tone-neutral", note: `${lengthBits} bits` },
+                { label: "Modo", value: kdfModeName(mode), tone: "tone-success", note: runtime },
+                { label: "Algoritmo", value: algorithmConfig.label, tone: "tone-success", note: kdfAlgorithmLabel.value },
+                { label: "Salida", value: mode === "BCRYPT" ? `${primaryValue.length} chars` : `${derived.byteLength} bytes`, tone: "tone-neutral", note: mode === "BCRYPT" ? "Modular crypt" : `${lengthBits} bits` },
                 { label: "Entrada", value: `${inputBytes.length} bytes`, tone: "tone-neutral", note: encodingDisplayLabel(kdfTextEncoding.value) }
             ],
             signalCards: [
-                { label: "Iteraciones", value: kdfMode.value === "PBKDF2" ? Number(kdfIterations.value).toLocaleString("es-ES") : "No aplica", tone: kdfMode.value === "PBKDF2" ? toneFromBoolean(Number(kdfIterations.value) >= 100000) : "tone-neutral", note: "Coste PBKDF2" },
-                { label: "Salt", value: `${salt.byteLength} bytes`, tone: "tone-success", note: "Base64" },
-                { label: "Info", value: kdfMode.value === "HKDF" ? `${infoBytes.length} bytes` : "No aplica", tone: kdfMode.value === "HKDF" ? "tone-success" : "tone-neutral", note: "Contexto HKDF" },
-                { label: "Hex", value: `${outputHex.length} chars`, tone: "tone-neutral", note: "Representacion" },
-                { label: "Base64", value: `${outputBase64.length} chars`, tone: "tone-neutral", note: "Representacion" }
+                { label: "Coste", value: costValue, tone: costTone, note: costNote },
+                { label: "Salt", value: mode === "BCRYPT" ? "bcrypt" : `${salt.byteLength} bytes`, tone: "tone-success", note: mode === "BCRYPT" ? kdfSalt.value.slice(0, 7) : "Base64" },
+                { label: "Info", value: mode === "HKDF" ? `${infoBytes.length} bytes` : "No aplica", tone: mode === "HKDF" ? "tone-success" : "tone-neutral", note: "Contexto" },
+                { label: "Hex/Base64", value: mode === "BCRYPT" ? "No aplica" : "Disponible", tone: mode === "BCRYPT" ? "tone-neutral" : "tone-success", note: "Representacion" }
             ],
-            panels: [
-                { title: "Clave derivada Hex", badge: "hex", content: outputHex, copyValue: outputHex },
-                { title: "Clave derivada Base64", badge: "base64", content: outputBase64, copyValue: outputBase64 }
-            ]
+            panels
         };
     } catch (error) {
         kdfResult.value = buildErrorResult("KDF_FAILED", "No se pudo derivar material", error.message);
@@ -5589,13 +8587,28 @@ async function deriveKdfMaterial() {
 }
 
 function fillKdfExample() {
-    kdfMode.value = "PBKDF2";
-    kdfHash.value = "SHA-256";
+    if (activeKdfToolConfig.value.mode !== kdfMode.value) {
+        kdfMode.value = activeKdfToolConfig.value.mode;
+    }
+    ensureKdfSelection();
     kdfLength.value = 32;
-    kdfIterations.value = 180000;
     kdfTextEncoding.value = "utf8";
     kdfInput.value = "password de laboratorio con sal";
     kdfInfo.value = "feanor/aes-gcm/content";
+    kdfIterations.value = 180000;
+    kdfArgonIterations.value = 2;
+    kdfArgonMemory.value = 19456;
+    kdfArgonParallelism.value = 1;
+    kdfScryptN.value = 16384;
+    kdfScryptR.value = 8;
+    kdfScryptP.value = 1;
+    if (kdfMode.value === "YESCRYPT") {
+        kdfScryptN.value = 4096;
+        kdfScryptR.value = 32;
+        kdfScryptP.value = 1;
+        kdfYescryptT.value = 0;
+    }
+    kdfBcryptRounds.value = 10;
     generateKdfSalt();
 }
 
@@ -9082,7 +12095,7 @@ function rowsForExifReport(rows) {
     return sorted.slice(0, 140);
 }
 
-function formatExifToolLikeReport(rows, file, type, sha256) {
+function formatExifToolLikeReport(rows, file, type, sha256, hashSumLines = []) {
     const command = selectedExifProfile.value.command;
     const width = Math.min(34, Math.max(12, ...rows.map(row => row.tag.length)));
     const lines = [
@@ -9092,6 +12105,7 @@ function formatExifToolLikeReport(rows, file, type, sha256) {
         `# Archivo: ${file.name}`,
         `# Tipo detectado: ${type.label}`,
         `# SHA-256: ${sha256 || "No disponible"}`,
+        ...hashSumLines.map(line => `# ${line}`),
         ""
     ];
     if (!rows.length) {
@@ -10173,9 +13187,9 @@ async function analyzeExifFile() {
         const bytes = new Uint8Array(await file.arrayBuffer());
         const type = detectFileType(bytes, file);
         const entropy = byteShannonEntropy(bytes);
-        const sha256 = globalThis.crypto?.subtle
-            ? bytesToHex(new Uint8Array(await globalThis.crypto.subtle.digest("SHA-256", bytes)))
-            : "";
+        const hashSumLines = buildHashSumLines(bytes, file.name);
+        const checksumLines = buildChecksumSuiteLines(bytes);
+        const sha256 = hashHexForAlgorithm(bytes, "SHA256");
         let container = { metadataLines: [], formatLines: [], indicators: [], appendedBytes: 0 };
         try {
             container = collectContainerHints(bytes, type);
@@ -10194,7 +13208,7 @@ async function analyzeExifFile() {
         const builtRows = buildExifRows(metadata, file, bytes, type, sha256, entropy, container, parseError);
         const reportRows = rowsForExifReport(builtRows.rows);
         const allSortedRows = sortExifRows(builtRows.rows, "forensic");
-        const reportText = formatExifToolLikeReport(reportRows, file, type, sha256);
+        const reportText = formatExifToolLikeReport(reportRows, file, type, sha256, hashSumLines);
         const groups = categorizeExifMetadata(metadata);
         const mapLink = gpsMapLink(metadata);
         const metadataCount = builtRows.metadataRows.length;
@@ -10225,6 +13239,8 @@ async function analyzeExifFile() {
                 browserMime: file.type || "",
                 detectedType: type,
                 sha256: sha256 || null,
+                hashSums: hashSumLines,
+                checksums: checksumLines,
                 entropy
             },
             profile: {
@@ -10286,6 +13302,18 @@ async function analyzeExifFile() {
                     badge: "key",
                     content: buildTextList("Lectura organizada", keyLines),
                     copyValue: keyLines.join("\n")
+                },
+                {
+                    title: "Funciones *sum",
+                    badge: "sum",
+                    content: buildTextList("Huellas CLI", hashSumLines),
+                    copyValue: hashSumLines.join("\n")
+                },
+                {
+                    title: "Checksums SUM / CRC",
+                    badge: "sum",
+                    content: buildTextList("Checksums no criptograficos", checksumLines),
+                    copyValue: checksumLines.join("\n")
                 },
                 {
                     title: "Estructura del contenedor",
@@ -10684,9 +13712,9 @@ async function analyzeStegoFile() {
         const exifLines = await collectExifMetadata(file, type);
         const zipInfo = type.family === "archive" ? await inspectZipLikeFile(file) : { metadataLines: [], formatLines: [], indicators: [] };
         const lsb = await analyzeImageLsb(file, type);
-        const sha256 = globalThis.crypto?.subtle
-            ? bytesToHex(new Uint8Array(await globalThis.crypto.subtle.digest("SHA-256", bytes)))
-            : "No disponible";
+        const hashSumLines = buildHashSumLines(bytes, file.name);
+        const checksumLines = buildChecksumSuiteLines(bytes);
+        const sha256 = hashHexForAlgorithm(bytes, "SHA256");
 
         const indicators = [
             ...container.indicators,
@@ -10707,6 +13735,7 @@ async function analyzeStegoFile() {
             `MIME navegador: ${file.type || "N/D"}`,
             `Magic bytes: ${bytesToHex(bytes.slice(0, 16))}`,
             `SHA-256: ${sha256}`,
+            `sha256sum: ${hashSumCommandLine(bytes, "SHA256", file.name)}`,
             ...analyzeEncodingSignals(bytes).map(line => `Encoding: ${line}`),
             lsb ? `Imagen: ${lsb.width}x${lsb.height}, capacidad LSB aprox ${formatBytesSize(lsb.capacityBytes)}` : "",
             lsb ? `Balance LSB RGB: ${(lsb.lsbRatio * 100).toFixed(2)}% de unos` : "",
@@ -10760,6 +13789,18 @@ async function analyzeStegoFile() {
                     badge: "meta",
                     content: buildTextList("Campos", metadataLines),
                     copyValue: metadataLines.join("\n")
+                },
+                {
+                    title: "Funciones *sum",
+                    badge: "sum",
+                    content: buildTextList("Huellas CLI", hashSumLines),
+                    copyValue: hashSumLines.join("\n")
+                },
+                {
+                    title: "Checksums SUM / CRC",
+                    badge: "sum",
+                    content: buildTextList("Checksums no criptograficos", checksumLines),
+                    copyValue: checksumLines.join("\n")
                 },
                 {
                     title: "Detalles de formato",
@@ -11851,7 +14892,8 @@ function runRegexTest() {
     background-color: #725d39;
     border-color: #d6a756;
     color: #fff6dc;
-    box-shadow: 0 0 0 0.18rem rgba(214, 167, 86, 0.18);
+    outline: 2px solid rgba(214, 167, 86, 0.38);
+    outline-offset: 2px;
 }
 
 .feanor-page :deep(.alert-info),
@@ -11909,6 +14951,22 @@ function runRegexTest() {
 
 .hash-module {
     order: 20;
+}
+
+.hash-lookup-module {
+    order: 20;
+}
+
+.red-team-workbench-module {
+    order: 21;
+}
+
+.password-cracker-module {
+    order: 22;
+}
+
+.rainbow-table-module {
+    order: 23;
 }
 
 .symmetric-module {
@@ -12083,7 +15141,7 @@ function runRegexTest() {
     text-align: center;
     padding: 18px;
     border-radius: 8px;
-    background: linear-gradient(180deg, rgba(33, 27, 18, 0.94), rgba(8, 7, 5, 0.96));
+    background: #181510;
     border: 1px solid rgba(214, 167, 86, 0.24);
 }
 
@@ -12222,19 +15280,18 @@ function runRegexTest() {
     padding: 0 12px;
     border: 1px solid rgba(214, 167, 86, 0.44);
     border-radius: 8px;
-    background: linear-gradient(180deg, rgba(75, 54, 24, 0.92), rgba(28, 22, 16, 0.96));
+    background: #211b12;
     color: #f7d28a;
     font-size: 0.74rem;
     font-weight: 800;
     letter-spacing: 0.06em;
     line-height: 1;
     text-transform: uppercase;
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
 }
 
 .info-button:hover,
 .info-button:focus {
-    background: linear-gradient(180deg, rgba(103, 74, 30, 0.98), rgba(34, 25, 17, 0.98));
+    background: #302817;
     border-color: rgba(247, 210, 138, 0.78);
     color: #fff7d6;
 }
@@ -12244,7 +15301,7 @@ function runRegexTest() {
     padding: 0 12px;
     border: 1px solid rgba(214, 167, 86, 0.42);
     border-radius: 8px;
-    background: linear-gradient(180deg, rgba(42, 34, 24, 0.92), rgba(24, 22, 19, 0.96));
+    background: #17140f;
     color: #d6a756;
     font-size: 0.74rem;
     font-weight: 800;
@@ -12254,7 +15311,7 @@ function runRegexTest() {
 .guide-button:hover,
 .guide-button:focus,
 .guide-button.active {
-    background: linear-gradient(180deg, rgba(94, 67, 28, 0.9), rgba(39, 29, 18, 0.98));
+    background: #302817;
     border-color: rgba(247, 210, 138, 0.72);
     color: #ffe2a3;
 }
@@ -12269,7 +15326,6 @@ function runRegexTest() {
     border: 1px solid rgba(214, 167, 86, 0.26);
     border-radius: 8px;
     background: #17130f;
-    box-shadow: 0 18px 40px rgba(10, 7, 4, 0.38);
     color: #d8cfbf;
     line-height: 1.55;
     opacity: 0;
@@ -12306,9 +15362,7 @@ function runRegexTest() {
     padding: 18px;
     border: 1px solid rgba(214, 167, 86, 0.28);
     border-radius: 8px;
-    background:
-        linear-gradient(135deg, rgba(120, 83, 30, 0.18), rgba(25, 21, 16, 0.96) 42%),
-        #17130f;
+    background: #17130f;
 }
 
 .guide-kicker {
@@ -12364,6 +15418,12 @@ function runRegexTest() {
     color: #eadfcb;
     font-size: 0.9rem;
     font-weight: 600;
+}
+
+.field-label-required::after {
+    content: " *";
+    color: #fca5a5;
+    font-weight: 800;
 }
 
 .control-grid {
@@ -12520,26 +15580,17 @@ function runRegexTest() {
     padding: 20px;
     border: 1px solid rgba(214, 167, 86, 0.18);
     border-radius: 8px;
-    background:
-        linear-gradient(180deg, rgba(34, 22, 13, 0.98), rgba(18, 12, 8, 0.98)),
-        #171008;
-    box-shadow:
-        inset 0 1px 0 rgba(255, 255, 255, 0.035),
-        0 16px 34px rgba(10, 7, 4, 0.26);
+    background: #171008;
 }
 
 .client-panel {
     border-left: 3px solid rgba(214, 167, 86, 0.78);
-    background:
-        linear-gradient(145deg, rgba(119, 66, 25, 0.3), rgba(31, 19, 11, 0.98) 40%),
-        #1a1008;
+    background: #1a1008;
 }
 
 .server-panel {
     border-left: 3px solid rgba(177, 112, 52, 0.72);
-    background:
-        linear-gradient(145deg, rgba(92, 49, 22, 0.28), rgba(29, 18, 11, 0.98) 40%),
-        #180f08;
+    background: #180f08;
 }
 
 .transfer-panel-head {
@@ -12634,7 +15685,9 @@ function runRegexTest() {
 .input-dark:focus {
     background: #2b2418;
     border-color: #d6a756;
-    box-shadow: 0 0 0 0.2rem rgba(214, 167, 86, 0.18);
+    box-shadow: none;
+    outline: 2px solid rgba(214, 167, 86, 0.36);
+    outline-offset: 2px;
     color: #f7f1e4;
 }
 
@@ -12652,6 +15705,13 @@ function runRegexTest() {
 .mono-input {
     font-family: "Consolas", "Courier New", monospace;
     font-size: 0.86rem;
+}
+
+.algorithm-select,
+.algorithm-select option {
+    font-family: "Consolas", "Courier New", monospace;
+    font-size: 0.8rem;
+    letter-spacing: 0;
 }
 
 .compact-textarea {
@@ -12759,31 +15819,32 @@ function runRegexTest() {
 .asymmetric-module .input-dark:focus {
     background: #17130f;
     border-color: rgba(247, 210, 138, 0.58);
-    box-shadow: 0 0 0 0.2rem rgba(214, 167, 86, 0.14);
+    outline: 2px solid rgba(214, 167, 86, 0.28);
+    outline-offset: 2px;
 }
 
 .asymmetric-module .btn-main {
-    background: linear-gradient(180deg, rgba(122, 83, 31, 0.96), rgba(74, 50, 24, 0.98));
+    background: #5b4a2e;
     border-color: rgba(247, 210, 138, 0.48);
     color: #fff3d0;
 }
 
 .asymmetric-module .btn-main:hover,
 .asymmetric-module .btn-main:focus {
-    background: linear-gradient(180deg, rgba(151, 103, 39, 0.98), rgba(88, 57, 23, 0.98));
+    background: #725d39;
     border-color: rgba(247, 210, 138, 0.78);
     color: #fff9e8;
 }
 
 .asymmetric-module .btn-subtle {
-    background: linear-gradient(180deg, rgba(49, 39, 25, 0.96), rgba(24, 20, 15, 0.98));
+    background: #17140f;
     border-color: rgba(214, 167, 86, 0.26);
     color: #e8d2a6;
 }
 
 .asymmetric-module .btn-subtle:hover,
 .asymmetric-module .btn-subtle:focus {
-    background: linear-gradient(180deg, rgba(70, 53, 29, 0.98), rgba(34, 27, 18, 0.98));
+    background: #302817;
     border-color: rgba(247, 210, 138, 0.58);
     color: #fff3d0;
 }

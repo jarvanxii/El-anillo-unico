@@ -177,7 +177,7 @@ export const feanorUtilityGroups = [
                 label: "Hash digest",
                 badge: "HASH",
                 routeName: "feanor-hash",
-                description: "Calcula huellas SHA/MD5 de mensajes con encoding configurable y compara valores esperados sin clave secreta."
+                description: "Calcula huellas SHA/MD5, salidas md5sum/sha1sum/sha256sum/sha512sum y checksums SUM/CRC sobre texto o ficheros."
             },
             {
                 id: "hmac",
@@ -201,6 +201,34 @@ export const feanorUtilityGroups = [
                 description: "Expande secretos de alta entropia con salt, info de contexto y encoding configurable para separar usos."
             },
             {
+                id: "argon2",
+                label: "Argon2",
+                badge: "ARG2",
+                routeName: "feanor-argon2",
+                description: "Genera hashes Argon2id/i/d con memoria, iteraciones, paralelismo, salt y salida PHC en navegador."
+            },
+            {
+                id: "scrypt",
+                label: "scrypt",
+                badge: "SCR",
+                routeName: "feanor-scrypt",
+                description: "Deriva claves con scrypt usando parametros N, r y p para resistencia a memoria y fuerza bruta offline."
+            },
+            {
+                id: "yescrypt",
+                label: "yescrypt",
+                badge: "YES",
+                routeName: "feanor-yescrypt",
+                description: "Genera hashes yescrypt $y$ y claves derivadas con WASM, parametros N/r/p/t y enfoque compatible con password hashing moderno."
+            },
+            {
+                id: "bcrypt",
+                label: "bcrypt",
+                badge: "BCR",
+                routeName: "feanor-bcrypt",
+                description: "Genera hashes bcrypt con coste configurable, salt modular crypt y avisos sobre el limite de 72 bytes."
+            },
+            {
                 id: "timing",
                 label: "Comparador constante",
                 badge: "TIME",
@@ -217,6 +245,41 @@ export const feanorUtilityGroups = [
         ]
     },
     {
+        id: "redTeam",
+        name: "Red Team",
+        summary: "Laboratorios defensivos para auditar hashes, founds y contrasenas debiles sin enviar material sensible fuera del navegador.",
+        utilities: [
+            {
+                id: "hashcatJohnWorkbench",
+                label: "Hashcat / John workbench",
+                badge: "H/J",
+                routeName: "feanor-hashcat-john-workbench",
+                description: "Planifica ataques autorizados con catalogo de modos, mascaras, reglas, wordlists, comandos Hashcat/John y preview local de candidatos."
+            },
+            {
+                id: "passwordCracker",
+                label: "Password hash cracker",
+                badge: "CRACK",
+                routeName: "feanor-password-cracker",
+                description: "Cracking local por diccionario para MD5, SHA1, SHA2, SHA3, RIPEMD-160 y MySQL5; identifica formatos adaptativos como bcrypt, Argon2, scrypt y yescrypt."
+            },
+            {
+                id: "rainbowTables",
+                label: "Rainbow tables",
+                badge: "RAIN",
+                routeName: "feanor-rainbow-tables",
+                description: "Genera tablas rainbow locales, exporta endpoints start->end y busca hashes rapidos para entender el impacto de salts y KDF modernos."
+            },
+            {
+                id: "hashLookup",
+                label: "Hash lookup local",
+                badge: "LOOK",
+                routeName: "feanor-hash-lookup",
+                description: "Identifica hashes, verifica founds hash[:salt]:plain y prueba wordlists locales al estilo CrackStation/Hashes sin enviar datos fuera del navegador."
+            }
+        ]
+    },
+    {
         id: "cifrado",
         name: "Cifrado y tokens",
         summary: "Laboratorios para cifrado simetrico, AEAD, tokens y codigos de un solo uso.",
@@ -226,7 +289,7 @@ export const feanorUtilityGroups = [
                 label: "Cifrado simetrico",
                 badge: "SYM",
                 routeName: "feanor-cifrado-simetrico",
-                description: "Cifra y descifra con algoritmos soportados por crypto-js usando clave o passphrase."
+                description: "Cifra y descifra con AES, DES, 3DES, RC4, RC4Drop, Rabbit y RabbitLegacy, con modos CBC/CFB/CTR/OFB/ECB, padding y encoding configurable."
             },
             {
                 id: "aead",

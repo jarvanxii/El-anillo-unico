@@ -35,10 +35,18 @@ import FeanorSteghideSuiteView from "../views/CodiceFeanor/Feanor-SteghideSuiteV
 import FeanorGeneradorSecretosView from "../views/CodiceFeanor/Feanor-GeneradorSecretosView.vue";
 import FeanorEntropiaView from "../views/CodiceFeanor/Feanor-EntropiaView.vue";
 import FeanorHashView from "../views/CodiceFeanor/Feanor-HashView.vue";
+import FeanorHashLookupView from "../views/CodiceFeanor/Feanor-HashLookupView.vue";
+import FeanorPasswordHashCrackerView from "../views/CodiceFeanor/Feanor-PasswordHashCrackerView.vue";
+import FeanorRainbowTablesView from "../views/CodiceFeanor/Feanor-RainbowTablesView.vue";
+import FeanorHashcatJohnWorkbenchView from "../views/CodiceFeanor/Feanor-HashcatJohnWorkbenchView.vue";
 import FeanorHmacView from "../views/CodiceFeanor/Feanor-HmacView.vue";
 import FeanorKdfView from "../views/CodiceFeanor/Feanor-KdfView.vue";
 import FeanorPbkdf2View from "../views/CodiceFeanor/Feanor-Pbkdf2View.vue";
 import FeanorHkdfView from "../views/CodiceFeanor/Feanor-HkdfView.vue";
+import FeanorArgon2View from "../views/CodiceFeanor/Feanor-Argon2View.vue";
+import FeanorScryptView from "../views/CodiceFeanor/Feanor-ScryptView.vue";
+import FeanorYescryptView from "../views/CodiceFeanor/Feanor-YescryptView.vue";
+import FeanorBcryptView from "../views/CodiceFeanor/Feanor-BcryptView.vue";
 import FeanorComparadorConstanteView from "../views/CodiceFeanor/Feanor-ComparadorConstanteView.vue";
 import FeanorFirmaJsonView from "../views/CodiceFeanor/Feanor-FirmaJsonView.vue";
 import FeanorCifradoSimetricoView from "../views/CodiceFeanor/Feanor-CifradoSimetricoView.vue";
@@ -183,6 +191,13 @@ const routes = [
     name: "feanor-teoria-hash-hmac-timing",
     component: FeanorTeoriaView,
     props: { topicId: "hash-hmac-timing" },
+    meta: { showFeanorHeader: true },
+  },
+  {
+    path: "/el-codice-de-feanor/teoria/red-team-hashcracking",
+    name: "feanor-teoria-red-team-hashcracking",
+    component: FeanorTeoriaView,
+    props: { topicId: "red-team-hashcracking" },
     meta: { showFeanorHeader: true },
   },
   {
@@ -383,6 +398,30 @@ const routes = [
     meta: { showFeanorHeader: true },
   },
   {
+    path: "/el-codice-de-feanor/hash-lookup-local",
+    name: "feanor-hash-lookup",
+    component: FeanorHashLookupView,
+    meta: { showFeanorHeader: true },
+  },
+  {
+    path: "/el-codice-de-feanor/red-team/password-hash-cracker",
+    name: "feanor-password-cracker",
+    component: FeanorPasswordHashCrackerView,
+    meta: { showFeanorHeader: true },
+  },
+  {
+    path: "/el-codice-de-feanor/red-team/hashcat-john-workbench",
+    name: "feanor-hashcat-john-workbench",
+    component: FeanorHashcatJohnWorkbenchView,
+    meta: { showFeanorHeader: true },
+  },
+  {
+    path: "/el-codice-de-feanor/red-team/rainbow-tables",
+    name: "feanor-rainbow-tables",
+    component: FeanorRainbowTablesView,
+    meta: { showFeanorHeader: true },
+  },
+  {
     path: "/el-codice-de-feanor/hmac",
     name: "feanor-hmac",
     component: FeanorHmacView,
@@ -404,6 +443,30 @@ const routes = [
     path: "/el-codice-de-feanor/hkdf",
     name: "feanor-hkdf",
     component: FeanorHkdfView,
+    meta: { showFeanorHeader: true },
+  },
+  {
+    path: "/el-codice-de-feanor/argon2",
+    name: "feanor-argon2",
+    component: FeanorArgon2View,
+    meta: { showFeanorHeader: true },
+  },
+  {
+    path: "/el-codice-de-feanor/scrypt",
+    name: "feanor-scrypt",
+    component: FeanorScryptView,
+    meta: { showFeanorHeader: true },
+  },
+  {
+    path: "/el-codice-de-feanor/yescrypt",
+    name: "feanor-yescrypt",
+    component: FeanorYescryptView,
+    meta: { showFeanorHeader: true },
+  },
+  {
+    path: "/el-codice-de-feanor/bcrypt",
+    name: "feanor-bcrypt",
+    component: FeanorBcryptView,
     meta: { showFeanorHeader: true },
   },
   {

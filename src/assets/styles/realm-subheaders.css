@@ -15,6 +15,23 @@
     --realm-glow: rgba(212, 175, 55, 0.24);
 }
 
+.subheader.realm-subheader.realm-subheader--feanor,
+.sub-dropdown.realm-sub-dropdown.realm-subheader--feanor {
+    --realm-bg-top: #261a10;
+    --realm-bg-mid: #17110d;
+    --realm-bg-bottom: #090b10;
+    --realm-surface: #1f1711;
+    --realm-hover: #302216;
+    --realm-border: #b77a31;
+    --realm-accent: #d6a756;
+    --realm-accent-strong: #ffe2a3;
+    --realm-text: #ead8b8;
+    --realm-text-strong: #fff6dc;
+    --realm-dropdown-top: #1a120c;
+    --realm-dropdown-bottom: #07080d;
+    --realm-glow: rgba(214, 167, 86, 0.28);
+}
+
 .subheader.realm-subheader.realm-subheader--saruman,
 .sub-dropdown.realm-sub-dropdown.realm-subheader--saruman {
     --realm-bg-top: #252b30;

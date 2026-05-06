@@ -1407,7 +1407,7 @@ export default {
 .btn-main:disabled,
 .btn-subtle:disabled {
     opacity: 0.65;
-    cursor: not-allowed;
+    cursor: var(--cursor-not-allowed), not-allowed;
 }
 
 .btn-subtle {

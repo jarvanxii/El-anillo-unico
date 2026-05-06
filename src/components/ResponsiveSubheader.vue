@@ -145,10 +145,26 @@ export default {
         },
         itemActive(item) {
             const routeName = this.itemRouteName(item);
-            return this.active === item.id || Boolean(routeName && routeName === this.currentRouteName);
+            return this.active === item.id || Boolean(routeName && routeName === this.currentRouteName) || this.itemSubRouteActive(item);
+        },
+        itemSubRouteActive(item) {
+            if (!this.hasSubs(item)) {
+                return false;
+            }
+
+            return item.subs.some(sub => {
+                const route = this.subRoute(sub);
+                if (!route) {
+                    return false;
+                }
+                if (typeof route === "string") {
+                    return route === this.$route?.path;
+                }
+                return Boolean((route.name && route.name === this.currentRouteName) || (route.path && route.path === this.$route?.path));
+            });
         },
         mobileItemActive(item) {
-            return this.hasSubs(item) ? this.openMobileSections.includes(item.id) : this.itemActive(item);
+            return this.hasSubs(item) ? this.openMobileSections.includes(item.id) || this.itemSubRouteActive(item) : this.itemActive(item);
         },
         handleItemEnter(item, event) {
             if (this.hasSubs(item)) {
@@ -303,7 +319,7 @@ export default {
     font-size: clamp(10.5px, calc(0.38vw + 7px), 12.5px);
     font-weight: 600;
     letter-spacing: 0.15px;
-    cursor: pointer;
+    cursor: var(--cursor-pointer), pointer;
     border-left: 1px solid color-mix(in srgb, var(--realm-border) 28%, transparent);
     border-right: 1px solid color-mix(in srgb, var(--realm-border) 28%, transparent);
     text-shadow: 0 1px 8px rgba(0, 0, 0, 0.34);
@@ -403,7 +419,7 @@ export default {
     padding: 6px 2px;
     border-bottom: 1px solid color-mix(in srgb, var(--realm-accent) 12%, transparent);
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    cursor: pointer;
+    cursor: var(--cursor-pointer), pointer;
 }
 
 .submenu a:hover,
@@ -438,7 +454,7 @@ export default {
     padding: 0;
     border: 0;
     background: transparent;
-    cursor: pointer;
+    cursor: var(--cursor-pointer), pointer;
     z-index: 2402;
 }
 
@@ -500,7 +516,7 @@ export default {
     font-weight: 600;
     line-height: 1.3;
     text-align: left;
-    cursor: pointer;
+    cursor: var(--cursor-pointer), pointer;
     transition: all 0.22s ease;
 }
 

@@ -1,37 +1,7 @@
 <template>
     <div class="feanor-result">
-        <div class="row g-3 mb-4">
-            <div class="col-6 col-lg-3" v-for="item in result.summaryCards" :key="item.label">
-                <div class="metric-card">
-                    <label>{{ item.label }}</label>
-                    <span :class="item.tone">{{ item.value }}</span>
-                    <small v-if="item.note">{{ item.note }}</small>
-                </div>
-            </div>
-        </div>
-
-        <div class="verdict-card" :class="result.verdictTone">
-            <div class="verdict-icon">
-                <span>{{ icon }}</span>
-            </div>
-            <div class="verdict-body">
-                <strong>{{ result.verdictTitle }}</strong>
-                <p>{{ result.verdictBody }}</p>
-            </div>
-        </div>
-
-        <div v-if="result.signalCards?.length" class="row g-3 mb-4">
-            <div class="col-md-6 col-xl-3" v-for="item in result.signalCards" :key="item.label">
-                <div class="signal-card">
-                    <label>{{ item.label }}</label>
-                    <span :class="item.tone">{{ item.value }}</span>
-                    <small>{{ item.note }}</small>
-                </div>
-            </div>
-        </div>
-
-        <div v-if="result.panels?.length" class="row g-3">
-            <div class="col-xl-6" v-for="panel in result.panels" :key="panel.title">
+        <div v-if="resultPanels.length" class="row g-3 result-panels">
+            <div class="col-xl-6" v-for="panel in resultPanels" :key="panel.title">
                 <div class="tool-card">
                     <div class="card-head">
                         <h5>{{ panel.title }}</h5>
@@ -52,11 +22,61 @@
                 </div>
             </div>
         </div>
+
+        <div class="analysis-block">
+            <div class="verdict-card" :class="result.verdictTone">
+                <div class="verdict-icon">
+                    <span>{{ icon }}</span>
+                </div>
+                <div class="verdict-body">
+                    <strong>{{ result.verdictTitle }}</strong>
+                    <p>{{ result.verdictBody }}</p>
+                </div>
+            </div>
+
+            <div v-if="analysisCards.length" class="row g-3">
+                <div class="col-md-6 col-xl-3" v-for="item in analysisCards" :key="item.label">
+                    <div class="metric-card">
+                        <label>{{ item.label }}</label>
+                        <span :class="item.tone">{{ item.value }}</span>
+                        <small v-if="item.note">{{ item.note }}</small>
+                    </div>
+                </div>
+            </div>
+
+            <details v-if="detailPanels.length" class="detail-panels">
+                <summary>Detalles tecnicos</summary>
+                <div class="row g-3">
+                    <div class="col-xl-6" v-for="panel in detailPanels" :key="`detail-${panel.title}`">
+                        <div class="tool-card detail-card">
+                            <div class="card-head">
+                                <h5>{{ panel.title }}</h5>
+                                <div class="card-actions">
+                                    <span class="mini-badge">{{ panel.badge }}</span>
+                                    <button
+                                        v-if="panel.copyValue"
+                                        class="btn btn-quiet"
+                                        @click="$emit('copy', panel.copyValue)"
+                                    >
+                                        Copiar
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="output-box">
+                                <pre class="result-pre">{{ panel.content }}</pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </details>
+        </div>
     </div>
 </template>
 
 <script setup>
-defineProps({
+import { computed } from "vue";
+
+const props = defineProps({
     result: {
         type: Object,
         required: true
@@ -66,6 +86,49 @@ defineProps({
         default: "LAB"
     }
 });
+
+const DETAIL_PANEL_TITLES = [
+    "lectura",
+    "metadatos",
+    "tabla de sustitucion",
+    "representaciones",
+    "linea temporal",
+    "relacion de cadena",
+    "detalles",
+    "analisis zxcvbn",
+    "lectura de caracteres",
+    "pseudocodigo",
+    "parametros"
+];
+
+const allPanels = computed(() => props.result.panels || []);
+
+function normalizeTitle(value) {
+    return String(value || "")
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toLowerCase();
+}
+
+function isDetailPanel(panel) {
+    const title = normalizeTitle(panel?.title);
+    return DETAIL_PANEL_TITLES.some(item => title.includes(item));
+}
+
+const resultPanels = computed(() => {
+    const primaryPanels = allPanels.value.filter(panel => !isDetailPanel(panel));
+    return primaryPanels.length || !allPanels.value.length ? primaryPanels : [allPanels.value[0]];
+});
+
+const detailPanels = computed(() => {
+    const primaryPanelSet = new Set(resultPanels.value);
+    return allPanels.value.filter(panel => !primaryPanelSet.has(panel));
+});
+
+const analysisCards = computed(() => [
+    ...(props.result.summaryCards || []).slice(0, 2),
+    ...(props.result.signalCards || []).slice(0, 2)
+]);
 
 defineEmits(["copy"]);
 </script>
@@ -110,6 +173,39 @@ defineEmits(["copy"]);
     line-height: 1.55;
 }
 
+.result-panels {
+    margin-bottom: 18px;
+}
+
+.analysis-block {
+    display: grid;
+    gap: 14px;
+}
+
+.detail-panels {
+    border: 1px solid #1f2937;
+    border-radius: 8px;
+    background: rgba(15, 23, 42, 0.58);
+    padding: 12px;
+}
+
+.detail-panels summary {
+    cursor: pointer;
+    color: #f8fafc;
+    font-size: 0.88rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.detail-panels[open] summary {
+    margin-bottom: 12px;
+}
+
+.detail-card {
+    background: #0b1220;
+}
+
 .verdict-card {
     display: flex;
     gap: 14px;
@@ -117,7 +213,7 @@ defineEmits(["copy"]);
     border-radius: 8px;
     border: 1px solid transparent;
     padding: 16px;
-    margin-bottom: 18px;
+    margin-bottom: 0;
 }
 
 .verdict-icon {

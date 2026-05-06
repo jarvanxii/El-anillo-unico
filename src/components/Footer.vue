@@ -149,7 +149,7 @@ export default {
     align-items: center;
     gap: 10px;
     width: fit-content;
-    cursor: pointer;
+    cursor: var(--cursor-pointer), pointer;
     color: #d4af37;
     font-family: "Cinzel Decorative", serif;
     font-size: 19px;
@@ -219,7 +219,7 @@ export default {
     font-size: 13px;
     line-height: 1.5;
     margin-bottom: 12px;
-    cursor: pointer;
+    cursor: var(--cursor-pointer), pointer;
     text-align: center;
     transition: all 0.25s ease;
     opacity: 0.85;

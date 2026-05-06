@@ -832,7 +832,7 @@ export default {
     color: #dbe5ef;
     font-size: 0.76rem;
     font-weight: 700;
-    cursor: pointer;
+    cursor: var(--cursor-pointer), pointer;
     transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
     white-space: nowrap;
 }
@@ -877,7 +877,7 @@ export default {
     color: rgba(216, 226, 236, 0.78);
     font-size: 0.88rem;
     font-weight: 700;
-    cursor: pointer;
+    cursor: var(--cursor-pointer), pointer;
     transition: border-color 0.18s ease, background 0.18s ease, color 0.18s ease;
 }
 

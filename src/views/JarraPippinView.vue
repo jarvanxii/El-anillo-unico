@@ -328,7 +328,7 @@ export default {
     padding: 0;
     border: 0;
     background: color-mix(in srgb, var(--view-surface-soft) 88%, black 12%);
-    cursor: zoom-in;
+    cursor: var(--cursor-zoom-in), zoom-in;
 }
 
 .meme-button img {

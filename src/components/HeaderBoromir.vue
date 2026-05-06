@@ -296,7 +296,7 @@ export default {
     font-size: 13px;
     font-weight: 600;
     letter-spacing: .3px;
-    cursor: pointer;
+    cursor: var(--cursor-pointer), pointer;
     border-left: 1px solid rgba(74, 123, 167, 0.18);
     border-right: 1px solid rgba(74, 123, 167, 0.18);
     transition: all .22s ease;
@@ -368,7 +368,7 @@ export default {
     line-height: 1.35;
     padding: 6px 2px;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    cursor: pointer;
+    cursor: var(--cursor-pointer), pointer;
 }
 
 .submenu a:hover {

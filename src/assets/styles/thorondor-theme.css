@@ -519,7 +519,7 @@
 }
 
 .thorondor-page .clickable-card {
-    cursor: pointer;
+    cursor: var(--cursor-pointer), pointer;
 }
 
 .thorondor-page .clickable-card:hover {

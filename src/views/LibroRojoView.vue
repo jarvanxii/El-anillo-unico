@@ -288,7 +288,7 @@ export default {
     color: var(--view-text-strong);
     font-weight: 700;
     text-align: left;
-    cursor: pointer;
+    cursor: var(--cursor-pointer), pointer;
     transition: color 0.18s ease, background 0.18s ease;
 }
 

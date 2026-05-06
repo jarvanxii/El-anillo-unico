@@ -1059,7 +1059,7 @@ export default {
 
 .btn-main:disabled {
     opacity: 0.65;
-    cursor: not-allowed;
+    cursor: var(--cursor-not-allowed), not-allowed;
 }
 
 .helper-copy {

@@ -1,41 +1,515 @@
 <template>
-    <div class="feanor-page text-light">
-        <section class="hero-banner">
+    <div :class="['feanor-page', 'text-light', { 'feanor-page--tool': !isOverviewPage }]">
+        <section v-if="isOverviewPage" class="hero-banner">
             <img src="@/assets/banners/banner-feanor.webp" alt="El Codice de Feanor" />
         </section>
 
         <div class="container py-5">
-            <section class="section-box intro-box">
+            <section v-if="isOverviewPage" class="section-box intro-box">
                 <div class="intro-layout">
                     <div class="section-heading">
                         <span class="section-kicker">Criptografia local y parsing tecnico</span>
                         <h1 class="section-name">El Codice de Feanor</h1>
                         <p class="section-copy">
                             Utilidades locales para criptografia aplicada, parsing tecnico, JWT, certificados,
-                            codificaciones, secretos, OTP, JSON y regex. Todo se ejecuta en el navegador.
+                            codificaciones, secretos, OTP, JSON, regex, esteganografia y metadatos. Todo se ejecuta en
+                            el navegador.
                         </p>
                     </div>
 
                     <div class="intro-emblem">
                         <img src="@/assets/logos/feanor.webp" alt="Sello de Feanor" />
-                        <span>19 modulos enlazados</span>
+                        <span>33 modulos enlazados</span>
                         <small>Procesamiento en cliente.</small>
                     </div>
                 </div>
             </section>
 
-            <section class="section-box hash-module">
+            <section v-if="isOverviewPage" class="section-box utilities-summary">
+                <div class="module-header">
+                    <span class="section-kicker">Teoria</span>
+                    <h2 class="module-title">Base teorica para entender cada herramienta</h2>
+                    <p class="module-copy">
+                        Antes de usar los laboratorios, estos apartados explican que ocurre por debajo: bytes, XOR,
+                        XOR, modulo, hashes, KDF, cifrado autenticado, esteganografia, metadatos, JWT, OTP, claves,
+                        firmas y certificados.
+                    </p>
+                </div>
+
+                <div class="utility-link-grid theory-link-grid">
+                    <router-link
+                        v-for="topic in feanorTheoryTopics"
+                        :key="topic.id"
+                        class="utility-link"
+                        :to="{ name: topic.routeName }">
+                        <span class="mini-badge">{{ topic.badge }}</span>
+                        <strong>{{ topic.label }}</strong>
+                        <p>{{ topic.summary }}</p>
+                    </router-link>
+                </div>
+            </section>
+
+            <section v-if="isOverviewPage" class="section-box utilities-summary">
+                <div class="module-header">
+                    <span class="section-kicker">Indice de utilidades</span>
+                    <h2 class="module-title">Herramientas ordenadas por complejidad</h2>
+                    <p class="module-copy">
+                        Elige una utilidad concreta para abrir solo su laboratorio. El resumen y el header comparten el
+                        mismo catalogo de datos, asi que las rutas y descripciones se mantienen en un unico sitio.
+                    </p>
+                </div>
+
+                <div class="utility-group-list">
+                    <article v-for="group in feanorUtilityGroups" :key="group.id" class="utility-group">
+                        <header class="utility-group-head">
+                            <span>{{ group.name }}</span>
+                            <p>{{ group.summary }}</p>
+                        </header>
+
+                        <div class="utility-link-grid">
+                            <router-link
+                                v-for="utility in group.utilities"
+                                :key="utility.id"
+                                class="utility-link"
+                                :to="{ name: utility.routeName }">
+                                <span class="mini-badge">{{ utility.badge }}</span>
+                                <strong>{{ utility.label }}</strong>
+                                <p>{{ utility.description }}</p>
+                            </router-link>
+                        </div>
+                    </article>
+                </div>
+            </section>
+
+            <section v-if="isModuleVisible('caesar')" class="section-box caesar-module">
                 <div class="module-header">
                     <span class="section-kicker">Modulo 01</span>
-                    <h2 class="module-title">Laboratorio de hash, HMAC y PBKDF2</h2>
+                    <h2 class="module-title">Cifrado Cesar</h2>
                     <p class="module-copy">
-                        Calcula huellas, deriva claves, compara salidas esperadas y valida si el material coincide con
-                        un valor de referencia. Pensado para verificacion rapida, no para custodiar secretos.
+                        Aplica desplazamientos clasicos con logica normal o inversa, eligiendo alfabeto espanol con
+                        <code class="inline-code">Ñ</code> o alfabeto ingles. Las letras conservan mayusculas y el resto
+                        del texto queda intacto.
                     </p>
                 </div>
 
                 <div class="control-grid">
                     <div class="control-field">
+                        <label class="field-label" for="caesar-alphabet">Alfabeto</label>
+                        <select id="caesar-alphabet" v-model="caesarAlphabet" class="form-select input-dark">
+                            <option v-for="item in caesarAlphabets" :key="item.value" :value="item.value">
+                                {{ item.label }}
+                            </option>
+                        </select>
+                    </div>
+                    <div class="control-field">
+                        <label class="field-label" for="caesar-logic">Logica</label>
+                        <select id="caesar-logic" v-model="caesarLogic" class="form-select input-dark">
+                            <option v-for="item in caesarLogicModes" :key="item.value" :value="item.value">
+                                {{ item.label }}
+                            </option>
+                        </select>
+                    </div>
+                    <div class="control-field">
+                        <label class="field-label" for="caesar-shift">Numero de caracteres</label>
+                        <input
+                            id="caesar-shift"
+                            v-model.number="caesarShift"
+                            type="number"
+                            min="0"
+                            step="1"
+                            class="form-control input-dark"
+                        />
+                    </div>
+                    <div class="control-field full-span">
+                        <label class="field-label" for="caesar-input">Texto</label>
+                        <textarea
+                            id="caesar-input"
+                            v-model="caesarInput"
+                            class="form-control input-dark textarea-dark"
+                            rows="5"
+                            placeholder="Texto plano o texto cifrado con Cesar"
+                        ></textarea>
+                    </div>
+                </div>
+
+                <div class="inline-actions">
+                    <button class="btn btn-main" @click="runCaesarCipher">Aplicar Cesar</button>
+                    <button class="btn btn-subtle" @click="toggleCaesarLogic">Invertir logica</button>
+                    <button class="btn btn-subtle" @click="useCaesarOutputAsInput">Pasar salida a entrada</button>
+                    <button class="btn btn-subtle" @click="fillCaesarExample">Cargar ejemplo</button>
+                </div>
+                <p class="helper-copy">
+                    La logica normal avanza en el alfabeto; la inversa retrocede el mismo numero de caracteres.
+                </p>
+
+                <FeanorResultPanel v-if="caesarResult" :result="caesarResult" icon="CES" @copy="copyText" />
+            </section>
+
+            <section v-if="isModuleVisible('atbash')" class="section-box atbash-module">
+                <div class="module-header">
+                    <span class="section-kicker">Modulo 02</span>
+                    <h2 class="module-title">Cifrado Atbash</h2>
+                    <p class="module-copy">
+                        Sustitucion por espejo del alfabeto: la primera letra se cambia por la ultima, la segunda por la
+                        penultima, y asi sucesivamente. La misma operacion cifra y descifra.
+                    </p>
+                </div>
+
+                <div class="control-grid">
+                    <div class="control-field">
+                        <label class="field-label" for="atbash-alphabet">Alfabeto</label>
+                        <select id="atbash-alphabet" v-model="atbashAlphabet" class="form-select input-dark">
+                            <option v-for="item in caesarAlphabets" :key="item.value" :value="item.value">
+                                {{ item.label }}
+                            </option>
+                        </select>
+                    </div>
+                    <div class="control-field full-span">
+                        <label class="field-label" for="atbash-input">Texto</label>
+                        <textarea
+                            id="atbash-input"
+                            v-model="atbashInput"
+                            class="form-control input-dark textarea-dark"
+                            rows="5"
+                            placeholder="Texto plano o texto Atbash"
+                        ></textarea>
+                    </div>
+                </div>
+
+                <div class="inline-actions">
+                    <button class="btn btn-main" @click="runAtbashCipher">Aplicar Atbash</button>
+                    <button class="btn btn-subtle" @click="useAtbashOutputAsInput">Pasar salida a entrada</button>
+                    <button class="btn btn-subtle" @click="fillAtbashExample">Cargar ejemplo</button>
+                </div>
+
+                <FeanorResultPanel v-if="atbashResult" :result="atbashResult" icon="ATB" @copy="copyText" />
+            </section>
+
+            <section v-if="isModuleVisible('xor')" class="section-box xor-module">
+                <div class="module-header">
+                    <span class="section-kicker">Modulo 03</span>
+                    <h2 class="module-title">Laboratorio XOR</h2>
+                    <p class="module-copy">
+                        Aplica OR exclusivo bit a bit sobre binario, Hex, texto UTF-8 o bytes decimales. Sirve para ver
+                        por que <code class="inline-code">P XOR K XOR K = P</code> en cifrado simetrico sencillo.
+                    </p>
+                </div>
+
+                <div class="control-grid">
+                    <div class="control-field">
+                        <label class="field-label" for="xor-mode">Formato</label>
+                        <select id="xor-mode" v-model="xorInputMode" class="form-select input-dark">
+                            <option v-for="item in xorInputModes" :key="item.value" :value="item.value">
+                                {{ item.label }}
+                            </option>
+                        </select>
+                    </div>
+                    <div class="control-field">
+                        <label class="field-label" for="xor-repeat">Clave corta</label>
+                        <select id="xor-repeat" v-model="xorRepeatKey" class="form-select input-dark">
+                            <option :value="false">Exigir misma longitud</option>
+                            <option :value="true">Repetir B como clave</option>
+                        </select>
+                    </div>
+                    <div class="control-field full-span">
+                        <label class="field-label" for="xor-left">A / Texto plano</label>
+                        <textarea
+                            id="xor-left"
+                            v-model="xorLeft"
+                            class="form-control input-dark textarea-dark"
+                            rows="4"
+                            placeholder="Ejemplo binario: 1010"
+                        ></textarea>
+                    </div>
+                    <div class="control-field full-span">
+                        <label class="field-label" for="xor-right">B / Clave</label>
+                        <textarea
+                            id="xor-right"
+                            v-model="xorRight"
+                            class="form-control input-dark textarea-dark"
+                            rows="4"
+                            placeholder="Ejemplo binario: 1100"
+                        ></textarea>
+                    </div>
+                </div>
+
+                <div class="inline-actions">
+                    <button class="btn btn-main" @click="runXorLab">Calcular XOR</button>
+                    <button class="btn btn-subtle" @click="useXorOutputAsInput">Pasar resultado a A</button>
+                    <button class="btn btn-subtle" @click="fillXorExample">Cargar ejemplo</button>
+                </div>
+
+                <FeanorResultPanel v-if="xorResult" :result="xorResult" icon="XOR" @copy="copyText" />
+            </section>
+
+            <section v-if="isModuleVisible('booleanOps')" class="section-box boolean-ops-module">
+                <div class="module-header">
+                    <span class="section-kicker">Modulo 04</span>
+                    <h2 class="module-title">NOR y puertas logicas</h2>
+                    <p class="module-copy">
+                        Compara XOR con AND, OR, NAND, NOR, XNOR y NOT sobre binario, Hex, texto UTF-8 o bytes
+                        decimales. NOR solo devuelve 1 cuando las dos entradas son 0.
+                    </p>
+                </div>
+
+                <div class="control-grid">
+                    <div class="control-field">
+                        <label class="field-label" for="boolean-operation">Operacion</label>
+                        <select id="boolean-operation" v-model="booleanOperation" class="form-select input-dark">
+                            <option v-for="item in booleanOperations" :key="item.value" :value="item.value">
+                                {{ item.label }}
+                            </option>
+                        </select>
+                    </div>
+                    <div class="control-field">
+                        <label class="field-label" for="boolean-mode">Formato</label>
+                        <select id="boolean-mode" v-model="booleanInputMode" class="form-select input-dark">
+                            <option v-for="item in xorInputModes" :key="item.value" :value="item.value">
+                                {{ item.label }}
+                            </option>
+                        </select>
+                    </div>
+                    <div v-if="booleanOperation !== 'not'" class="control-field">
+                        <label class="field-label" for="boolean-repeat">Clave corta</label>
+                        <select id="boolean-repeat" v-model="booleanRepeatKey" class="form-select input-dark">
+                            <option :value="false">Exigir misma longitud</option>
+                            <option :value="true">Repetir B como mascara</option>
+                        </select>
+                    </div>
+                    <div class="control-field full-span">
+                        <label class="field-label" for="boolean-left">A</label>
+                        <textarea
+                            id="boolean-left"
+                            v-model="booleanLeft"
+                            class="form-control input-dark textarea-dark"
+                            rows="4"
+                            placeholder="Ejemplo binario: 1010"
+                        ></textarea>
+                    </div>
+                    <div v-if="booleanOperation !== 'not'" class="control-field full-span">
+                        <label class="field-label" for="boolean-right">B / mascara</label>
+                        <textarea
+                            id="boolean-right"
+                            v-model="booleanRight"
+                            class="form-control input-dark textarea-dark"
+                            rows="4"
+                            placeholder="Ejemplo binario: 1100"
+                        ></textarea>
+                    </div>
+                </div>
+
+                <div class="inline-actions">
+                    <button class="btn btn-main" @click="runBooleanLab">Calcular</button>
+                    <button class="btn btn-subtle" @click="useBooleanOutputAsInput">Pasar resultado a A</button>
+                    <button class="btn btn-subtle" @click="fillBooleanExample">Cargar ejemplo NOR</button>
+                </div>
+
+                <FeanorResultPanel v-if="booleanResult" :result="booleanResult" icon="NOR" @copy="copyText" />
+            </section>
+
+            <section v-if="isModuleVisible('vigenere')" class="section-box vigenere-module">
+                <div class="module-header">
+                    <span class="section-kicker">Modulo 05</span>
+                    <h2 class="module-title">Cifrado Vigenere</h2>
+                    <p class="module-copy">
+                        Usa una clave alfabetica repetida para aplicar un desplazamiento distinto a cada letra. Es un
+                        Cesar polialfabetico y deja intactos espacios, signos y caracteres fuera del alfabeto.
+                    </p>
+                </div>
+
+                <div class="control-grid">
+                    <div class="control-field">
+                        <label class="field-label" for="vigenere-alphabet">Alfabeto</label>
+                        <select id="vigenere-alphabet" v-model="vigenereAlphabet" class="form-select input-dark">
+                            <option v-for="item in caesarAlphabets" :key="item.value" :value="item.value">
+                                {{ item.label }}
+                            </option>
+                        </select>
+                    </div>
+                    <div class="control-field">
+                        <label class="field-label" for="vigenere-direction">Operacion</label>
+                        <select id="vigenere-direction" v-model="vigenereDirection" class="form-select input-dark">
+                            <option value="encrypt">Cifrar</option>
+                            <option value="decrypt">Descifrar</option>
+                        </select>
+                    </div>
+                    <div class="control-field full-span">
+                        <label class="field-label" for="vigenere-key">Clave</label>
+                        <input id="vigenere-key" v-model="vigenereKey" class="form-control input-dark" placeholder="feanor" />
+                    </div>
+                    <div class="control-field full-span">
+                        <label class="field-label" for="vigenere-input">Texto</label>
+                        <textarea
+                            id="vigenere-input"
+                            v-model="vigenereInput"
+                            class="form-control input-dark textarea-dark"
+                            rows="5"
+                            placeholder="Texto plano o cifrado Vigenere"
+                        ></textarea>
+                    </div>
+                </div>
+
+                <div class="inline-actions">
+                    <button class="btn btn-main" @click="runVigenereCipher">Ejecutar</button>
+                    <button class="btn btn-subtle" @click="toggleVigenereDirection">Invertir operacion</button>
+                    <button class="btn btn-subtle" @click="useVigenereOutputAsInput">Pasar salida a entrada</button>
+                    <button class="btn btn-subtle" @click="fillVigenereExample">Cargar ejemplo</button>
+                </div>
+
+                <FeanorResultPanel v-if="vigenereResult" :result="vigenereResult" icon="VIG" @copy="copyText" />
+            </section>
+
+            <section v-if="isModuleVisible('affine')" class="section-box affine-module">
+                <div class="module-header">
+                    <span class="section-kicker">Modulo 06</span>
+                    <h2 class="module-title">Cifrado Afin</h2>
+                    <p class="module-copy">
+                        Sustitucion matematica sobre posiciones de alfabeto: cifrar usa <code class="inline-code">E(x) =
+                        (a*x + b) mod m</code>. Para descifrar, <code class="inline-code">a</code> debe tener inverso
+                        modular.
+                    </p>
+                </div>
+
+                <div class="control-grid">
+                    <div class="control-field">
+                        <label class="field-label" for="affine-alphabet">Alfabeto</label>
+                        <select id="affine-alphabet" v-model="affineAlphabet" class="form-select input-dark">
+                            <option v-for="item in caesarAlphabets" :key="item.value" :value="item.value">
+                                {{ item.label }}
+                            </option>
+                        </select>
+                    </div>
+                    <div class="control-field">
+                        <label class="field-label" for="affine-direction">Operacion</label>
+                        <select id="affine-direction" v-model="affineDirection" class="form-select input-dark">
+                            <option value="encrypt">Cifrar</option>
+                            <option value="decrypt">Descifrar</option>
+                        </select>
+                    </div>
+                    <div class="control-field">
+                        <label class="field-label" for="affine-a">a</label>
+                        <input id="affine-a" v-model.number="affineA" type="number" step="1" class="form-control input-dark" />
+                    </div>
+                    <div class="control-field">
+                        <label class="field-label" for="affine-b">b</label>
+                        <input id="affine-b" v-model.number="affineB" type="number" step="1" class="form-control input-dark" />
+                    </div>
+                    <div class="control-field full-span">
+                        <label class="field-label" for="affine-input">Texto</label>
+                        <textarea
+                            id="affine-input"
+                            v-model="affineInput"
+                            class="form-control input-dark textarea-dark"
+                            rows="5"
+                            placeholder="Texto plano o cifrado Afin"
+                        ></textarea>
+                    </div>
+                </div>
+
+                <div class="inline-actions">
+                    <button class="btn btn-main" @click="runAffineCipher">Ejecutar Afin</button>
+                    <button class="btn btn-subtle" @click="toggleAffineDirection">Invertir operacion</button>
+                    <button class="btn btn-subtle" @click="useAffineOutputAsInput">Pasar salida a entrada</button>
+                    <button class="btn btn-subtle" @click="fillAffineExample">Cargar ejemplo</button>
+                </div>
+
+                <FeanorResultPanel v-if="affineResult" :result="affineResult" icon="AFN" @copy="copyText" />
+            </section>
+
+            <section v-if="isModuleVisible('railFence')" class="section-box rail-fence-module">
+                <div class="module-header">
+                    <span class="section-kicker">Modulo 07</span>
+                    <h2 class="module-title">Cifrado Rail Fence</h2>
+                    <p class="module-copy">
+                        Transposicion en zigzag: el texto baja y sube por varios railes, y el cifrado se lee por filas.
+                        No cambia letras, solo su posicion.
+                    </p>
+                </div>
+
+                <div class="control-grid">
+                    <div class="control-field">
+                        <label class="field-label" for="rail-direction">Operacion</label>
+                        <select id="rail-direction" v-model="railFenceDirection" class="form-select input-dark">
+                            <option value="encrypt">Cifrar</option>
+                            <option value="decrypt">Descifrar</option>
+                        </select>
+                    </div>
+                    <div class="control-field">
+                        <label class="field-label" for="rail-count">Railes</label>
+                        <input id="rail-count" v-model.number="railFenceRails" type="number" min="2" max="16" step="1" class="form-control input-dark" />
+                    </div>
+                    <div class="control-field full-span">
+                        <label class="field-label" for="rail-input">Texto</label>
+                        <textarea
+                            id="rail-input"
+                            v-model="railFenceInput"
+                            class="form-control input-dark textarea-dark"
+                            rows="5"
+                            placeholder="Texto plano o cifrado por transposicion"
+                        ></textarea>
+                    </div>
+                </div>
+
+                <div class="inline-actions">
+                    <button class="btn btn-main" @click="runRailFenceCipher">Ejecutar Rail Fence</button>
+                    <button class="btn btn-subtle" @click="toggleRailFenceDirection">Invertir operacion</button>
+                    <button class="btn btn-subtle" @click="useRailFenceOutputAsInput">Pasar salida a entrada</button>
+                    <button class="btn btn-subtle" @click="fillRailFenceExample">Cargar ejemplo</button>
+                </div>
+
+                <FeanorResultPanel v-if="railFenceResult" :result="railFenceResult" icon="RFL" @copy="copyText" />
+            </section>
+
+            <section v-if="isModuleVisible('modular')" class="section-box modular-module">
+                <div class="module-header">
+                    <span class="section-kicker">Modulo 08</span>
+                    <h2 class="module-title">Operacion modular</h2>
+                    <p class="module-copy">
+                        Calcula restos con enteros grandes y, si quieres, potencia modular. Es la aritmetica circular
+                        que aparece en RSA, Diffie-Hellman, curvas elipticas y muchos ejercicios criptograficos.
+                    </p>
+                </div>
+
+                <div class="control-grid">
+                    <div class="control-field">
+                        <label class="field-label" for="modular-operation">Operacion</label>
+                        <select id="modular-operation" v-model="modularOperation" class="form-select input-dark">
+                            <option value="mod">A % N</option>
+                            <option value="pow">A^E % N</option>
+                        </select>
+                    </div>
+                    <div class="control-field">
+                        <label class="field-label" for="modular-base">A</label>
+                        <input id="modular-base" v-model="modularBase" class="form-control input-dark mono-input" placeholder="118613842" />
+                    </div>
+                    <div v-if="modularOperation === 'pow'" class="control-field">
+                        <label class="field-label" for="modular-exponent">E</label>
+                        <input id="modular-exponent" v-model="modularExponent" class="form-control input-dark mono-input" placeholder="65537" />
+                    </div>
+                    <div class="control-field">
+                        <label class="field-label" for="modular-modulus">N / Modulo</label>
+                        <input id="modular-modulus" v-model="modularModulus" class="form-control input-dark mono-input" placeholder="9091" />
+                    </div>
+                </div>
+
+                <div class="inline-actions">
+                    <button class="btn btn-main" @click="runModularLab">Calcular</button>
+                    <button class="btn btn-subtle" @click="fillModularExample">Ejemplo grande</button>
+                    <button class="btn btn-subtle" @click="fillModuloSimpleExample">Ejemplo 60 % 12</button>
+                </div>
+
+                <FeanorResultPanel v-if="modularResult" :result="modularResult" icon="MOD" @copy="copyText" />
+            </section>
+
+            <section v-if="isHashToolVisible" class="section-box hash-module">
+                <div class="module-header">
+                    <span class="section-kicker">Modulo 21</span>
+                    <h2 class="module-title">{{ activeHashToolConfig.title }}</h2>
+                    <p class="module-copy">{{ activeHashToolConfig.copy }}</p>
+                </div>
+
+                <div class="control-grid">
+                    <div v-if="activeHashToolConfig.showMode" class="control-field">
                         <label class="field-label" for="hash-mode">Modo</label>
                         <select id="hash-mode" v-model="hashMode" class="form-select input-dark">
                             <option v-for="item in hashModes" :key="item.value" :value="item.value">
@@ -134,70 +608,15 @@
                     </button>
                 </div>
                 <p class="helper-copy">
-                    Consejo: usa <code class="inline-code">PBKDF2</code> para derivacion, <code class="inline-code">HMAC</code>
-                    para integridad y evita <code class="inline-code">MD5</code> o <code class="inline-code">SHA1</code>
-                    salvo compatibilidad.
+                    {{ activeHashToolConfig.helper }}
                 </p>
 
-                <template v-if="hashResult">
-                    <div class="row g-3 mb-4">
-                        <div class="col-6 col-lg-3" v-for="item in hashResult.summaryCards" :key="item.label">
-                            <div class="metric-card">
-                                <label>{{ item.label }}</label>
-                                <span :class="item.tone">{{ item.value }}</span>
-                                <small v-if="item.note">{{ item.note }}</small>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="verdict-card" :class="hashResult.verdictTone">
-                        <div class="verdict-icon">
-                            <span>HASH</span>
-                        </div>
-                        <div class="verdict-body">
-                            <strong>{{ hashResult.verdictTitle }}</strong>
-                            <p>{{ hashResult.verdictBody }}</p>
-                        </div>
-                    </div>
-
-                    <div class="row g-3 mb-4">
-                        <div class="col-md-6 col-xl-3" v-for="item in hashResult.signalCards" :key="item.label">
-                            <div class="signal-card">
-                                <label>{{ item.label }}</label>
-                                <span :class="item.tone">{{ item.value }}</span>
-                                <small>{{ item.note }}</small>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="row g-3">
-                        <div class="col-xl-6" v-for="panel in hashResult.panels" :key="panel.title">
-                            <div class="tool-card">
-                                <div class="card-head">
-                                    <h5>{{ panel.title }}</h5>
-                                    <div class="card-actions">
-                                        <span class="mini-badge">{{ panel.badge }}</span>
-                                        <button
-                                            v-if="panel.copyValue"
-                                            class="btn btn-quiet"
-                                            @click="copyText(panel.copyValue)"
-                                        >
-                                            Copiar
-                                        </button>
-                                    </div>
-                                </div>
-                                <div class="output-box">
-                                    <pre class="result-pre">{{ panel.content }}</pre>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </template>
+                <FeanorResultPanel v-if="hashResult" :result="hashResult" icon="HASH" @copy="copyText" />
             </section>
 
-            <section class="section-box symmetric-module">
+            <section v-if="isModuleVisible('symmetric')" class="section-box symmetric-module">
                 <div class="module-header">
-                    <span class="section-kicker">Modulo 02</span>
+                    <span class="section-kicker">Modulo 25</span>
                     <h2 class="module-title">Cifrado y descifrado simetrico</h2>
                     <p class="module-copy">
                         Prueba cifrados soportados por <code class="inline-code">crypto-js</code>, genera claves de
@@ -250,65 +669,12 @@
                     perfecto para pruebas locales, no para disenar un esquema criptografico de produccion.
                 </p>
 
-                <template v-if="cipherResult">
-                    <div class="row g-3 mb-4">
-                        <div class="col-6 col-lg-3" v-for="item in cipherResult.summaryCards" :key="item.label">
-                            <div class="metric-card">
-                                <label>{{ item.label }}</label>
-                                <span :class="item.tone">{{ item.value }}</span>
-                                <small v-if="item.note">{{ item.note }}</small>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="verdict-card" :class="cipherResult.verdictTone">
-                        <div class="verdict-icon">
-                            <span>CIPH</span>
-                        </div>
-                        <div class="verdict-body">
-                            <strong>{{ cipherResult.verdictTitle }}</strong>
-                            <p>{{ cipherResult.verdictBody }}</p>
-                        </div>
-                    </div>
-
-                    <div class="row g-3 mb-4">
-                        <div class="col-md-6 col-xl-3" v-for="item in cipherResult.signalCards" :key="item.label">
-                            <div class="signal-card">
-                                <label>{{ item.label }}</label>
-                                <span :class="item.tone">{{ item.value }}</span>
-                                <small>{{ item.note }}</small>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="row g-3">
-                        <div class="col-xl-6" v-for="panel in cipherResult.panels" :key="panel.title">
-                            <div class="tool-card">
-                                <div class="card-head">
-                                    <h5>{{ panel.title }}</h5>
-                                    <div class="card-actions">
-                                        <span class="mini-badge">{{ panel.badge }}</span>
-                                        <button
-                                            v-if="panel.copyValue"
-                                            class="btn btn-quiet"
-                                            @click="copyText(panel.copyValue)"
-                                        >
-                                            Copiar
-                                        </button>
-                                    </div>
-                                </div>
-                                <div class="output-box">
-                                    <pre class="result-pre">{{ panel.content }}</pre>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </template>
+                <FeanorResultPanel v-if="cipherResult" :result="cipherResult" icon="CIPH" @copy="copyText" />
             </section>
 
-            <section class="section-box asymmetric-module">
+            <section v-if="isModuleVisible('asymmetric')" class="section-box asymmetric-module">
                 <div class="module-header">
-                    <span class="section-kicker">Modulo 03</span>
+                    <span class="section-kicker">Modulo 29</span>
                     <div class="module-title-line">
                         <h2 class="module-title">Cifrado y descifrado asimetrico</h2>
                         <div class="info-hover">
@@ -509,65 +875,12 @@
                     contenido con AES-GCM y se protege la clave AES con la clave publica RSA.
                 </p>
 
-                <template v-if="asymmetricResult">
-                    <div class="row g-3 mb-4">
-                        <div class="col-6 col-lg-3" v-for="item in asymmetricResult.summaryCards" :key="item.label">
-                            <div class="metric-card">
-                                <label>{{ item.label }}</label>
-                                <span :class="item.tone">{{ item.value }}</span>
-                                <small v-if="item.note">{{ item.note }}</small>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="verdict-card" :class="asymmetricResult.verdictTone">
-                        <div class="verdict-icon">
-                            <span>RSA</span>
-                        </div>
-                        <div class="verdict-body">
-                            <strong>{{ asymmetricResult.verdictTitle }}</strong>
-                            <p>{{ asymmetricResult.verdictBody }}</p>
-                        </div>
-                    </div>
-
-                    <div class="row g-3 mb-4">
-                        <div class="col-md-6 col-xl-3" v-for="item in asymmetricResult.signalCards" :key="item.label">
-                            <div class="signal-card">
-                                <label>{{ item.label }}</label>
-                                <span :class="item.tone">{{ item.value }}</span>
-                                <small>{{ item.note }}</small>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="row g-3">
-                        <div class="col-xl-6" v-for="panel in asymmetricResult.panels" :key="panel.title">
-                            <div class="tool-card">
-                                <div class="card-head">
-                                    <h5>{{ panel.title }}</h5>
-                                    <div class="card-actions">
-                                        <span class="mini-badge">{{ panel.badge }}</span>
-                                        <button
-                                            v-if="panel.copyValue"
-                                            class="btn btn-quiet"
-                                            @click="copyText(panel.copyValue)"
-                                        >
-                                            Copiar
-                                        </button>
-                                    </div>
-                                </div>
-                                <div class="output-box">
-                                    <pre class="result-pre">{{ panel.content }}</pre>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </template>
+                <FeanorResultPanel v-if="asymmetricResult" :result="asymmetricResult" icon="RSA" @copy="copyText" />
             </section>
 
-            <section class="section-box signature-module">
+            <section v-if="isModuleVisible('signature')" class="section-box signature-module">
                 <div class="module-header">
-                    <span class="section-kicker">Modulo 04</span>
+                    <span class="section-kicker">Modulo 30</span>
                     <h2 class="module-title">Firma digital y verificacion</h2>
                     <p class="module-copy">
                         Genera claves, firma un mensaje con clave privada y verifica la firma con clave publica. La
@@ -651,9 +964,9 @@
                 />
             </section>
 
-            <section class="section-box aead-module">
+            <section v-if="isModuleVisible('aead')" class="section-box aead-module">
                 <div class="module-header">
-                    <span class="section-kicker">Modulo 05</span>
+                    <span class="section-kicker">Modulo 26</span>
                     <h2 class="module-title">Laboratorio AEAD con AES-GCM</h2>
                     <p class="module-copy">
                         Cifra con autenticacion. AES-GCM produce ciphertext y tag; si cambian el texto cifrado, el IV,
@@ -738,9 +1051,9 @@
                 <FeanorResultPanel v-if="aeadResult" :result="aeadResult" icon="AEAD" @copy="copyText" />
             </section>
 
-            <section class="section-box ecdh-module">
+            <section v-if="isModuleVisible('ecdh')" class="section-box ecdh-module">
                 <div class="module-header">
-                    <span class="section-kicker">Modulo 06</span>
+                    <span class="section-kicker">Modulo 31</span>
                     <h2 class="module-title">Intercambio ECDH</h2>
                     <p class="module-copy">
                         Dos partes generan claves de curva eliptica, intercambian claves publicas y derivan el mismo
@@ -811,18 +1124,15 @@
                 <FeanorResultPanel v-if="ecdhResult" :result="ecdhResult" icon="ECDH" @copy="copyText" />
             </section>
 
-            <section class="section-box kdf-module">
+            <section v-if="isKdfToolVisible" class="section-box kdf-module">
                 <div class="module-header">
-                    <span class="section-kicker">Modulo 07</span>
-                    <h2 class="module-title">Derivacion de claves PBKDF2 y HKDF</h2>
-                    <p class="module-copy">
-                        PBKDF2 endurece material humano con salt e iteraciones. HKDF expande material de alta entropia
-                        usando salt e info de contexto.
-                    </p>
+                    <span class="section-kicker">Modulo 22</span>
+                    <h2 class="module-title">{{ activeKdfToolConfig.title }}</h2>
+                    <p class="module-copy">{{ activeKdfToolConfig.copy }}</p>
                 </div>
 
                 <div class="control-grid">
-                    <div class="control-field">
+                    <div v-if="activeKdfToolConfig.showMode" class="control-field">
                         <label class="field-label" for="kdf-mode">Modo</label>
                         <select id="kdf-mode" v-model="kdfMode" class="form-select input-dark">
                             <option value="PBKDF2">PBKDF2</option>
@@ -841,11 +1151,11 @@
                         <label class="field-label" for="kdf-length">Bytes salida</label>
                         <input id="kdf-length" v-model.number="kdfLength" type="number" min="16" max="128" class="form-control input-dark" />
                     </div>
-                    <div class="control-field">
+                    <div v-if="kdfMode === 'PBKDF2'" class="control-field">
                         <label class="field-label" for="kdf-iterations">Iteraciones PBKDF2</label>
                         <input id="kdf-iterations" v-model.number="kdfIterations" type="number" min="1000" step="1000" class="form-control input-dark" />
                     </div>
-                    <div class="control-field full-span">
+                    <div v-if="kdfMode === 'HKDF'" class="control-field full-span">
                         <label class="field-label" for="kdf-input">Material de entrada</label>
                         <input id="kdf-input" v-model="kdfInput" class="form-control input-dark" placeholder="Password, semilla o secreto base" />
                     </div>
@@ -868,9 +1178,9 @@
                 <FeanorResultPanel v-if="kdfResult" :result="kdfResult" icon="KDF" @copy="copyText" />
             </section>
 
-            <section class="section-box certificate-module">
+            <section v-if="isModuleVisible('certificate')" class="section-box certificate-module">
                 <div class="module-header">
-                    <span class="section-kicker">Modulo 08</span>
+                    <span class="section-kicker">Modulo 33</span>
                     <h2 class="module-title">Inspector X.509</h2>
                     <p class="module-copy">
                         Analiza certificados PEM: sujeto, emisor, validez, huella SHA-256, SAN y relacion basica entre
@@ -899,9 +1209,9 @@
                 <FeanorResultPanel v-if="certificateResult" :result="certificateResult" icon="X509" @copy="copyText" />
             </section>
 
-            <section class="section-box key-converter-module">
+            <section v-if="isModuleVisible('keyConverter')" class="section-box key-converter-module">
                 <div class="module-header">
-                    <span class="section-kicker">Modulo 09</span>
+                    <span class="section-kicker">Modulo 32</span>
                     <h2 class="module-title">Conversor PEM, DER y JWK</h2>
                     <p class="module-copy">
                         Convierte claves RSA o EC entre PEM y JWK cuando WebCrypto puede importarlas. Tambien extrae y
@@ -949,9 +1259,9 @@
                 <FeanorResultPanel v-if="keyConverterResult" :result="keyConverterResult" icon="KEY" @copy="copyText" />
             </section>
 
-            <section class="section-box jwt-module">
+            <section v-if="isModuleVisible('jwt')" class="section-box jwt-module">
                 <div class="module-header">
-                    <span class="section-kicker">Modulo 10</span>
+                    <span class="section-kicker">Modulo 28</span>
                     <h2 class="module-title">Inspector y validador de JWT</h2>
                     <p class="module-copy">
                         Decodifica cabecera y payload, revisa tiempos, algoritmos, audiencias, emisor y cabeceras
@@ -1008,95 +1318,91 @@
                     segun el algoritmo del token.
                 </p>
 
-                <template v-if="jwtResult">
-                    <div class="row g-3 mb-4">
-                        <div class="col-6 col-lg-3" v-for="item in jwtResult.summaryCards" :key="item.label">
-                            <div class="metric-card">
-                                <label>{{ item.label }}</label>
-                                <span :class="item.tone">{{ item.value }}</span>
-                                <small v-if="item.note">{{ item.note }}</small>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="verdict-card" :class="jwtResult.verdictTone">
-                        <div class="verdict-icon">
-                            <span>JWT</span>
-                        </div>
-                        <div class="verdict-body">
-                            <strong>{{ jwtResult.verdictTitle }}</strong>
-                            <p>{{ jwtResult.verdictBody }}</p>
-                        </div>
-                    </div>
-
-                    <div class="row g-3 mb-4">
-                        <div class="col-md-6 col-xl-3" v-for="item in jwtResult.signalCards" :key="item.label">
-                            <div class="signal-card">
-                                <label>{{ item.label }}</label>
-                                <span :class="item.tone">{{ item.value }}</span>
-                                <small>{{ item.note }}</small>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="row g-3">
-                        <div class="col-xl-6" v-for="panel in jwtResult.panels" :key="panel.title">
-                            <div class="tool-card">
-                                <div class="card-head">
-                                    <h5>{{ panel.title }}</h5>
-                                    <div class="card-actions">
-                                        <span class="mini-badge">{{ panel.badge }}</span>
-                                        <button
-                                            v-if="panel.copyValue"
-                                            class="btn btn-quiet"
-                                            @click="copyText(panel.copyValue)"
-                                        >
-                                            Copiar
-                                        </button>
-                                    </div>
-                                </div>
-                                <div class="output-box">
-                                    <pre class="result-pre">{{ panel.content }}</pre>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </template>
+                <FeanorResultPanel v-if="jwtResult" :result="jwtResult" icon="JWT" @copy="copyText" />
             </section>
 
-            <section class="section-box transform-module">
+            <section v-if="isTransformToolVisible" class="section-box transform-module">
                 <div class="module-header">
-                    <span class="section-kicker">Modulo 11</span>
-                    <h2 class="module-title">Transformaciones y codificaciones</h2>
-                    <p class="module-copy">
-                        Convierte material entre Base64, Base64URL, URL encoding y Hex, y detecta si la salida tiene
-                        pinta de JSON o de segmento reutilizable en otros modulos.
-                    </p>
+                    <span class="section-kicker">Modulo 09</span>
+                    <h2 class="module-title">{{ activeTransformToolConfig.title }}</h2>
+                    <p class="module-copy">{{ activeTransformToolConfig.copy }}</p>
+                </div>
+
+                <div class="mode-segment" role="tablist" aria-label="Modo de transformacion">
+                    <button
+                        type="button"
+                        :class="{ active: transformDirection === 'encode' }"
+                        @click="setTransformDirection('encode')"
+                    >
+                        Codificar
+                    </button>
+                    <button
+                        type="button"
+                        :class="{ active: transformDirection === 'decode' }"
+                        @click="setTransformDirection('decode')"
+                    >
+                        Decodificar
+                    </button>
+                </div>
+
+                <div class="base64-category-grid">
+                    <button
+                        v-for="category in visibleTransformCategories"
+                        :key="category.value"
+                        type="button"
+                        :class="['category-chip', { active: transformCategory === category.value }]"
+                        @click="selectTransformCategory(category.value)"
+                    >
+                        <span>{{ category.badge }}</span>
+                        <strong>{{ category.label }}</strong>
+                        <small>{{ category.description }}</small>
+                    </button>
                 </div>
 
                 <div class="control-grid">
-                    <div class="control-field">
-                        <label class="field-label" for="transform-operation">Operacion</label>
-                        <select id="transform-operation" v-model="transformOperation" class="form-select input-dark">
-                            <option v-for="item in transformOperations" :key="item.value" :value="item.value">
+                    <div v-if="currentTransformCategory.formats.length > 1" class="control-field">
+                        <label class="field-label" for="transform-format">Formato</label>
+                        <select id="transform-format" v-model="transformFormat" class="form-select input-dark">
+                            <option v-for="item in currentTransformCategory.formats" :key="item.value" :value="item.value">
                                 {{ item.label }}
                             </option>
                         </select>
                     </div>
-                    <div class="control-field full-span">
+                    <div v-if="isTransformFileCategory && transformDirection === 'encode'" class="control-field full-span">
+                        <label class="field-label" for="transform-file">Fichero</label>
+                        <input
+                            id="transform-file"
+                            class="form-control input-dark"
+                            type="file"
+                            :accept="currentTransformAccept"
+                            @change="handleTransformFile"
+                        />
+                    </div>
+                    <div v-if="isTransformTextInputVisible" class="control-field full-span">
                         <label class="field-label" for="transform-input">Entrada</label>
                         <textarea
                             id="transform-input"
                             v-model="transformInput"
                             class="form-control input-dark textarea-dark"
-                            rows="4"
-                            placeholder="Texto o material codificado"
+                            rows="6"
+                            :placeholder="transformPlaceholder"
                         ></textarea>
+                    </div>
+                    <div v-if="isTransformFileCategory && transformDirection === 'decode'" class="control-field">
+                        <label class="field-label" for="transform-output-name">Nombre de descarga</label>
+                        <input
+                            id="transform-output-name"
+                            v-model="transformDecodedFileName"
+                            class="form-control input-dark"
+                            placeholder="salida.png, audio.mp3, video.mp4..."
+                        />
                     </div>
                 </div>
 
                 <div class="inline-actions">
-                    <button class="btn btn-main" @click="runTransform">Aplicar</button>
+                    <button class="btn btn-main" @click="runTransform">
+                        {{ transformDirection === "encode" ? "Codificar" : "Decodificar" }}
+                    </button>
                     <button class="btn btn-subtle" @click="fillTransformExample">Cargar ejemplo</button>
                     <button
                         class="btn btn-subtle"
@@ -1110,67 +1416,34 @@
                     >
                         Enviar a JSON
                     </button>
+                    <a
+                        v-if="transformDownloadUrl"
+                        class="btn btn-main"
+                        :href="transformDownloadUrl"
+                        :download="transformDownloadName"
+                    >
+                        Descargar fichero
+                    </a>
                 </div>
 
-                <template v-if="transformResult">
-                    <div class="row g-3 mb-4">
-                        <div class="col-6 col-lg-3" v-for="item in transformResult.summaryCards" :key="item.label">
-                            <div class="metric-card">
-                                <label>{{ item.label }}</label>
-                                <span :class="item.tone">{{ item.value }}</span>
-                                <small v-if="item.note">{{ item.note }}</small>
-                            </div>
-                        </div>
+                <div v-if="transformPreview" class="transform-preview-panel">
+                    <div class="card-head">
+                        <h5>Previsualizacion</h5>
+                        <span class="mini-badge">{{ transformPreview.kind }}</span>
                     </div>
+                    <img v-if="transformPreview.kind === 'image'" :src="transformPreview.url" alt="Preview Base64" />
+                    <audio v-else-if="transformPreview.kind === 'audio'" :src="transformPreview.url" controls></audio>
+                    <video v-else-if="transformPreview.kind === 'video'" :src="transformPreview.url" controls></video>
+                    <iframe v-else-if="transformPreview.kind === 'pdf'" :src="transformPreview.url" title="Preview PDF"></iframe>
+                    <a v-else :href="transformPreview.url" :download="transformDownloadName">Abrir fichero generado</a>
+                </div>
 
-                    <div class="verdict-card" :class="transformResult.verdictTone">
-                        <div class="verdict-icon">
-                            <span>XFRM</span>
-                        </div>
-                        <div class="verdict-body">
-                            <strong>{{ transformResult.verdictTitle }}</strong>
-                            <p>{{ transformResult.verdictBody }}</p>
-                        </div>
-                    </div>
-
-                    <div class="row g-3 mb-4">
-                        <div class="col-md-6 col-xl-3" v-for="item in transformResult.signalCards" :key="item.label">
-                            <div class="signal-card">
-                                <label>{{ item.label }}</label>
-                                <span :class="item.tone">{{ item.value }}</span>
-                                <small>{{ item.note }}</small>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="row g-3">
-                        <div class="col-xl-6" v-for="panel in transformResult.panels" :key="panel.title">
-                            <div class="tool-card">
-                                <div class="card-head">
-                                    <h5>{{ panel.title }}</h5>
-                                    <div class="card-actions">
-                                        <span class="mini-badge">{{ panel.badge }}</span>
-                                        <button
-                                            v-if="panel.copyValue"
-                                            class="btn btn-quiet"
-                                            @click="copyText(panel.copyValue)"
-                                        >
-                                            Copiar
-                                        </button>
-                                    </div>
-                                </div>
-                                <div class="output-box">
-                                    <pre class="result-pre">{{ panel.content }}</pre>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </template>
+                <FeanorResultPanel v-if="transformResult" :result="transformResult" icon="XFRM" @copy="copyText" />
             </section>
 
-            <section class="section-box byte-inspector-module">
+            <section v-if="isModuleVisible('byte')" class="section-box byte-inspector-module">
                 <div class="module-header">
-                    <span class="section-kicker">Modulo 12</span>
+                    <span class="section-kicker">Modulo 10</span>
                     <h2 class="module-title">Inspector de bytes y encoding</h2>
                     <p class="module-copy">
                         Descompone texto o bytes en UTF-8, Hex, Base64, Base64URL, binario y decimal. Sirve para ver
@@ -1209,9 +1482,9 @@
                 <FeanorResultPanel v-if="byteResult" :result="byteResult" icon="BYTE" @copy="copyText" />
             </section>
 
-            <section class="section-box json-module">
+            <section v-if="isModuleVisible('json')" class="section-box json-module">
                 <div class="module-header">
-                    <span class="section-kicker">Modulo 13</span>
+                    <span class="section-kicker">Modulo 12</span>
                     <h2 class="module-title">Laboratorio JSON y diff canonico</h2>
                     <p class="module-copy">
                         Formatea, minifica, valida y compara dos documentos JSON ignorando el orden de las claves para
@@ -1259,65 +1532,489 @@
                     diferencia semantica.
                 </p>
 
-                <template v-if="jsonResult">
-                    <div class="row g-3 mb-4">
-                        <div class="col-6 col-lg-3" v-for="item in jsonResult.summaryCards" :key="item.label">
-                            <div class="metric-card">
-                                <label>{{ item.label }}</label>
-                                <span :class="item.tone">{{ item.value }}</span>
-                                <small v-if="item.note">{{ item.note }}</small>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="verdict-card" :class="jsonResult.verdictTone">
-                        <div class="verdict-icon">
-                            <span>JSON</span>
-                        </div>
-                        <div class="verdict-body">
-                            <strong>{{ jsonResult.verdictTitle }}</strong>
-                            <p>{{ jsonResult.verdictBody }}</p>
-                        </div>
-                    </div>
-
-                    <div class="row g-3 mb-4">
-                        <div class="col-md-6 col-xl-3" v-for="item in jsonResult.signalCards" :key="item.label">
-                            <div class="signal-card">
-                                <label>{{ item.label }}</label>
-                                <span :class="item.tone">{{ item.value }}</span>
-                                <small>{{ item.note }}</small>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="row g-3">
-                        <div class="col-xl-4" v-for="panel in jsonResult.panels" :key="panel.title">
-                            <div class="tool-card">
-                                <div class="card-head">
-                                    <h5>{{ panel.title }}</h5>
-                                    <div class="card-actions">
-                                        <span class="mini-badge">{{ panel.badge }}</span>
-                                        <button
-                                            v-if="panel.copyValue"
-                                            class="btn btn-quiet"
-                                            @click="copyText(panel.copyValue)"
-                                        >
-                                            Copiar
-                                        </button>
-                                    </div>
-                                </div>
-                                <div class="output-box">
-                                    <pre class="result-pre">{{ panel.content }}</pre>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </template>
+                <FeanorResultPanel v-if="jsonResult" :result="jsonResult" icon="JSON" @copy="copyText" />
             </section>
 
-            <section class="section-box json-sign-module">
+            <section v-if="isModuleVisible('stegoAnalyze')" class="section-box stego-analyze-module">
+                <div class="module-header">
+                    <span class="section-kicker">Modulo 13</span>
+                    <h2 class="module-title">Analizador de esteganografia y metadatos</h2>
+                    <p class="module-copy">
+                        Inspecciona ficheros en cliente para detectar tipo real, magic bytes, entropia, cadenas
+                        imprimibles, metadatos habituales y senales compatibles con datos ocultos usando Web APIs,
+                        exifr y JSZip.
+                    </p>
+                </div>
+
+                <div class="control-grid">
+                    <div class="control-field full-span">
+                        <label class="field-label" for="stego-analyze-file">Fichero a analizar</label>
+                        <input
+                            id="stego-analyze-file"
+                            class="form-control input-dark"
+                            type="file"
+                            accept="image/*,audio/*,video/*,.pdf,.zip,.docx,.xlsx,.pptx,.epub,.txt,.json,.csv,.svg,.xml,.mp3,.wav,.flac,.ogg,.m4a,.mp4,.mov,.webm,.mkv,.avi,.webp,.gif,.bmp,.tif,.tiff,.heic,.heif"
+                            @change="handleStegoAnalyzeFile"
+                        />
+                    </div>
+                </div>
+
+                <div class="inline-actions">
+                    <button class="btn btn-main" @click="analyzeStegoFile">Analizar fichero</button>
+                    <button class="btn btn-subtle" @click="clearStegoAnalyze">Limpiar analisis</button>
+                </div>
+                <p class="helper-copy">
+                    El analisis es orientativo: puede encontrar indicios y metadatos, pero no puede demostrar que un
+                    fichero este completamente libre de informacion oculta.
+                </p>
+
+                <FeanorResultPanel v-if="stegoAnalyzeResult" :result="stegoAnalyzeResult" icon="META" @copy="copyText" />
+            </section>
+
+            <section v-if="isModuleVisible('exif')" class="section-box exif-module">
                 <div class="module-header">
                     <span class="section-kicker">Modulo 14</span>
+                    <h2 class="module-title">Analizador EXIF y metadatos de imagen</h2>
+                    <p class="module-copy">
+                        Extrae metadatos EXIF, XMP, IPTC, GPS e ICC de imagenes locales y los organiza por contexto:
+                        fichero, camara, lente, captura, ubicacion, software y campos crudos.
+                    </p>
+                </div>
+
+                <div class="control-grid">
+                    <div class="control-field full-span">
+                        <label class="field-label" for="exif-file">Imagen</label>
+                        <input
+                            id="exif-file"
+                            class="form-control input-dark"
+                            type="file"
+                            accept="image/jpeg,image/tiff,image/heic,image/heif,image/png,image/webp,image/avif,image/*,.jpg,.jpeg,.png,.webp,.tif,.tiff,.heic,.heif,.avif,.dng,.cr2,.cr3,.arw,.nef,.orf,.rw2,.raf,.pef"
+                            @change="handleExifFile"
+                        />
+                    </div>
+                    <div class="control-field">
+                        <label class="field-label" for="exif-profile">Perfil de lectura</label>
+                        <select id="exif-profile" v-model="exifProfile" class="form-select input-dark">
+                            <option v-for="item in exifProfiles" :key="item.value" :value="item.value">
+                                {{ item.label }}
+                            </option>
+                        </select>
+                    </div>
+                    <div class="control-field">
+                        <label class="field-label" for="exif-detail-mode">Vista</label>
+                        <select id="exif-detail-mode" v-model="exifDetailMode" class="form-select input-dark">
+                            <option v-for="item in exifDetailModes" :key="item.value" :value="item.value">
+                                {{ item.label }}
+                            </option>
+                        </select>
+                    </div>
+                    <div class="control-field full-span">
+                        <label class="field-label" for="exif-tag-filter">Filtro de tags</label>
+                        <input
+                            id="exif-tag-filter"
+                            v-model="exifTagFilter"
+                            class="form-control input-dark"
+                            placeholder="gps, author, software, serial, xmp, app1..."
+                        />
+                    </div>
+                </div>
+
+                <div class="metadata-format-strip exif-format-strip">
+                    <span class="mini-badge">{{ selectedExifProfile.badge }}</span>
+                    <strong>{{ selectedExifProfile.command }}</strong>
+                    <p>{{ selectedExifProfile.note }}</p>
+                </div>
+
+                <div class="inline-actions">
+                    <button class="btn btn-main" @click="analyzeExifFile">Analizar EXIF</button>
+                    <button class="btn btn-subtle" @click="clearExifAnalysis">Limpiar</button>
+                    <a
+                        v-if="exifTxtDownloadUrl"
+                        class="btn btn-main"
+                        :href="exifTxtDownloadUrl"
+                        :download="exifTxtDownloadName"
+                    >
+                        Descargar TXT
+                    </a>
+                    <a
+                        v-if="exifJsonDownloadUrl"
+                        class="btn btn-subtle"
+                        :href="exifJsonDownloadUrl"
+                        :download="exifJsonDownloadName"
+                    >
+                        Descargar JSON
+                    </a>
+                </div>
+                <p class="helper-copy">
+                    Inspirado en ExifTool: agrupa tags, permite filtrar por nombre/grupo/valor y genera un reporte local.
+                    No ejecuta ExifTool real; todo se calcula con Web APIs, exifr y lectura binaria en cliente.
+                </p>
+
+                <FeanorResultPanel v-if="exifResult" :result="exifResult" icon="EXIF" @copy="copyText" />
+            </section>
+
+            <section v-if="isModuleVisible('metadataEditor')" class="section-box metadata-editor-module">
+                <div class="module-header">
+                    <span class="section-kicker">Modulo 15</span>
+                    <h2 class="module-title">Editor de metadatos por fichero</h2>
+                    <p class="module-copy">
+                        Sube un fichero, elige su contenedor y escribe metadatos de laboratorio. MP3, WAV, PNG, JPEG y
+                        SVG se modifican directamente en el navegador; el resto genera sidecar tecnico para no romper
+                        formatos complejos.
+                    </p>
+                </div>
+
+                <div class="control-grid">
+                    <div class="control-field">
+                        <label class="field-label" for="metadata-editor-type">Tipo de fichero</label>
+                        <select id="metadata-editor-type" v-model="metadataEditorType" class="form-select input-dark">
+                            <option v-for="item in metadataEditorTypes" :key="item.value" :value="item.value">
+                                {{ item.label }}
+                            </option>
+                        </select>
+                    </div>
+                    <div class="control-field">
+                        <label class="field-label" for="metadata-editor-mode">Modo</label>
+                        <select id="metadata-editor-mode" v-model="metadataEditorMode" class="form-select input-dark">
+                            <option value="auto">Auto: directo si es seguro</option>
+                            <option value="direct">Modificar el fichero</option>
+                            <option value="sidecar">Crear sidecar XMP/JSON</option>
+                        </select>
+                    </div>
+                    <div class="control-field full-span">
+                        <label class="field-label" for="metadata-editor-file">Fichero</label>
+                        <input
+                            id="metadata-editor-file"
+                            class="form-control input-dark"
+                            type="file"
+                            :accept="metadataEditorAccept"
+                            @change="handleMetadataEditorFile"
+                        />
+                    </div>
+                    <div class="control-field">
+                        <label class="field-label" for="metadata-editor-title">Titulo</label>
+                        <input id="metadata-editor-title" v-model="metadataEditorTitle" class="form-control input-dark" placeholder="Informe, pista, imagen..." />
+                    </div>
+                    <div class="control-field">
+                        <label class="field-label" for="metadata-editor-author">Autor / artista</label>
+                        <input id="metadata-editor-author" v-model="metadataEditorAuthor" class="form-control input-dark" placeholder="Equipo, alias o laboratorio" />
+                    </div>
+                    <div class="control-field">
+                        <label class="field-label" for="metadata-editor-copyright">Copyright</label>
+                        <input id="metadata-editor-copyright" v-model="metadataEditorCopyright" class="form-control input-dark" placeholder="CC BY, interno, publico..." />
+                    </div>
+                    <div class="control-field">
+                        <label class="field-label" for="metadata-editor-language">Idioma</label>
+                        <select id="metadata-editor-language" v-model="metadataEditorLanguage" class="form-select input-dark">
+                            <option value="spa">Espanol</option>
+                            <option value="eng">Ingles</option>
+                            <option value="und">Sin declarar</option>
+                        </select>
+                    </div>
+                    <div class="control-field full-span">
+                        <label class="field-label" for="metadata-editor-description">Descripcion / comentario</label>
+                        <textarea
+                            id="metadata-editor-description"
+                            v-model="metadataEditorDescription"
+                            class="form-control input-dark textarea-dark compact-textarea"
+                            rows="3"
+                            placeholder="Comentario visible para visores de metadatos"
+                        ></textarea>
+                    </div>
+                    <div class="control-field">
+                        <label class="field-label" for="metadata-editor-encoding">Codificar payload como</label>
+                        <select id="metadata-editor-encoding" v-model="metadataEditorPayloadEncoding" class="form-select input-dark">
+                            <option v-for="item in metadataPayloadEncodings" :key="item.value" :value="item.value">
+                                {{ item.label }}
+                            </option>
+                        </select>
+                    </div>
+                    <div class="control-field">
+                        <label class="field-label" for="metadata-editor-tags">Etiquetas</label>
+                        <input id="metadata-editor-tags" v-model="metadataEditorTags" class="form-control input-dark" placeholder="ctf, forense, privado" />
+                    </div>
+                    <div class="control-field full-span">
+                        <label class="field-label" for="metadata-editor-payload">Texto codificado a insertar</label>
+                        <textarea
+                            id="metadata-editor-payload"
+                            v-model="metadataEditorPayload"
+                            class="form-control input-dark textarea-dark"
+                            rows="5"
+                            placeholder="Mensaje que se guardara en ID3 TXXX, PNG iTXt, JPEG COM, SVG metadata o WAV INFO"
+                        ></textarea>
+                    </div>
+                </div>
+
+                <div class="metadata-format-strip">
+                    <span class="mini-badge">{{ selectedMetadataEditorType.family }}</span>
+                    <strong>{{ selectedMetadataEditorType.container }}</strong>
+                    <p>{{ selectedMetadataEditorType.note }}</p>
+                </div>
+
+                <div class="inline-actions">
+                    <button class="btn btn-main" @click="runMetadataEditor">Generar fichero</button>
+                    <button class="btn btn-subtle" @click="fillMetadataEditorExample">Cargar ejemplo</button>
+                    <button class="btn btn-subtle" @click="clearMetadataEditor">Limpiar</button>
+                    <a
+                        v-if="metadataEditorDownloadUrl"
+                        class="btn btn-main"
+                        :href="metadataEditorDownloadUrl"
+                        :download="metadataEditorDownloadName"
+                    >
+                        Descargar resultado
+                    </a>
+                </div>
+                <p class="helper-copy">
+                    Para MP3 se escribe una etiqueta ID3v2.4 nueva al inicio y el payload viaja en TXXX. En formatos no
+                    directos se crea sidecar para practicar sin corromper contenedores como PDF, MP4, Office o WebM.
+                </p>
+
+                <FeanorResultPanel v-if="metadataEditorResult" :result="metadataEditorResult" icon="EDIT" @copy="copyText" />
+            </section>
+
+            <section v-if="isModuleVisible('stegoEmbed')" class="section-box stego-embed-module">
+                <div class="module-header">
+                    <span class="section-kicker">Modulo 16</span>
+                    <h2 class="module-title">Incrustar datos en imagen</h2>
+                    <p class="module-copy">
+                        Oculta texto UTF-8 en los bits menos significativos de los canales RGB. La salida se guarda como
+                        PNG para conservar los bits escritos por la herramienta.
+                    </p>
+                </div>
+
+                <div class="control-grid">
+                    <div class="control-field full-span">
+                        <label class="field-label" for="stego-embed-file">Imagen portadora</label>
+                        <input
+                            id="stego-embed-file"
+                            class="form-control input-dark"
+                            type="file"
+                            accept="image/png,image/jpeg,image/webp,image/bmp"
+                            @change="handleStegoEmbedFile"
+                        />
+                    </div>
+                    <div class="control-field full-span">
+                        <label class="field-label" for="stego-embed-payload">Datos a ocultar</label>
+                        <textarea
+                            id="stego-embed-payload"
+                            v-model="stegoEmbedPayload"
+                            class="form-control input-dark textarea-dark"
+                            rows="5"
+                            placeholder="Mensaje, JSON, token de laboratorio o cualquier texto corto"
+                        ></textarea>
+                    </div>
+                </div>
+
+                <div class="inline-actions">
+                    <button class="btn btn-main" @click="embedStegoPayload">Incrustar datos</button>
+                    <button class="btn btn-subtle" @click="fillStegoPayloadExample">Cargar ejemplo</button>
+                    <a
+                        v-if="stegoEmbedDownloadUrl"
+                        class="btn btn-main"
+                        :href="stegoEmbedDownloadUrl"
+                        :download="stegoEmbedDownloadName"
+                    >
+                        Descargar PNG
+                    </a>
+                </div>
+                <p class="helper-copy">
+                    Esto no cifra el contenido: si el texto es sensible, cifralo antes con otro modulo y oculta el
+                    resultado.
+                </p>
+
+                <FeanorResultPanel v-if="stegoEmbedResult" :result="stegoEmbedResult" icon="LSB+" @copy="copyText" />
+            </section>
+
+            <section v-if="isModuleVisible('stegoExtract')" class="section-box stego-extract-module">
+                <div class="module-header">
+                    <span class="section-kicker">Modulo 17</span>
+                    <h2 class="module-title">Extraer datos ocultos</h2>
+                    <p class="module-copy">
+                        Lee imagenes procesadas por el incrustador LSB de Feanor y recupera el payload si la cabecera
+                        interna sigue intacta.
+                    </p>
+                </div>
+
+                <div class="control-grid">
+                    <div class="control-field full-span">
+                        <label class="field-label" for="stego-extract-file">Imagen a extraer</label>
+                        <input
+                            id="stego-extract-file"
+                            class="form-control input-dark"
+                            type="file"
+                            accept="image/png,image/*"
+                            @change="handleStegoExtractFile"
+                        />
+                    </div>
+                </div>
+
+                <div class="inline-actions">
+                    <button class="btn btn-main" @click="extractStegoPayload">Extraer datos</button>
+                    <button class="btn btn-subtle" @click="clearStegoExtract">Limpiar extraccion</button>
+                </div>
+                <p class="helper-copy">
+                    Si la imagen fue recomprimida como JPEG o redimensionada, los bits LSB pueden haberse perdido.
+                </p>
+
+                <FeanorResultPanel v-if="stegoExtractResult" :result="stegoExtractResult" icon="LSB-" @copy="copyText" />
+            </section>
+
+            <section v-if="isModuleVisible('steghideSuite')" class="section-box steghide-suite-module">
+                <div class="module-header">
+                    <span class="section-kicker">Modulo 18</span>
+                    <h2 class="module-title">Steghide y StegSeek frontend</h2>
+                    <p class="module-copy">
+                        Laboratorio inspirado en <code class="inline-code">steghide</code> y
+                        <code class="inline-code">stegseek</code>: calcula capacidad, incrusta, extrae, prueba
+                        diccionarios y genera comandos nativos. En navegador usa un formato compatible de laboratorio
+                        con LSB pseudoaleatorio, AES-GCM, PBKDF2 y CRC32.
+                    </p>
+                </div>
+
+                <div class="control-grid">
+                    <div class="control-field">
+                        <label class="field-label" for="steghide-operation">Operacion</label>
+                        <select id="steghide-operation" v-model="steghideOperation" class="form-select input-dark">
+                            <option v-for="item in steghideOperations" :key="item.value" :value="item.value">
+                                {{ item.label }}
+                            </option>
+                        </select>
+                    </div>
+                    <div class="control-field">
+                        <label class="field-label" for="steghide-encryption">Cifrado frontend</label>
+                        <select id="steghide-encryption" v-model="steghideEncryption" class="form-select input-dark">
+                            <option value="aes-gcm">AES-GCM + PBKDF2</option>
+                            <option value="none">Sin cifrado</option>
+                        </select>
+                    </div>
+                    <div class="control-field full-span">
+                        <label class="field-label" for="steghide-cover-file">Cover / stego file</label>
+                        <input
+                            id="steghide-cover-file"
+                            class="form-control input-dark"
+                            type="file"
+                            accept=".jpg,.jpeg,.bmp,.wav,.au,.snd,.png,.webp,image/*,audio/wav,audio/basic"
+                            @change="handleSteghideFile"
+                        />
+                    </div>
+                    <div class="control-field full-span">
+                        <label class="field-label" for="steghide-secret-file">Embedded file</label>
+                        <input
+                            id="steghide-secret-file"
+                            class="form-control input-dark"
+                            type="file"
+                            @change="handleSteghideSecretFile"
+                        />
+                    </div>
+                    <div class="control-field full-span">
+                        <label class="field-label" for="steghide-passphrase">Passphrase</label>
+                        <input
+                            id="steghide-passphrase"
+                            v-model="steghidePassphrase"
+                            class="form-control input-dark"
+                            type="password"
+                            autocomplete="off"
+                            placeholder="Clave para derivar posiciones y, si procede, cifrar el payload"
+                        />
+                    </div>
+                    <div class="control-field">
+                        <label class="field-label" for="steghide-compression">Compresion</label>
+                        <select id="steghide-compression" v-model="steghideCompression" class="form-select input-dark">
+                            <option value="auto">Auto deflate si el navegador lo soporta</option>
+                            <option value="none">-Z / no comprimir</option>
+                        </select>
+                    </div>
+                    <div class="control-field">
+                        <label class="field-label" for="steghide-compression-level">Nivel -z</label>
+                        <input
+                            id="steghide-compression-level"
+                            v-model.number="steghideCompressionLevel"
+                            class="form-control input-dark"
+                            type="number"
+                            min="1"
+                            max="9"
+                            step="1"
+                        />
+                    </div>
+                    <div class="control-field">
+                        <label class="field-label" for="steghide-crc">Checksum</label>
+                        <select id="steghide-crc" v-model="steghideChecksum" class="form-select input-dark">
+                            <option :value="true">CRC32 activo</option>
+                            <option :value="false">-K / sin checksum</option>
+                        </select>
+                    </div>
+                    <div class="control-field">
+                        <label class="field-label" for="steghide-name">Nombre embebido</label>
+                        <select id="steghide-name" v-model="steghideStoreName" class="form-select input-dark">
+                            <option :value="true">Guardar nombre original</option>
+                            <option :value="false">-N / no guardar nombre</option>
+                        </select>
+                    </div>
+                    <div class="control-field full-span">
+                        <label class="field-label" for="steghide-wordlist-file">Wordlist para crack</label>
+                        <input
+                            id="steghide-wordlist-file"
+                            class="form-control input-dark"
+                            type="file"
+                            accept=".txt,.lst,.dic,text/plain"
+                            @change="handleSteghideWordlistFile"
+                        />
+                    </div>
+                    <div class="control-field">
+                        <label class="field-label" for="steghide-max-guesses">Max. intentos</label>
+                        <input
+                            id="steghide-max-guesses"
+                            v-model.number="steghideMaxGuesses"
+                            class="form-control input-dark"
+                            type="number"
+                            min="1"
+                            step="100"
+                        />
+                    </div>
+                    <div class="control-field">
+                        <label class="field-label" for="steghide-default-guesses">Guesses extra</label>
+                        <select id="steghide-default-guesses" v-model="steghideSkipDefaultGuesses" class="form-select input-dark">
+                            <option :value="false">Como StegSeek: anadir vacia/nombres</option>
+                            <option :value="true">Solo wordlist</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="metadata-format-strip steghide-format-strip">
+                    <span class="mini-badge">{{ selectedSteghideOperation.badge }}</span>
+                    <strong>{{ selectedSteghideOperation.command }}</strong>
+                    <p>{{ selectedSteghideOperation.note }}</p>
+                </div>
+
+                <div class="inline-actions">
+                    <button class="btn btn-main" @click="runSteghideInfo">Info / capacidad</button>
+                    <button class="btn btn-main" @click="embedSteghidePayload">Incrustar</button>
+                    <button class="btn btn-subtle" @click="extractSteghidePayload">Extraer</button>
+                    <button class="btn btn-subtle" @click="crackSteghideWordlist">Crack wordlist</button>
+                    <button class="btn btn-subtle" @click="runSteghideSeedProbe">Seed / probe</button>
+                    <button class="btn btn-subtle" @click="fillSteghideExample">Cargar ejemplo</button>
+                    <button class="btn btn-subtle" @click="clearSteghideLab">Limpiar</button>
+                    <a
+                        v-if="steghideDownloadUrl"
+                        class="btn btn-main"
+                        :href="steghideDownloadUrl"
+                        :download="steghideDownloadName"
+                    >
+                        Descargar salida
+                    </a>
+                </div>
+                <p class="helper-copy">
+                    Compatibilidad nativa: Steghide real soporta JPEG, BMP, WAV y AU. Este laboratorio reimplementa el
+                    flujo completo posible en frontend; JPEG exacto, matching de Steghide y el seed bruteforce completo
+                    de 2^32 quedan documentados como comandos nativos porque requieren el motor original o WASM dedicado.
+                </p>
+
+                <FeanorResultPanel v-if="steghideResult" :result="steghideResult" icon="STEG" @copy="copyText" />
+            </section>
+
+            <section v-if="isModuleVisible('jsonSign')" class="section-box json-sign-module">
+                <div class="module-header">
+                    <span class="section-kicker">Modulo 24</span>
                     <h2 class="module-title">Canonicalizacion y firma de JSON</h2>
                     <p class="module-copy">
                         Ordena claves de forma determinista y calcula firma HMAC sobre los bytes canonicos. Es el paso
@@ -1374,9 +2071,9 @@
                 <FeanorResultPanel v-if="jsonSignResult" :result="jsonSignResult" icon="JWS" @copy="copyText" />
             </section>
 
-            <section class="section-box secret-module">
+            <section v-if="isModuleVisible('secret')" class="section-box secret-module">
                 <div class="module-header">
-                    <span class="section-kicker">Modulo 15</span>
+                    <span class="section-kicker">Modulo 19</span>
                     <h2 class="module-title">Generador de secretos</h2>
                     <p class="module-copy">
                         Genera contrasenas, tokens, cadenas hexadecimales y UUIDs locales para pruebas tecnicas. El
@@ -1430,56 +2127,13 @@
                                 </button>
                             </div>
 
-                            <template v-if="secretResult">
-                                <div class="row g-3 mb-4">
-                                    <div class="col-6 col-lg-3" v-for="item in secretResult.summaryCards" :key="item.label">
-                                        <div class="metric-card">
-                                            <label>{{ item.label }}</label>
-                                            <span :class="item.tone">{{ item.value }}</span>
-                                            <small v-if="item.note">{{ item.note }}</small>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="verdict-card" :class="secretResult.verdictTone">
-                                    <div class="verdict-icon">
-                                        <span>KEY</span>
-                                    </div>
-                                    <div class="verdict-body">
-                                        <strong>{{ secretResult.verdictTitle }}</strong>
-                                        <p>{{ secretResult.verdictBody }}</p>
-                                    </div>
-                                </div>
-
-                                <div class="row g-3">
-                                    <div class="col-12" v-for="panel in secretResult.panels" :key="panel.title">
-                                        <div class="tool-card">
-                                            <div class="card-head">
-                                                <h5>{{ panel.title }}</h5>
-                                                <div class="card-actions">
-                                                    <span class="mini-badge">{{ panel.badge }}</span>
-                                                    <button
-                                                        v-if="panel.copyValue"
-                                                        class="btn btn-quiet"
-                                                        @click="copyText(panel.copyValue)"
-                                                    >
-                                                        Copiar
-                                                    </button>
-                                                </div>
-                                            </div>
-                                            <div class="output-box">
-                                                <pre class="result-pre">{{ panel.content }}</pre>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </template>
+                            <FeanorResultPanel v-if="secretResult" :result="secretResult" icon="KEY" @copy="copyText" />
                         </div>
             </section>
 
-            <section class="section-box entropy-module">
+            <section v-if="isModuleVisible('entropy')" class="section-box entropy-module">
                 <div class="module-header">
-                    <span class="section-kicker">Modulo 16</span>
+                    <span class="section-kicker">Modulo 20</span>
                     <h2 class="module-title">Analizador de entropia</h2>
                     <p class="module-copy">
                         Evalua passwords, tokens o claves: longitud, charset, entropia estimada, puntuacion zxcvbn,
@@ -1509,9 +2163,9 @@
                 <FeanorResultPanel v-if="entropyResult" :result="entropyResult" icon="ENT" @copy="copyText" />
             </section>
 
-            <section class="section-box otp-module">
+            <section v-if="isModuleVisible('otp')" class="section-box otp-module">
                 <div class="module-header">
-                    <span class="section-kicker">Modulo 17</span>
+                    <span class="section-kicker">Modulo 27</span>
                     <h2 class="module-title">TOTP y HOTP</h2>
                     <p class="module-copy">
                         Genera secretos Base32, calcula codigos HOTP/TOTP y verifica codigos de un solo uso usando
@@ -1567,9 +2221,9 @@
                 <FeanorResultPanel v-if="otpResult" :result="otpResult" icon="OTP" @copy="copyText" />
             </section>
 
-            <section class="section-box timing-module">
+            <section v-if="isModuleVisible('timing')" class="section-box timing-module">
                 <div class="module-header">
-                    <span class="section-kicker">Modulo 18</span>
+                    <span class="section-kicker">Modulo 23</span>
                     <h2 class="module-title">Comparador constante</h2>
                     <p class="module-copy">
                         Compara dos valores byte a byte con una rutina de tiempo constante. La practica muestra por que
@@ -1601,9 +2255,9 @@
                 <FeanorResultPanel v-if="timingResult" :result="timingResult" icon="TIME" @copy="copyText" />
             </section>
 
-            <section class="section-box regex-module">
+            <section v-if="isModuleVisible('regex')" class="section-box regex-module">
                 <div class="module-header">
-                    <span class="section-kicker">Modulo 19</span>
+                    <span class="section-kicker">Modulo 11</span>
                     <h2 class="module-title">Banco regex</h2>
                     <p class="module-copy">
                         Prueba expresiones regulares contra texto real, activa flags y revisa coincidencias, indices y
@@ -1648,60 +2302,7 @@
                                 <button class="btn btn-subtle" @click="fillRegexExample">Cargar ejemplo</button>
                             </div>
 
-                            <template v-if="regexResult">
-                                <div class="row g-3 mb-4">
-                                    <div class="col-6 col-lg-3" v-for="item in regexResult.summaryCards" :key="item.label">
-                                        <div class="metric-card">
-                                            <label>{{ item.label }}</label>
-                                            <span :class="item.tone">{{ item.value }}</span>
-                                            <small v-if="item.note">{{ item.note }}</small>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="verdict-card" :class="regexResult.verdictTone">
-                                    <div class="verdict-icon">
-                                        <span>REGX</span>
-                                    </div>
-                                    <div class="verdict-body">
-                                        <strong>{{ regexResult.verdictTitle }}</strong>
-                                        <p>{{ regexResult.verdictBody }}</p>
-                                    </div>
-                                </div>
-
-                                <div class="row g-3 mb-4">
-                                    <div class="col-md-6 col-xl-3" v-for="item in regexResult.signalCards" :key="item.label">
-                                        <div class="signal-card">
-                                            <label>{{ item.label }}</label>
-                                            <span :class="item.tone">{{ item.value }}</span>
-                                            <small>{{ item.note }}</small>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="row g-3">
-                                    <div class="col-xl-6" v-for="panel in regexResult.panels" :key="panel.title">
-                                        <div class="tool-card">
-                                            <div class="card-head">
-                                                <h5>{{ panel.title }}</h5>
-                                                <div class="card-actions">
-                                                    <span class="mini-badge">{{ panel.badge }}</span>
-                                                    <button
-                                                        v-if="panel.copyValue"
-                                                        class="btn btn-quiet"
-                                                        @click="copyText(panel.copyValue)"
-                                                    >
-                                                        Copiar
-                                                    </button>
-                                                </div>
-                                            </div>
-                                            <div class="output-box">
-                                                <pre class="result-pre">{{ panel.content }}</pre>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </template>
+                            <FeanorResultPanel v-if="regexResult" :result="regexResult" icon="REGX" @copy="copyText" />
                         </div>
             </section>
 
@@ -1713,13 +2314,24 @@
 </template>
 
 <script setup>
-import { reactive, ref } from "vue";
+import { computed, reactive, ref, watch } from "vue";
 import CryptoJS from "crypto-js";
 import * as Diff from "diff";
 import { jwtDecode } from "jwt-decode";
 import { v4 as uuidv4 } from "uuid";
 import zxcvbn from "zxcvbn";
 import FeanorResultPanel from "@/components/FeanorResultPanel.vue";
+import { feanorTheoryTopics } from "@/features/codiceFeanor/data/feanorTheory";
+import { feanorUtilityGroups } from "@/features/codiceFeanor/data/feanorUtilities";
+
+const props = defineProps({
+    toolModule: {
+        type: String,
+        default: ""
+    }
+});
+
+const isOverviewPage = computed(() => !props.toolModule);
 
 const hashModes = [
     { label: "Digest", value: "digest" },
@@ -1727,11 +2339,49 @@ const hashModes = [
     { label: "PBKDF2", value: "pbkdf2" }
 ];
 
+const hashToolConfigs = {
+    hash: {
+        title: "Hash digest",
+        copy: "Calcula huellas deterministas de mensajes o ficheros textuales y compara contra un valor esperado.",
+        helper: "Digest sirve para huellas publicas e integridad sin clave. No es cifrado y no autentica al emisor.",
+        mode: "digest",
+        showMode: false
+    },
+    hmac: {
+        title: "HMAC",
+        copy: "Calcula codigos HMAC con clave secreta para autenticar integridad de un mensaje compartido.",
+        helper: "HMAC necesita una clave compartida. Sin esa clave, un atacante no puede recalcular una salida valida.",
+        mode: "hmac",
+        showMode: false
+    }
+};
+
 const hashAlgorithms = ["SHA256", "SHA512", "SHA3", "SHA1", "MD5"];
 const hashEncodings = [
     { label: "Hex", value: "hex" },
     { label: "Base64", value: "base64" }
 ];
+
+const kdfToolConfigs = {
+    kdf: {
+        title: "Derivacion de claves",
+        copy: "Laboratorio legacy para alternar PBKDF2 y HKDF. Las vistas principales separan ambos flujos.",
+        mode: "PBKDF2",
+        showMode: true
+    },
+    pbkdf2: {
+        title: "PBKDF2",
+        copy: "Endurece passwords o material humano con salt, hash e iteraciones antes de usarlo como clave.",
+        mode: "PBKDF2",
+        showMode: false
+    },
+    hkdf: {
+        title: "HKDF",
+        copy: "Extrae y expande material de alta entropia usando salt e info de contexto para separar usos de clave.",
+        mode: "HKDF",
+        showMode: false
+    }
+};
 
 const cipherAlgorithms = ["AES", "DES", "TripleDES", "RC4", "Rabbit"];
 const asymmetricKeySizes = [2048, 3072, 4096];
@@ -1751,6 +2401,390 @@ const transformOperations = [
     { label: "URL decodificar", value: "url-decode" },
     { label: "Hex codificar", value: "hex-encode" },
     { label: "Hex decodificar", value: "hex-decode" }
+];
+
+const transformCategories = [
+    {
+        value: "base64-text",
+        label: "Texto Base64",
+        badge: "TXT",
+        description: "Texto UTF-8 plano",
+        kind: "text",
+        formats: [{ value: "text/plain", label: "Texto UTF-8 (.txt)", extension: "txt", mime: "text/plain" }]
+    },
+    {
+        value: "base64url-text",
+        label: "Base64URL",
+        badge: "URL64",
+        description: "JWT y rutas URL-safe",
+        kind: "text",
+        formats: [{ value: "text/plain", label: "Texto UTF-8 URL-safe", extension: "txt", mime: "text/plain" }]
+    },
+    {
+        value: "url-text",
+        label: "URL encode",
+        badge: "URL",
+        description: "Percent encoding",
+        kind: "text",
+        formats: [{ value: "text/plain", label: "Texto URL", extension: "txt", mime: "text/plain" }]
+    },
+    {
+        value: "hex-text",
+        label: "Hex",
+        badge: "HEX",
+        description: "Bytes en hexadecimal",
+        kind: "text",
+        formats: [{ value: "text/plain", label: "Texto Hex", extension: "txt", mime: "text/plain" }]
+    },
+    {
+        value: "image",
+        label: "Imagen",
+        badge: "IMG",
+        description: "PNG, JPG, GIF, SVG, WebP",
+        kind: "image",
+        formats: [
+            { value: "image/png", label: "PNG (.png)", extension: "png", mime: "image/png" },
+            { value: "image/jpeg", label: "JPG / JPEG (.jpg)", extension: "jpg", mime: "image/jpeg" },
+            { value: "image/gif", label: "GIF (.gif)", extension: "gif", mime: "image/gif" },
+            { value: "image/webp", label: "WebP (.webp)", extension: "webp", mime: "image/webp" },
+            { value: "image/svg+xml", label: "SVG (.svg)", extension: "svg", mime: "image/svg+xml" },
+            { value: "image/bmp", label: "BMP (.bmp)", extension: "bmp", mime: "image/bmp" },
+            { value: "image/x-icon", label: "ICO (.ico)", extension: "ico", mime: "image/x-icon" }
+        ]
+    },
+    {
+        value: "audio",
+        label: "Audio",
+        badge: "AUD",
+        description: "MP3, WAV, OGG, FLAC",
+        kind: "audio",
+        formats: [
+            { value: "audio/mpeg", label: "MP3 (.mp3)", extension: "mp3", mime: "audio/mpeg" },
+            { value: "audio/wav", label: "WAV (.wav)", extension: "wav", mime: "audio/wav" },
+            { value: "audio/ogg", label: "Ogg (.ogg)", extension: "ogg", mime: "audio/ogg" },
+            { value: "audio/flac", label: "FLAC (.flac)", extension: "flac", mime: "audio/flac" },
+            { value: "audio/mp4", label: "M4A (.m4a)", extension: "m4a", mime: "audio/mp4" },
+            { value: "audio/x-ms-wma", label: "WMA (.wma)", extension: "wma", mime: "audio/x-ms-wma" }
+        ]
+    },
+    {
+        value: "video",
+        label: "Video",
+        badge: "VID",
+        description: "MP4, WebM, MOV, AVI",
+        kind: "video",
+        formats: [
+            { value: "video/mp4", label: "MP4 (.mp4)", extension: "mp4", mime: "video/mp4" },
+            { value: "video/webm", label: "WebM (.webm)", extension: "webm", mime: "video/webm" },
+            { value: "video/quicktime", label: "MOV (.mov)", extension: "mov", mime: "video/quicktime" },
+            { value: "video/x-msvideo", label: "AVI (.avi)", extension: "avi", mime: "video/x-msvideo" },
+            { value: "video/x-matroska", label: "MKV (.mkv)", extension: "mkv", mime: "video/x-matroska" }
+        ]
+    },
+    {
+        value: "pdf",
+        label: "PDF",
+        badge: "PDF",
+        description: "Documento embebible",
+        kind: "pdf",
+        formats: [{ value: "application/pdf", label: "PDF (.pdf)", extension: "pdf", mime: "application/pdf" }]
+    },
+    {
+        value: "file",
+        label: "Fichero",
+        badge: "FILE",
+        description: "ZIP, Office, JSON, binario",
+        kind: "file",
+        formats: [
+            { value: "application/zip", label: "ZIP (.zip)", extension: "zip", mime: "application/zip" },
+            { value: "application/vnd.openxmlformats-officedocument.wordprocessingml.document", label: "DOCX (.docx)", extension: "docx", mime: "application/vnd.openxmlformats-officedocument.wordprocessingml.document" },
+            { value: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", label: "XLSX (.xlsx)", extension: "xlsx", mime: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" },
+            { value: "application/vnd.openxmlformats-officedocument.presentationml.presentation", label: "PPTX (.pptx)", extension: "pptx", mime: "application/vnd.openxmlformats-officedocument.presentationml.presentation" },
+            { value: "application/json", label: "JSON (.json)", extension: "json", mime: "application/json" },
+            { value: "text/csv", label: "CSV (.csv)", extension: "csv", mime: "text/csv" },
+            { value: "application/octet-stream", label: "Binario (.bin)", extension: "bin", mime: "application/octet-stream" }
+        ]
+    }
+];
+
+const transformToolConfigs = {
+    transform: {
+        title: "Transformaciones ligeras",
+        copy: "Laboratorio legacy para transformaciones de texto. Las herramientas principales ahora viven en labs separados.",
+        categories: ["base64-text", "base64url-text", "url-text", "hex-text"],
+        defaultCategory: "base64-text"
+    },
+    base64: {
+        title: "Laboratorio Base64",
+        copy: "Codifica y decodifica texto, imagenes, audio, video, PDF y ficheros genericos como Base64 puro o data URI descargable.",
+        categories: ["base64-text", "image", "audio", "video", "pdf", "file"],
+        defaultCategory: "base64-text"
+    },
+    base64url: {
+        title: "Laboratorio Base64URL",
+        copy: "Convierte texto UTF-8 a Base64URL y recupera texto desde el alfabeto URL-safe usado en JWT, rutas y parametros.",
+        categories: ["base64url-text"],
+        defaultCategory: "base64url-text"
+    },
+    urlEncoding: {
+        title: "URL encoding",
+        copy: "Codifica o decodifica percent-encoding para query strings, fragments y valores que deben viajar dentro de una URL.",
+        categories: ["url-text"],
+        defaultCategory: "url-text"
+    },
+    hex: {
+        title: "Hexadecimal",
+        copy: "Representa texto UTF-8 como Hex o recupera texto desde bytes hexadecimales de longitud par.",
+        categories: ["hex-text"],
+        defaultCategory: "hex-text"
+    }
+};
+
+const xorInputModes = [
+    { label: "Binario bit a bit", value: "binary" },
+    { label: "Hex bytes", value: "hex" },
+    { label: "Texto UTF-8", value: "text" },
+    { label: "Decimal bytes", value: "decimal" }
+];
+
+const booleanOperations = [
+    { label: "NOR - NOT(A OR B)", value: "nor" },
+    { label: "NAND - NOT(A AND B)", value: "nand" },
+    { label: "AND - A AND B", value: "and" },
+    { label: "OR - A OR B", value: "or" },
+    { label: "XOR - A XOR B", value: "xor" },
+    { label: "XNOR - NOT(A XOR B)", value: "xnor" },
+    { label: "NOT - NOT(A)", value: "not" }
+];
+
+const exifProfiles = [
+    {
+        value: "privacy",
+        label: "Privacidad primero",
+        badge: "PRIV",
+        command: "exiftool -G -a -s -gps:all -xmp:all",
+        note: "Prioriza GPS, identidad, seriales, fechas y software antes que campos tecnicos repetitivos."
+    },
+    {
+        value: "forensic",
+        label: "Forense completo",
+        badge: "FOR",
+        command: "exiftool -G -a -s -u -ee",
+        note: "Muestra huella del fichero, estructura del contenedor, indicadores y todos los tags legibles."
+    },
+    {
+        value: "exiftool",
+        label: "Salida ExifTool-like",
+        badge: "GAS",
+        command: "exiftool -G -a -s -sort -json",
+        note: "Ordena por grupo/tag y genera texto exportable junto a JSON, inspirado en la salida clasica de ExifTool."
+    }
+];
+
+const exifDetailModes = [
+    { label: "Resumen ordenado", value: "grouped" },
+    { label: "Riesgos de privacidad", value: "risks" },
+    { label: "Crudo / auditoria", value: "raw" }
+];
+
+const steghideOperations = [
+    {
+        value: "info",
+        label: "Info / capacidad",
+        badge: "INFO",
+        command: "steghide info <stegofile>",
+        note: "Detecta tipo real, capacidad LSB, compatibilidad Steghide y genera comandos nativos equivalentes."
+    },
+    {
+        value: "embed",
+        label: "Embed",
+        badge: "EMB",
+        command: "steghide embed -cf cover -ef secret -sf output -p pass",
+        note: "Incrusta un fichero usando posiciones pseudoaleatorias derivadas de la passphrase."
+    },
+    {
+        value: "extract",
+        label: "Extract",
+        badge: "EXT",
+        command: "steghide extract -sf stego -xf output -p pass",
+        note: "Recupera el payload si la passphrase deriva el mismo orden de posiciones y el CRC valida."
+    },
+    {
+        value: "crack",
+        label: "StegSeek wordlist",
+        badge: "CRK",
+        command: "stegseek <stegofile> <wordlist.txt>",
+        note: "Prueba passphrases de una wordlist contra el formato frontend y muestra comandos StegSeek reales."
+    },
+    {
+        value: "seed",
+        label: "Seed / probe",
+        badge: "SEED",
+        command: "stegseek --seed <stegofile>",
+        note: "Explica el modo seed, busca senales locales y prueba extraccion sin passphrase cuando sea posible."
+    }
+];
+
+const metadataEditorTypes = [
+    {
+        value: "mp3",
+        label: "Audio MP3 (.mp3) - ID3v2.4 directo",
+        family: "Audio",
+        container: "ID3v2.4 / TXXX",
+        extension: "mp3",
+        mime: "audio/mpeg",
+        accept: ".mp3,audio/mpeg",
+        direct: true,
+        note: "Escribe una etiqueta ID3v2.4 al inicio del MP3 y guarda el payload codificado en un frame TXXX."
+    },
+    {
+        value: "wav",
+        label: "Audio WAV (.wav) - RIFF INFO directo",
+        family: "Audio",
+        container: "RIFF LIST/INFO",
+        extension: "wav",
+        mime: "audio/wav",
+        accept: ".wav,audio/wav,audio/x-wav",
+        direct: true,
+        note: "Anade un chunk LIST/INFO con INAM, IART, ICMT, ICOP e ISFT al final del WAVE."
+    },
+    {
+        value: "png",
+        label: "Imagen PNG (.png) - iTXt directo",
+        family: "Imagen",
+        container: "PNG iTXt",
+        extension: "png",
+        mime: "image/png",
+        accept: ".png,image/png",
+        direct: true,
+        note: "Inserta chunks iTXt antes de IEND para que el texto quede como metadato textual UTF-8."
+    },
+    {
+        value: "jpeg",
+        label: "Imagen JPEG (.jpg) - COM directo",
+        family: "Imagen",
+        container: "JPEG COM",
+        extension: "jpg",
+        mime: "image/jpeg",
+        accept: ".jpg,.jpeg,image/jpeg",
+        direct: true,
+        note: "Inserta un segmento COM despues de SOI. Es visible para herramientas forenses y no toca pixeles."
+    },
+    {
+        value: "svg",
+        label: "Imagen SVG (.svg) - metadata XML directo",
+        family: "Imagen",
+        container: "SVG metadata",
+        extension: "svg",
+        mime: "image/svg+xml",
+        accept: ".svg,image/svg+xml",
+        direct: true,
+        note: "Anade un bloque metadata XML dentro del SVG y conserva el documento como texto."
+    },
+    {
+        value: "webp",
+        label: "Imagen WebP (.webp) - XMP sidecar",
+        family: "Imagen",
+        container: "RIFF/WebP XMP",
+        extension: "webp",
+        mime: "image/webp",
+        accept: ".webp,image/webp",
+        direct: false,
+        note: "WebP usa RIFF y puede transportar EXIF/XMP, pero el lab genera sidecar para evitar romper chunks VP8/VP8X."
+    },
+    {
+        value: "tiff",
+        label: "Imagen TIFF/HEIC/RAW - XMP sidecar",
+        family: "Imagen",
+        container: "EXIF/XMP/IPTC",
+        extension: "xmp",
+        mime: "application/rdf+xml",
+        accept: ".tif,.tiff,.heic,.heif,.dng,.cr2,.nef,image/tiff,image/heic,image/heif",
+        direct: false,
+        note: "Formatos fotograficos con EXIF profundo y MakerNotes: el modo seguro en navegador es sidecar."
+    },
+    {
+        value: "mp4",
+        label: "Video MP4/MOV/M4A - QuickTime sidecar",
+        family: "Video",
+        container: "QuickTime atoms",
+        extension: "xmp",
+        mime: "application/rdf+xml",
+        accept: ".mp4,.mov,.m4a,video/mp4,video/quicktime,audio/mp4",
+        direct: false,
+        note: "MP4/MOV/M4A guardan metadatos en atoms; se documenta en sidecar para no reescribir offsets de video."
+    },
+    {
+        value: "webm",
+        label: "Video WebM/MKV - Matroska sidecar",
+        family: "Video",
+        container: "Matroska tags",
+        extension: "xmp",
+        mime: "application/rdf+xml",
+        accept: ".webm,.mkv,video/webm,video/x-matroska",
+        direct: false,
+        note: "Matroska/WebM soporta tags, pero su reescritura binaria completa queda fuera del lab puro frontend."
+    },
+    {
+        value: "pdf",
+        label: "Documento PDF (.pdf) - XMP sidecar",
+        family: "Documento",
+        container: "PDF Info/XMP",
+        extension: "xmp",
+        mime: "application/rdf+xml",
+        accept: ".pdf,application/pdf",
+        direct: false,
+        note: "PDF puede tener diccionario Info y XMP; el lab evita updates incrementales inseguros y genera XMP externo."
+    },
+    {
+        value: "office",
+        label: "Office DOCX/XLSX/PPTX - core.xml sidecar",
+        family: "Documento",
+        container: "ZIP + docProps",
+        extension: "json",
+        mime: "application/json",
+        accept: ".docx,.xlsx,.pptx",
+        direct: false,
+        note: "Office moderno es ZIP con XML interno. La practica genera un descriptor aplicable a docProps/core.xml."
+    },
+    {
+        value: "epub",
+        label: "EPUB/ZIP - OPF sidecar",
+        family: "Documento",
+        container: "ZIP + OPF",
+        extension: "json",
+        mime: "application/json",
+        accept: ".epub,.zip,application/epub+zip,application/zip",
+        direct: false,
+        note: "EPUB y ZIP admiten manifiestos internos; se crea descriptor para modificar el paquete con una herramienta dedicada."
+    }
+];
+
+const metadataPayloadEncodings = [
+    { label: "Base64", value: "base64" },
+    { label: "Base64URL", value: "base64url" },
+    { label: "Hex", value: "hex" },
+    { label: "Texto plano", value: "plain" }
+];
+
+const caesarAlphabets = [
+    {
+        label: "Espanol (A-Z con Ñ)",
+        value: "spanish",
+        uppercase: "ABCDEFGHIJKLMNÑOPQRSTUVWXYZ",
+        lowercase: "abcdefghijklmnñopqrstuvwxyz"
+    },
+    {
+        label: "Ingles (A-Z)",
+        value: "english",
+        uppercase: "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+        lowercase: "abcdefghijklmnopqrstuvwxyz"
+    }
+];
+
+const caesarLogicModes = [
+    { label: "Normal", value: "normal" },
+    { label: "Inversa", value: "inverse" }
 ];
 
 const secretKinds = [
@@ -1836,9 +2870,64 @@ const jwtJwksInput = ref("");
 const jwtHmacSecret = ref("");
 const jwtResult = ref(null);
 
+const transformDirection = ref("encode");
+const transformCategory = ref("base64-text");
+const transformFormat = ref("text/plain");
 const transformOperation = ref("base64-encode");
 const transformInput = ref("");
+const transformFile = ref(null);
+const transformDecodedFileName = ref("");
+const transformDownloadUrl = ref("");
+const transformDownloadName = ref("feanor-base64.bin");
+const transformPreview = ref(null);
 const transformResult = ref(null);
+
+const caesarAlphabet = ref("spanish");
+const caesarLogic = ref("normal");
+const caesarShift = ref(3);
+const caesarInput = ref("");
+const caesarResult = ref(null);
+
+const atbashAlphabet = ref("spanish");
+const atbashInput = ref("");
+const atbashResult = ref(null);
+
+const xorInputMode = ref("binary");
+const xorRepeatKey = ref(false);
+const xorLeft = ref("");
+const xorRight = ref("");
+const xorResult = ref(null);
+
+const booleanInputMode = ref("binary");
+const booleanOperation = ref("nor");
+const booleanRepeatKey = ref(false);
+const booleanLeft = ref("");
+const booleanRight = ref("");
+const booleanResult = ref(null);
+
+const vigenereAlphabet = ref("spanish");
+const vigenereDirection = ref("encrypt");
+const vigenereKey = ref("");
+const vigenereInput = ref("");
+const vigenereResult = ref(null);
+
+const affineAlphabet = ref("spanish");
+const affineDirection = ref("encrypt");
+const affineA = ref(5);
+const affineB = ref(8);
+const affineInput = ref("");
+const affineResult = ref(null);
+
+const railFenceDirection = ref("encrypt");
+const railFenceRails = ref(3);
+const railFenceInput = ref("");
+const railFenceResult = ref(null);
+
+const modularOperation = ref("mod");
+const modularBase = ref("");
+const modularExponent = ref("");
+const modularModulus = ref("");
+const modularResult = ref(null);
 
 const byteInputMode = ref("text");
 const byteInput = ref("");
@@ -1847,6 +2936,54 @@ const byteResult = ref(null);
 const jsonDocA = ref("");
 const jsonDocB = ref("");
 const jsonResult = ref(null);
+
+const stegoAnalyzeFile = ref(null);
+const stegoAnalyzeResult = ref(null);
+const exifFile = ref(null);
+const exifProfile = ref("privacy");
+const exifDetailMode = ref("grouped");
+const exifTagFilter = ref("");
+const exifTxtDownloadUrl = ref("");
+const exifTxtDownloadName = ref("feanor-exif-report.txt");
+const exifJsonDownloadUrl = ref("");
+const exifJsonDownloadName = ref("feanor-exif-report.json");
+const exifResult = ref(null);
+const metadataEditorType = ref("mp3");
+const metadataEditorMode = ref("auto");
+const metadataEditorFile = ref(null);
+const metadataEditorTitle = ref("");
+const metadataEditorAuthor = ref("");
+const metadataEditorDescription = ref("");
+const metadataEditorCopyright = ref("");
+const metadataEditorLanguage = ref("spa");
+const metadataEditorTags = ref("");
+const metadataEditorPayloadEncoding = ref("base64");
+const metadataEditorPayload = ref("");
+const metadataEditorDownloadUrl = ref("");
+const metadataEditorDownloadName = ref("feanor-metadata.bin");
+const metadataEditorResult = ref(null);
+const stegoEmbedFile = ref(null);
+const stegoEmbedPayload = ref("");
+const stegoEmbedDownloadUrl = ref("");
+const stegoEmbedDownloadName = ref("feanor-stego.png");
+const stegoEmbedResult = ref(null);
+const stegoExtractFile = ref(null);
+const stegoExtractResult = ref(null);
+const steghideOperation = ref("info");
+const steghideFile = ref(null);
+const steghideSecretFile = ref(null);
+const steghideWordlistFile = ref(null);
+const steghidePassphrase = ref("");
+const steghideEncryption = ref("aes-gcm");
+const steghideCompression = ref("auto");
+const steghideCompressionLevel = ref(6);
+const steghideChecksum = ref(true);
+const steghideStoreName = ref(true);
+const steghideMaxGuesses = ref(5000);
+const steghideSkipDefaultGuesses = ref(false);
+const steghideDownloadUrl = ref("");
+const steghideDownloadName = ref("feanor-steghide-output.bin");
+const steghideResult = ref(null);
 
 const jsonSignAlgorithm = ref("SHA256");
 const jsonSignSecret = ref("");
@@ -1920,6 +3057,99 @@ const cipherMap = {
     Rabbit: CryptoJS.Rabbit
 };
 
+const activeHashToolConfig = computed(() =>
+    hashToolConfigs[props.toolModule] || hashToolConfigs.hash
+);
+
+const isHashToolVisible = computed(() =>
+    Object.keys(hashToolConfigs).includes(props.toolModule)
+);
+
+const activeKdfToolConfig = computed(() =>
+    kdfToolConfigs[props.toolModule] || kdfToolConfigs.kdf
+);
+
+const isKdfToolVisible = computed(() =>
+    Object.keys(kdfToolConfigs).includes(props.toolModule)
+);
+
+const currentTransformCategory = computed(() =>
+    transformCategories.find(category => category.value === transformCategory.value) || transformCategories[0]
+);
+
+const activeTransformToolConfig = computed(() =>
+    transformToolConfigs[props.toolModule] || transformToolConfigs.transform
+);
+
+const visibleTransformCategories = computed(() =>
+    transformCategories.filter(category => activeTransformToolConfig.value.categories.includes(category.value))
+);
+
+const isTransformToolVisible = computed(() =>
+    Object.keys(transformToolConfigs).includes(props.toolModule)
+);
+
+const selectedMetadataEditorType = computed(() =>
+    metadataEditorTypes.find(item => item.value === metadataEditorType.value) || metadataEditorTypes[0]
+);
+
+const selectedExifProfile = computed(() =>
+    exifProfiles.find(item => item.value === exifProfile.value) || exifProfiles[0]
+);
+
+const selectedSteghideOperation = computed(() =>
+    steghideOperations.find(item => item.value === steghideOperation.value) || steghideOperations[0]
+);
+
+const metadataEditorAccept = computed(() => selectedMetadataEditorType.value.accept || "*/*");
+
+const currentTransformFormat = computed(() =>
+    currentTransformCategory.value.formats.find(format => format.value === transformFormat.value)
+        || currentTransformCategory.value.formats[0]
+);
+
+const isTransformFileCategory = computed(() => !["base64-text", "base64url-text", "url-text", "hex-text"].includes(transformCategory.value));
+
+const isTransformTextInputVisible = computed(() =>
+    !isTransformFileCategory.value || transformDirection.value === "decode"
+);
+
+const currentTransformAccept = computed(() =>
+    currentTransformCategory.value.formats.map(format => format.mime).join(",")
+);
+
+const transformPlaceholder = computed(() => {
+    if (transformDirection.value === "encode") {
+        if (transformCategory.value === "base64-text") return "Texto UTF-8 que quieres convertir a Base64";
+        if (transformCategory.value === "base64url-text") return "Texto UTF-8 que quieres convertir a Base64URL";
+        if (transformCategory.value === "url-text") return "Texto que quieres preparar para una URL";
+        if (transformCategory.value === "hex-text") return "Texto UTF-8 que quieres representar en Hex";
+        return "Selecciona un fichero para codificarlo como Base64";
+    }
+
+    if (transformCategory.value === "base64-text") return "Base64 o data URI que quieres decodificar a texto";
+    if (transformCategory.value === "base64url-text") return "Base64URL que quieres decodificar a texto";
+    if (transformCategory.value === "url-text") return "Texto con percent-encoding, por ejemplo hola%20mundo";
+    if (transformCategory.value === "hex-text") return "Hex con longitud par, por ejemplo 486f6c61";
+    return "Pega Base64 puro o data URI: data:image/png;base64,...";
+});
+
+watch(() => props.toolModule, () => {
+    syncTransformToolDefaults();
+    syncHashToolDefaults();
+    syncKdfToolDefaults();
+}, { immediate: true });
+
+const STEGO_MAGIC_TEXT = "FEANOR_STEGO_V1";
+const STEGO_MAGIC_BYTES = new TextEncoder().encode(STEGO_MAGIC_TEXT);
+const STEGO_LENGTH_BYTES = 4;
+const STEGO_HEADER_BYTES = STEGO_MAGIC_BYTES.length + STEGO_LENGTH_BYTES;
+const STEGHIDE_MAGIC_TEXT = "FEANOR_STEGHIDE_V1";
+const STEGHIDE_MAGIC_BYTES = new TextEncoder().encode(STEGHIDE_MAGIC_TEXT);
+const STEGHIDE_LENGTH_BYTES = 4;
+const STEGHIDE_HEADER_BYTES = STEGHIDE_MAGIC_BYTES.length + STEGHIDE_LENGTH_BYTES;
+const STEGHIDE_KDF_ITERATIONS = 120000;
+
 function randomHex(bytes = 16) {
     return CryptoJS.lib.WordArray.random(bytes).toString(CryptoJS.enc.Hex);
 }
@@ -1961,11 +3191,12 @@ function base64ToUtf8(value) {
 
 function bytesToBase64(value) {
     const bytes = value instanceof Uint8Array ? value : new Uint8Array(value);
-    let binary = "";
-    bytes.forEach(byte => {
-        binary += String.fromCharCode(byte);
-    });
-    return btoa(binary);
+    const chunks = [];
+    const chunkSize = 0x8000;
+    for (let index = 0; index < bytes.length; index += chunkSize) {
+        chunks.push(String.fromCharCode(...bytes.subarray(index, index + chunkSize)));
+    }
+    return btoa(chunks.join(""));
 }
 
 function base64ToBytes(value) {
@@ -2003,6 +3234,152 @@ function hexToBytes(value) {
     }
     const pairs = normalized.match(/.{1,2}/g) || [];
     return new Uint8Array(pairs.map(pair => Number.parseInt(pair, 16)));
+}
+
+function formatBytesSize(bytes) {
+    if (!Number.isFinite(bytes)) return "N/D";
+    const units = ["B", "KB", "MB", "GB"];
+    let value = bytes;
+    let unitIndex = 0;
+    while (value >= 1024 && unitIndex < units.length - 1) {
+        value /= 1024;
+        unitIndex += 1;
+    }
+    const digits = unitIndex === 0 ? 0 : 1;
+    return `${value.toFixed(digits)} ${units[unitIndex]}`;
+}
+
+function asciiSlice(bytes, start = 0, end = bytes.length) {
+    let output = "";
+    for (let index = start; index < end; index += 1) {
+        output += String.fromCharCode(bytes[index]);
+    }
+    return output;
+}
+
+function startsWithBytes(bytes, signature) {
+    if (bytes.length < signature.length) return false;
+    return signature.every((byte, index) => bytes[index] === byte);
+}
+
+function findBytes(bytes, signature, start = 0) {
+    if (!signature.length || bytes.length < signature.length) return -1;
+    for (let index = start; index <= bytes.length - signature.length; index += 1) {
+        let matched = true;
+        for (let offset = 0; offset < signature.length; offset += 1) {
+            if (bytes[index + offset] !== signature[offset]) {
+                matched = false;
+                break;
+            }
+        }
+        if (matched) return index;
+    }
+    return -1;
+}
+
+function lastIndexOfBytes(bytes, signature) {
+    if (!signature.length || bytes.length < signature.length) return -1;
+    for (let index = bytes.length - signature.length; index >= 0; index -= 1) {
+        let matched = true;
+        for (let offset = 0; offset < signature.length; offset += 1) {
+            if (bytes[index + offset] !== signature[offset]) {
+                matched = false;
+                break;
+            }
+        }
+        if (matched) return index;
+    }
+    return -1;
+}
+
+function byteShannonEntropy(bytes) {
+    if (!bytes.length) return 0;
+    const frequencies = new Array(256).fill(0);
+    bytes.forEach(byte => {
+        frequencies[byte] += 1;
+    });
+    return frequencies.reduce((entropy, count) => {
+        if (!count) return entropy;
+        const probability = count / bytes.length;
+        return entropy - probability * Math.log2(probability);
+    }, 0);
+}
+
+function scanPrintableStrings(bytes, minLength = 7, maxResults = 24) {
+    const results = [];
+    let current = "";
+    bytes.forEach(byte => {
+        const printable = byte >= 32 && byte <= 126;
+        if (printable) {
+            current += String.fromCharCode(byte);
+            return;
+        }
+        if (current.length >= minLength) {
+            results.push(current);
+        }
+        current = "";
+    });
+    if (current.length >= minLength) {
+        results.push(current);
+    }
+    return Array.from(new Set(results))
+        .sort((a, b) => b.length - a.length)
+        .slice(0, maxResults);
+}
+
+function sanitizeMetadataValue(value) {
+    if (value instanceof Date) return value.toISOString();
+    if (Array.isArray(value)) return value.map(sanitizeMetadataValue).join(", ");
+    if (value && typeof value === "object") {
+        if (value.description) return value.description;
+        return JSON.stringify(value);
+    }
+    return String(value ?? "");
+}
+
+function objectToLines(value, maxEntries = 28) {
+    if (!value || typeof value !== "object") return [];
+    return Object.entries(value)
+        .filter(([, item]) => item !== undefined && item !== null && sanitizeMetadataValue(item) !== "")
+        .slice(0, maxEntries)
+        .map(([key, item]) => `${key}: ${sanitizeMetadataValue(item)}`);
+}
+
+function detectFileType(bytes, file) {
+    const first16 = asciiSlice(bytes, 0, Math.min(bytes.length, 16));
+    const extension = (file?.name?.split(".").pop() || "").toLowerCase();
+
+    if (startsWithBytes(bytes, [0x89, 0x50, 0x4e, 0x47])) return { label: "PNG", family: "image", extension };
+    if (startsWithBytes(bytes, [0xff, 0xd8, 0xff])) return { label: "JPEG", family: "image", extension };
+    if (first16.startsWith("GIF87a") || first16.startsWith("GIF89a")) return { label: "GIF", family: "image", extension };
+    if (first16.startsWith("BM")) return { label: "BMP", family: "image", extension };
+    if (startsWithBytes(bytes, [0x49, 0x49, 0x2a, 0x00]) || startsWithBytes(bytes, [0x4d, 0x4d, 0x00, 0x2a])) return { label: "TIFF", family: "image", extension };
+    if (first16.startsWith("RIFF") && asciiSlice(bytes, 8, 12) === "WEBP") return { label: "WEBP", family: "image", extension };
+    if (first16.startsWith("RIFF") && asciiSlice(bytes, 8, 12) === "WAVE") return { label: "WAV", family: "audio", extension };
+    if (startsWithBytes(bytes, [0x2e, 0x73, 0x6e, 0x64])) return { label: "AU", family: "audio", extension };
+    if (first16.startsWith("RIFF") && asciiSlice(bytes, 8, 12) === "AVI ") return { label: "AVI", family: "video", extension };
+    if (startsWithBytes(bytes, [0x49, 0x44, 0x33]) || startsWithBytes(bytes, [0xff, 0xfb])) return { label: "MP3", family: "audio", extension };
+    if (first16.startsWith("fLaC")) return { label: "FLAC", family: "audio", extension };
+    if (first16.startsWith("OggS")) return { label: "OGG", family: "audio", extension };
+    if (startsWithBytes(bytes, [0x1a, 0x45, 0xdf, 0xa3])) return { label: extension === "webm" ? "WEBM" : "MKV/WEBM", family: "video", extension };
+    if (asciiSlice(bytes, 4, 8) === "ftyp") {
+        const brand = asciiSlice(bytes, 8, 12).trim();
+        const imageBrands = ["heic", "heix", "hevc", "hevx", "mif1", "msf1", "avif"];
+        if (imageBrands.includes(brand)) return { label: brand.toUpperCase(), family: "image", extension };
+        if (extension === "m4a" || extension === "aac") return { label: "M4A/MP4", family: "audio", extension };
+        return { label: "MP4/MOV", family: "video", extension };
+    }
+    if (first16.startsWith("%PDF-")) return { label: "PDF", family: "document", extension };
+    if (startsWithBytes(bytes, [0x50, 0x4b, 0x03, 0x04])) {
+        const officeMap = { docx: "DOCX", xlsx: "XLSX", pptx: "PPTX", epub: "EPUB" };
+        return { label: officeMap[extension] || "ZIP", family: "archive", extension };
+    }
+
+    const headText = asciiSlice(bytes, 0, Math.min(bytes.length, 512)).trimStart().toLowerCase();
+    if (headText.startsWith("<svg")) return { label: "SVG", family: "image", extension };
+    if (headText.startsWith("{") || headText.startsWith("[")) return { label: "JSON/TEXTO", family: "text", extension };
+    if (headText.startsWith("<")) return { label: "XML/HTML", family: "text", extension };
+    return { label: extension ? extension.toUpperCase() : "BINARIO", family: "binary", extension };
 }
 
 function wordArrayToBytes(wordArray) {
@@ -2256,6 +3633,10 @@ function setClipboardNotice(message) {
     }, 1800);
 }
 
+function isModuleVisible(module) {
+    return props.toolModule === module;
+}
+
 async function copyText(value) {
     try {
         await navigator.clipboard.writeText(String(value ?? ""));
@@ -2302,6 +3683,16 @@ function useLastSecretAsHashSecret() {
     hashSecret.value = secretResult.value.generated;
 }
 
+function syncHashToolDefaults() {
+    if (!isHashToolVisible.value) return;
+    hashMode.value = activeHashToolConfig.value.mode;
+}
+
+function syncKdfToolDefaults() {
+    if (!isKdfToolVisible.value) return;
+    kdfMode.value = activeKdfToolConfig.value.mode;
+}
+
 function useCipherOutputAsInput() {
     if (!cipherResult.value?.primaryValue) {
         cipherResult.value = buildErrorResult("CIPHER_OUTPUT_EMPTY", "No hay salida cifrada o descifrada", "Ejecuta primero Cifrar o Descifrar para generar una salida reutilizable.");
@@ -2318,6 +3709,9 @@ function useTransformOutputAsInput() {
     }
 
     transformInput.value = transformResult.value.primaryValue;
+    transformDirection.value = transformDirection.value === "encode" ? "decode" : "encode";
+    updateTransformOperation();
+    clearTransformGeneratedAssets();
 }
 
 function sendTransformOutputToJson() {
@@ -4440,95 +5834,1424 @@ function useAsymmetricKeyForConverter() {
     keyConverterResult.value = buildErrorResult("ASYMMETRIC_KEY_EMPTY", "No hay clave RSA actual", "Genera claves en el modulo de cifrado asimetrico antes de reutilizarlas aqui.");
 }
 
-function fillTransformExample() {
-    transformOperation.value = "base64url-decode";
-    transformInput.value = base64ToBase64Url(utf8ToBase64('{"scope":"read:reports","active":true}'));
+function updateTransformOperation() {
+    const suffix = transformDirection.value === "encode" ? "encode" : "decode";
+    if (transformCategory.value === "base64-text") transformOperation.value = `base64-${suffix}`;
+    else if (transformCategory.value === "base64url-text") transformOperation.value = `base64url-${suffix}`;
+    else if (transformCategory.value === "url-text") transformOperation.value = `url-${suffix}`;
+    else if (transformCategory.value === "hex-text") transformOperation.value = `hex-${suffix}`;
+    else transformOperation.value = `${transformCategory.value}-base64-${suffix}`;
 }
 
-function runTransform() {
+function setTransformDirection(direction) {
+    transformDirection.value = direction;
+    updateTransformOperation();
+    clearTransformGeneratedAssets();
+    transformResult.value = null;
+}
+
+function syncTransformToolDefaults() {
+    if (!isTransformToolVisible.value) return;
+    const allowed = activeTransformToolConfig.value.categories;
+    if (!allowed.includes(transformCategory.value)) {
+        transformCategory.value = activeTransformToolConfig.value.defaultCategory;
+    }
+    transformFormat.value = currentTransformCategory.value.formats[0]?.value || "text/plain";
+    updateTransformOperation();
+}
+
+function selectTransformCategory(category) {
+    if (!activeTransformToolConfig.value.categories.includes(category)) return;
+    transformCategory.value = category;
+    transformFormat.value = currentTransformCategory.value.formats[0]?.value || "application/octet-stream";
+    updateTransformOperation();
+    clearTransformGeneratedAssets();
+    transformResult.value = null;
+}
+
+function handleTransformFile(event) {
+    transformFile.value = event.target.files?.[0] || null;
+    clearTransformGeneratedAssets();
+    transformResult.value = null;
+}
+
+function clearTransformGeneratedAssets() {
+    if (transformDownloadUrl.value) {
+        URL.revokeObjectURL(transformDownloadUrl.value);
+    }
+    if (transformPreview.value?.ownsUrl) {
+        URL.revokeObjectURL(transformPreview.value.url);
+    }
+    transformDownloadUrl.value = "";
+    transformDownloadName.value = "feanor-base64.bin";
+    transformPreview.value = null;
+}
+
+function setTransformPreview(kind, url, ownsUrl = true) {
+    if (transformPreview.value?.ownsUrl) {
+        URL.revokeObjectURL(transformPreview.value.url);
+    }
+    transformPreview.value = { kind, url, ownsUrl };
+}
+
+function setTransformDownload(blob, filename, kind) {
+    clearTransformGeneratedAssets();
+    const url = URL.createObjectURL(blob);
+    transformDownloadUrl.value = url;
+    transformDownloadName.value = filename;
+    transformPreview.value = { kind, url, ownsUrl: false };
+}
+
+function parseBase64Payload(value) {
+    const trimmed = String(value ?? "").trim();
+    const match = trimmed.match(/^data:([^;,]+)?(?:;[^,]*)?;base64,([\s\S]+)$/i);
+    if (match) {
+        return {
+            base64: match[2].replace(/\s+/g, ""),
+            mime: match[1] || "",
+            isDataUri: true
+        };
+    }
+    return {
+        base64: trimmed.replace(/\s+/g, ""),
+        mime: "",
+        isDataUri: false
+    };
+}
+
+function previewKindFromCategory(category) {
+    if (category === "image") return "image";
+    if (category === "audio") return "audio";
+    if (category === "video") return "video";
+    if (category === "pdf") return "pdf";
+    return "file";
+}
+
+function formatFromMime(mime) {
+    const normalized = String(mime || "").toLowerCase();
+    return transformCategories
+        .flatMap(category => category.formats)
+        .find(format => format.mime.toLowerCase() === normalized)
+        || null;
+}
+
+function inferMimeFromDecodedBytes(bytes, fallbackMime) {
+    const detected = detectFileType(bytes, { name: `decoded.${currentTransformFormat.value.extension}` });
+    const detectedMap = {
+        PNG: "image/png",
+        JPEG: "image/jpeg",
+        GIF: "image/gif",
+        BMP: "image/bmp",
+        WEBP: "image/webp",
+        PDF: "application/pdf",
+        ZIP: "application/zip",
+        MP3: "audio/mpeg",
+        WAV: "audio/wav"
+    };
+    return detectedMap[detected.label] || fallbackMime || currentTransformFormat.value.mime;
+}
+
+function filenameForDecodedOutput(mime) {
+    if (transformDecodedFileName.value.trim()) return transformDecodedFileName.value.trim();
+    const format = formatFromMime(mime) || currentTransformFormat.value;
+    return `feanor-base64.${format.extension || "bin"}`;
+}
+
+function buildDataUri(mime, base64) {
+    return `data:${mime};base64,${base64}`;
+}
+
+function buildEmbedSnippet(kind, dataUri, filename) {
+    if (kind === "image") return `<img src="${dataUri}" alt="${filename}" />`;
+    if (kind === "audio") return `<audio controls src="${dataUri}"></audio>`;
+    if (kind === "video") return `<video controls src="${dataUri}"></video>`;
+    if (kind === "pdf") return `<iframe src="${dataUri}" title="${filename}"></iframe>`;
+    return `<a href="${dataUri}" download="${filename}">Descargar ${filename}</a>`;
+}
+
+function selectedFileKindLabel() {
+    return currentTransformCategory.value.label;
+}
+
+function fillTransformExample() {
+    clearTransformGeneratedAssets();
+    transformDirection.value = "decode";
+    transformCategory.value = "base64url-text";
+    transformFormat.value = "text/plain";
+    updateTransformOperation();
+    transformInput.value = base64ToBase64Url(utf8ToBase64('{"scope":"read:reports","active":true}'));
+    transformDecodedFileName.value = "";
+}
+
+function runTextTransform() {
     if (!transformInput.value.trim()) {
-        transformResult.value = buildErrorResult("TRANSFORM_EMPTY", "Falta la entrada", "Introduce texto o una cadena codificada.");
-        return;
+        throw new Error("Introduce texto o una cadena codificada.");
     }
 
+    let output = "";
+    let note = "";
+
+    switch (transformOperation.value) {
+    case "base64-encode":
+        output = utf8ToBase64(transformInput.value);
+        note = "Texto UTF-8 convertido a Base64 clasico.";
+        break;
+    case "base64-decode":
+        output = base64ToUtf8(parseBase64Payload(transformInput.value).base64);
+        note = "Cadena Base64 convertida a texto UTF-8.";
+        break;
+    case "base64url-encode":
+        output = base64ToBase64Url(utf8ToBase64(transformInput.value));
+        note = "Texto convertido al alfabeto URL-safe.";
+        break;
+    case "base64url-decode":
+        output = base64ToUtf8(base64UrlToBase64(transformInput.value.trim()));
+        note = "Cadena Base64URL devuelta a texto plano.";
+        break;
+    case "url-encode":
+        output = encodeURIComponent(transformInput.value);
+        note = "Texto preparado para viajar en query strings o fragments.";
+        break;
+    case "url-decode":
+        output = decodeURIComponent(transformInput.value);
+        note = "La cadena se ha decodificado desde percent-encoding.";
+        break;
+    case "hex-encode":
+        output = utf8ToHex(transformInput.value);
+        note = "Texto convertido a representacion hexadecimal.";
+        break;
+    case "hex-decode":
+        output = hexToUtf8(transformInput.value);
+        note = "Cadena hexadecimal decodificada a UTF-8.";
+        break;
+    default:
+        throw new Error("Operacion de texto no soportada.");
+    }
+
+    const jsonHint = looksLikeJson(output) ? "La salida parece JSON valido." : "La salida no parece JSON.";
+    return {
+        output,
+        note,
+        panels: [
+            {
+                title: "Resultado",
+                badge: "texto",
+                content: output,
+                copyValue: output
+            },
+            {
+                title: "Lectura tecnica",
+                badge: "notas",
+                content: buildTextList("Observaciones", [note, jsonHint]),
+                copyValue: `${note}\n${jsonHint}`
+            }
+        ],
+        jsonHint
+    };
+}
+
+async function runFileBase64Encode() {
+    if (!transformFile.value) {
+        throw new Error("Selecciona un fichero para convertirlo a Base64.");
+    }
+
+    const file = transformFile.value;
+    const bytes = new Uint8Array(await file.arrayBuffer());
+    const base64 = bytesToBase64(bytes);
+    const mime = file.type || currentTransformFormat.value.mime;
+    const dataUri = buildDataUri(mime, base64);
+    const kind = previewKindFromCategory(transformCategory.value);
+    const previewUrl = URL.createObjectURL(file);
+    const snippet = buildEmbedSnippet(kind, dataUri, file.name);
+    setTransformPreview(kind, previewUrl, true);
+
+    return {
+        output: base64,
+        note: `${file.name} convertido a Base64 como ${mime}.`,
+        panels: [
+            {
+                title: "Resultado",
+                badge: "base64",
+                content: base64,
+                copyValue: base64
+            },
+            {
+                title: "Data URI",
+                badge: "data",
+                content: dataUri,
+                copyValue: dataUri
+            },
+            {
+                title: "HTML de uso",
+                badge: "embed",
+                content: snippet,
+                copyValue: snippet
+            }
+        ],
+        file,
+        bytes,
+        mime,
+        dataUri
+    };
+}
+
+async function runFileBase64Decode() {
+    if (!transformInput.value.trim()) {
+        throw new Error("Pega Base64 puro o una data URI antes de decodificar.");
+    }
+
+    const parsed = parseBase64Payload(transformInput.value);
+    const bytes = base64ToBytes(parsed.base64);
+    const mime = inferMimeFromDecodedBytes(bytes, parsed.mime || currentTransformFormat.value.mime);
+    const filename = filenameForDecodedOutput(mime);
+    const kind = previewKindFromCategory(transformCategory.value);
+    const blob = new Blob([bytes], { type: mime });
+    const dataUri = buildDataUri(mime, parsed.base64);
+    setTransformDownload(blob, filename, kind);
+
+    return {
+        output: dataUri,
+        note: `${formatBytesSize(bytes.byteLength)} decodificados como ${mime}.`,
+        panels: [
+            {
+                title: "Resultado",
+                badge: "fichero",
+                content: buildTextList("Fichero generado", [
+                    `Nombre: ${filename}`,
+                    `MIME: ${mime}`,
+                    `Tamano: ${formatBytesSize(bytes.byteLength)}.`,
+                    "Usa el boton Descargar fichero para guardarlo."
+                ]),
+                copyValue: filename
+            },
+            {
+                title: "Base64 normalizado",
+                badge: "base64",
+                content: parsed.base64,
+                copyValue: parsed.base64
+            }
+        ],
+        bytes,
+        mime,
+        filename,
+        isDataUri: parsed.isDataUri
+    };
+}
+
+async function runTransform() {
+    updateTransformOperation();
+    clearTransformGeneratedAssets();
+
     try {
-        let output = "";
-        let reversible = "Si";
-        let note = "";
-
-        switch (transformOperation.value) {
-        case "base64-encode":
-            output = utf8ToBase64(transformInput.value);
-            note = "Texto UTF-8 convertido a Base64 clasico.";
-            break;
-        case "base64-decode":
-            output = base64ToUtf8(transformInput.value.trim());
-            note = "Cadena Base64 convertida a texto UTF-8.";
-            break;
-        case "base64url-encode":
-            output = base64ToBase64Url(utf8ToBase64(transformInput.value));
-            note = "Texto convertido al alfabeto URL-safe.";
-            break;
-        case "base64url-decode":
-            output = base64ToUtf8(base64UrlToBase64(transformInput.value.trim()));
-            note = "Cadena Base64URL devuelta a texto plano.";
-            break;
-        case "url-encode":
-            output = encodeURIComponent(transformInput.value);
-            note = "Texto preparado para viajar en query strings o fragments.";
-            break;
-        case "url-decode":
-            output = decodeURIComponent(transformInput.value);
-            note = "La cadena se ha decodificado desde percent-encoding.";
-            break;
-        case "hex-encode":
-            output = utf8ToHex(transformInput.value);
-            note = "Texto convertido a representacion hexadecimal.";
-            break;
-        case "hex-decode":
-            output = hexToUtf8(transformInput.value);
-            note = "Cadena hexadecimal decodificada a UTF-8.";
-            break;
-        default:
-            throw new Error("Operacion no soportada.");
-        }
-
-        const jsonHint = looksLikeJson(output) ? "La salida parece JSON valido." : "La salida no parece JSON.";
+        const fileMode = isTransformFileCategory.value;
+        const result = fileMode
+            ? (transformDirection.value === "encode" ? await runFileBase64Encode() : await runFileBase64Decode())
+            : runTextTransform();
+        const output = result.output;
+        const inputSize = fileMode && transformDirection.value === "encode"
+            ? formatBytesSize(result.bytes.byteLength)
+            : `${transformInput.value.length} chars`;
+        const outputSize = fileMode && transformDirection.value === "decode"
+            ? formatBytesSize(result.bytes.byteLength)
+            : `${String(output).length} chars`;
+        const operationLabel = transformDirection.value === "encode" ? "Codificar" : "Decodificar";
+        const typeLabel = fileMode ? selectedFileKindLabel() : currentTransformCategory.value.label;
+        const jsonHint = !fileMode && looksLikeJson(output) ? "La salida parece JSON valido." : "";
 
         transformResult.value = {
             primaryValue: output,
             verdictTone: "verdict-success",
-            verdictTitle: "Transformacion aplicada",
-            verdictBody: `${note} ${jsonHint}`,
+            verdictTitle: fileMode ? "Base64 de fichero procesado" : "Transformacion aplicada",
+            verdictBody: fileMode
+                ? `${result.note} El flujo se ejecuta integramente en el navegador.`
+                : `${result.note} ${jsonHint || "Salida lista para reutilizar."}`,
             summaryCards: [
-                { label: "Operacion", value: transformOperation.value, tone: "tone-neutral", note: "Pipeline activo" },
-                { label: "Entrada", value: `${transformInput.value.length} chars`, tone: "tone-neutral", note: `${countUniqueCharacters(transformInput.value)} unicos` },
-                { label: "Salida", value: `${output.length} chars`, tone: "tone-success", note: "Lista para copiar" },
-                { label: "Reversible", value: reversible, tone: "tone-success", note: "Existe operacion inversa" }
+                { label: "Modo", value: operationLabel, tone: "tone-success", note: transformOperation.value },
+                { label: "Categoria", value: typeLabel, tone: "tone-neutral", note: currentTransformFormat.value.label },
+                { label: "Entrada", value: inputSize, tone: "tone-neutral", note: fileMode && transformDirection.value === "encode" ? result.file.name : "Material local" },
+                { label: "Salida", value: outputSize, tone: "tone-success", note: transformDirection.value === "decode" && fileMode ? "Fichero" : "Texto" }
             ],
             signalCards: [
-                { label: "JSON probable", value: looksLikeJson(output) ? "Si" : "No", tone: looksLikeJson(output) ? "tone-success" : "tone-neutral", note: "Heuristica local" },
-                { label: "URL-safe", value: /^[A-Za-z0-9\-_.~%]*$/.test(output) ? "Si" : "No", tone: /^[A-Za-z0-9\-_.~%]*$/.test(output) ? "tone-success" : "tone-warning", note: "Caracteres compatibles con URL" },
-                { label: "Operacion", value: transformOperation.value.includes("decode") ? "Decode" : "Encode", tone: "tone-neutral", note: note },
-                { label: "Salida vacia", value: output ? "No" : "Si", tone: output ? "tone-success" : "tone-warning", note: "Revision de contenido" }
+                { label: "MIME", value: result.mime || currentTransformFormat.value.mime, tone: "tone-neutral", note: "Tipo declarado" },
+                { label: "Data URI", value: fileMode ? "Disponible" : "N/D", tone: fileMode ? "tone-success" : "tone-neutral", note: fileMode ? "HTML/CSS embebible" : "Texto simple" },
+                { label: "JSON probable", value: !fileMode && looksLikeJson(output) ? "Si" : "No", tone: !fileMode && looksLikeJson(output) ? "tone-success" : "tone-neutral", note: "Heuristica local" },
+                { label: "Reversible", value: "Si", tone: "tone-success", note: "Usa el modo opuesto" }
+            ],
+            panels: result.panels
+        };
+    } catch (error) {
+        transformResult.value = buildErrorResult("TRANSFORM_FAILED", "Transformacion no completada", error.message);
+    }
+}
+
+function getCaesarAlphabet() {
+    return caesarAlphabets.find(item => item.value === caesarAlphabet.value) || caesarAlphabets[0];
+}
+
+function normalizeCaesarShift(value, alphabetLength) {
+    const shift = Number(value);
+    if (!Number.isFinite(shift) || !Number.isInteger(shift) || shift < 0) {
+        throw new Error("El numero de caracteres debe ser un entero igual o mayor que 0.");
+    }
+    return shift % alphabetLength;
+}
+
+function applyCaesarShift(value, alphabet, effectiveShift) {
+    let shiftedCharacters = 0;
+    const output = Array.from(value).map(char => {
+        const upperIndex = alphabet.uppercase.indexOf(char);
+        if (upperIndex !== -1) {
+            shiftedCharacters += 1;
+            return alphabet.uppercase[(upperIndex + effectiveShift) % alphabet.uppercase.length];
+        }
+
+        const lowerIndex = alphabet.lowercase.indexOf(char);
+        if (lowerIndex !== -1) {
+            shiftedCharacters += 1;
+            return alphabet.lowercase[(lowerIndex + effectiveShift) % alphabet.lowercase.length];
+        }
+
+        return char;
+    }).join("");
+
+    return {
+        output,
+        shiftedCharacters,
+        untouchedCharacters: Array.from(value).length - shiftedCharacters
+    };
+}
+
+function buildCaesarSubstitutionTable(alphabet, effectiveShift) {
+    return alphabet.uppercase
+        .split("")
+        .map((char, index) => `${char}->${alphabet.uppercase[(index + effectiveShift) % alphabet.uppercase.length]}`)
+        .join("  ");
+}
+
+function fillCaesarExample() {
+    caesarAlphabet.value = "spanish";
+    caesarLogic.value = "normal";
+    caesarShift.value = 3;
+    caesarInput.value = "El codigo de Feanor protege la Ñ y el anillo.";
+}
+
+function toggleCaesarLogic() {
+    caesarLogic.value = caesarLogic.value === "normal" ? "inverse" : "normal";
+}
+
+function useCaesarOutputAsInput() {
+    if (!caesarResult.value?.primaryValue) {
+        caesarResult.value = buildErrorResult("CAESAR_OUTPUT_EMPTY", "No hay salida Cesar", "Aplica primero el cifrado para poder pasar el resultado a la entrada.");
+        return;
+    }
+
+    caesarInput.value = caesarResult.value.primaryValue;
+}
+
+function runCaesarCipher() {
+    if (!caesarInput.value) {
+        caesarResult.value = buildErrorResult("CAESAR_EMPTY", "Falta texto", "Introduce texto plano o cifrado antes de aplicar Cesar.");
+        return;
+    }
+
+    try {
+        const alphabet = getCaesarAlphabet();
+        const normalizedShift = normalizeCaesarShift(caesarShift.value, alphabet.uppercase.length);
+        const effectiveShift = caesarLogic.value === "inverse"
+            ? (alphabet.uppercase.length - normalizedShift) % alphabet.uppercase.length
+            : normalizedShift;
+        const direction = caesarLogic.value === "inverse" ? "retrocede" : "avanza";
+        const result = applyCaesarShift(caesarInput.value, alphabet, effectiveShift);
+        const substitutionTable = buildCaesarSubstitutionTable(alphabet, effectiveShift);
+        const hasLetters = result.shiftedCharacters > 0;
+
+        caesarResult.value = {
+            primaryValue: result.output,
+            verdictTone: hasLetters ? "verdict-success" : "verdict-warning",
+            verdictTitle: hasLetters ? "Cifrado Cesar aplicado" : "Sin letras transformables",
+            verdictBody: hasLetters
+                ? `La logica ${caesarLogic.value === "inverse" ? "inversa" : "normal"} ${direction} ${normalizedShift} posiciones sobre el alfabeto seleccionado.`
+                : "El texto no contiene letras del alfabeto seleccionado; la salida se mantiene igual.",
+            summaryCards: [
+                { label: "Logica", value: caesarLogic.value === "inverse" ? "Inversa" : "Normal", tone: "tone-neutral", note: direction },
+                { label: "Desplazamiento", value: `${Number(caesarShift.value)} chars`, tone: "tone-success", note: `Modulo ${alphabet.uppercase.length}: ${normalizedShift}` },
+                { label: "Alfabeto", value: alphabet.value === "spanish" ? "Espanol" : "Ingles", tone: "tone-neutral", note: `${alphabet.uppercase.length} letras` },
+                { label: "Letras", value: `${result.shiftedCharacters}`, tone: hasLetters ? "tone-success" : "tone-warning", note: "Transformadas" }
+            ],
+            signalCards: [
+                { label: "Ñ activa", value: alphabet.value === "spanish" ? "Si" : "No", tone: alphabet.value === "spanish" ? "tone-success" : "tone-neutral", note: alphabet.value === "spanish" ? "Incluida entre N y O" : "Queda sin desplazar" },
+                { label: "Mayusculas", value: "Conservadas", tone: "tone-success", note: "Tambien minusculas" },
+                { label: "Sin tocar", value: `${result.untouchedCharacters}`, tone: result.untouchedCharacters ? "tone-neutral" : "tone-success", note: "Espacios, signos u otros" },
+                { label: "Reversible", value: "Si", tone: "tone-success", note: "Usa la logica opuesta" }
             ],
             panels: [
                 {
                     title: "Resultado",
-                    badge: "output",
-                    content: output,
-                    copyValue: output
+                    badge: "cesar",
+                    content: result.output,
+                    copyValue: result.output
+                },
+                {
+                    title: "Tabla de sustitucion",
+                    badge: alphabet.value === "spanish" ? "A-Ñ-Z" : "A-Z",
+                    content: substitutionTable,
+                    copyValue: substitutionTable
                 },
                 {
                     title: "Lectura tecnica",
                     badge: "notas",
-                    content: buildTextList("Observaciones", [note, jsonHint]),
-                    copyValue: `${note}\n${jsonHint}`
+                    content: buildTextList("Observaciones", [
+                        `Alfabeto usado: ${alphabet.uppercase}.`,
+                        `La logica ${caesarLogic.value === "inverse" ? "inversa" : "normal"} ${direction} ${normalizedShift} posiciones reales tras aplicar modulo ${alphabet.uppercase.length}.`,
+                        "Los caracteres fuera del alfabeto elegido se mantienen sin cambios.",
+                        "Para revertir, usa el mismo desplazamiento con la logica opuesta."
+                    ]),
+                    copyValue: `Alfabeto: ${alphabet.uppercase}\nLogica: ${caesarLogic.value}\nDesplazamiento: ${normalizedShift}`
                 }
             ]
         };
     } catch (error) {
-        transformResult.value = buildErrorResult("TRANSFORM_FAILED", "Transformacion no completada", error.message);
+        caesarResult.value = buildErrorResult("CAESAR_FAILED", "No se pudo aplicar Cesar", error.message);
+    }
+}
+
+function alphabetCharacters(alphabet, variant = "uppercase") {
+    return Array.from(alphabet[variant] || "");
+}
+
+function alphabetIndex(char, alphabet, variant = "uppercase") {
+    return alphabetCharacters(alphabet, variant).indexOf(char);
+}
+
+function getAlphabetByValue(value) {
+    return caesarAlphabets.find(item => item.value === value) || caesarAlphabets[0];
+}
+
+function transformAlphabetCharacters(value, alphabet, mapper) {
+    let transformed = 0;
+    const output = Array.from(value).map(char => {
+        const upperChars = alphabetCharacters(alphabet, "uppercase");
+        const lowerChars = alphabetCharacters(alphabet, "lowercase");
+        const upperIndex = upperChars.indexOf(char);
+        if (upperIndex !== -1) {
+            transformed += 1;
+            return upperChars[mapper(upperIndex, upperChars.length)];
+        }
+        const lowerIndex = lowerChars.indexOf(char);
+        if (lowerIndex !== -1) {
+            transformed += 1;
+            return lowerChars[mapper(lowerIndex, lowerChars.length)];
+        }
+        return char;
+    }).join("");
+    return { output, transformed, untouched: Array.from(value).length - transformed };
+}
+
+function buildSubstitutionPairs(alphabet, mapper) {
+    const upperChars = alphabetCharacters(alphabet, "uppercase");
+    return upperChars
+        .map((char, index) => `${char}->${upperChars[mapper(index, upperChars.length)]}`)
+        .join("  ");
+}
+
+function fillAtbashExample() {
+    atbashAlphabet.value = "spanish";
+    atbashInput.value = "FEANOR GUARDA EL SECRETO";
+}
+
+function useAtbashOutputAsInput() {
+    if (!atbashResult.value?.primaryValue) {
+        atbashResult.value = buildErrorResult("ATBASH_OUTPUT_EMPTY", "No hay salida Atbash", "Aplica primero Atbash para pasar la salida a la entrada.");
+        return;
+    }
+    atbashInput.value = atbashResult.value.primaryValue;
+}
+
+function runAtbashCipher() {
+    if (!atbashInput.value) {
+        atbashResult.value = buildErrorResult("ATBASH_EMPTY", "Falta texto", "Introduce texto antes de aplicar Atbash.");
+        return;
+    }
+
+    try {
+        const alphabet = getAlphabetByValue(atbashAlphabet.value);
+        const result = transformAlphabetCharacters(atbashInput.value, alphabet, (index, length) => length - 1 - index);
+        const table = buildSubstitutionPairs(alphabet, (index, length) => length - 1 - index);
+
+        atbashResult.value = {
+            primaryValue: result.output,
+            verdictTone: result.transformed ? "verdict-success" : "verdict-warning",
+            verdictTitle: result.transformed ? "Atbash aplicado" : "Sin letras transformables",
+            verdictBody: "Atbash es involutivo: aplicar la misma sustitucion una segunda vez recupera el texto original.",
+            summaryCards: [
+                { label: "Alfabeto", value: alphabet.value === "spanish" ? "Espanol" : "Ingles", tone: "tone-neutral", note: `${alphabetCharacters(alphabet).length} letras` },
+                { label: "Operacion", value: "Espejo", tone: "tone-success", note: "A <-> Z" },
+                { label: "Letras", value: String(result.transformed), tone: result.transformed ? "tone-success" : "tone-warning", note: "Transformadas" },
+                { label: "Reversible", value: "Si", tone: "tone-success", note: "Misma operacion" }
+            ],
+            signalCards: [
+                { label: "Clave", value: "No", tone: "tone-warning", note: "Sustitucion fija" },
+                { label: "Frecuencia", value: "Conservada", tone: "tone-warning", note: "Debil ante analisis" },
+                { label: "Espacios", value: "Intactos", tone: "tone-neutral", note: "No alfabeticos" },
+                { label: "Uso", value: "Didactico", tone: "tone-neutral", note: "No seguro" }
+            ],
+            panels: [
+                { title: "Resultado", badge: "atbash", content: result.output, copyValue: result.output },
+                { title: "Tabla de sustitucion", badge: "mapa", content: table, copyValue: table },
+                {
+                    title: "Lectura tecnica",
+                    badge: "notas",
+                    content: buildTextList("Propiedades", [
+                        "Cada indice i se reemplaza por m - 1 - i.",
+                        "No hay direccion cifrar/descifrar: la funcion es su propia inversa.",
+                        "No oculta frecuencias; solo cambia nombres de letras."
+                    ]),
+                    copyValue: "Atbash: i -> m - 1 - i"
+                }
+            ]
+        };
+    } catch (error) {
+        atbashResult.value = buildErrorResult("ATBASH_FAILED", "No se pudo aplicar Atbash", error.message);
+    }
+}
+
+function normalizeBitString(value) {
+    const bits = String(value ?? "").replace(/[\s_]/g, "");
+    if (!bits || /[^01]/.test(bits)) {
+        throw new Error("En modo binario solo se aceptan bits 0 y 1.");
+    }
+    return bits;
+}
+
+function parseDecimalBytes(value) {
+    const parts = String(value ?? "").split(/[\s,;]+/).filter(Boolean);
+    if (!parts.length) {
+        throw new Error("Introduce bytes decimales separados por espacios o comas.");
+    }
+    return new Uint8Array(parts.map(part => {
+        const byte = Number(part);
+        if (!Number.isInteger(byte) || byte < 0 || byte > 255) {
+            throw new Error(`Byte decimal invalido: ${part}. Usa valores entre 0 y 255.`);
+        }
+        return byte;
+    }));
+}
+
+function parseXorBytes(value) {
+    if (xorInputMode.value === "hex") return hexToBytes(value);
+    if (xorInputMode.value === "decimal") return parseDecimalBytes(value);
+    return textToBytes(value);
+}
+
+function repeatStringToLength(value, length) {
+    if (!value.length) {
+        throw new Error("B no puede estar vacio si se usa como clave.");
+    }
+    return Array.from({ length }, (_, index) => value[index % value.length]).join("");
+}
+
+function repeatBytesToLength(bytes, length) {
+    if (!bytes.length) {
+        throw new Error("B no puede estar vacio si se usa como clave.");
+    }
+    return new Uint8Array(Array.from({ length }, (_, index) => bytes[index % bytes.length]));
+}
+
+function bitsToBytes(bits) {
+    if (bits.length % 8 !== 0) return null;
+    const bytes = [];
+    for (let index = 0; index < bits.length; index += 8) {
+        bytes.push(Number.parseInt(bits.slice(index, index + 8), 2));
+    }
+    return new Uint8Array(bytes);
+}
+
+function byteBits(bytes) {
+    return Array.from(bytes).map(byte => byte.toString(2).padStart(8, "0")).join(" ");
+}
+
+function buildXorBitTable(leftBits, rightBits, resultBits) {
+    const maxRows = Math.min(leftBits.length, 64);
+    const rows = ["i  A  B  A XOR B"];
+    for (let index = 0; index < maxRows; index += 1) {
+        rows.push(`${String(index).padStart(2, "0")}  ${leftBits[index]}  ${rightBits[index]}     ${resultBits[index]}`);
+    }
+    if (leftBits.length > maxRows) rows.push(`... ${leftBits.length - maxRows} bits mas`);
+    return rows.join("\n");
+}
+
+function fillXorExample() {
+    xorInputMode.value = "binary";
+    xorRepeatKey.value = false;
+    xorLeft.value = "1010";
+    xorRight.value = "1100";
+}
+
+function useXorOutputAsInput() {
+    if (!xorResult.value?.primaryValue) {
+        xorResult.value = buildErrorResult("XOR_OUTPUT_EMPTY", "No hay salida XOR", "Calcula primero la operacion para pasar el resultado a A.");
+        return;
+    }
+
+    xorLeft.value = xorResult.value.primaryValue;
+    if (xorResult.value.outputMode) {
+        xorInputMode.value = xorResult.value.outputMode;
+    }
+}
+
+function runXorLab() {
+    if (!xorLeft.value.trim() || !xorRight.value.trim()) {
+        xorResult.value = buildErrorResult("XOR_EMPTY", "Faltan operandos", "Introduce A y B antes de calcular XOR.");
+        return;
+    }
+
+    try {
+        let primaryValue = "";
+        let outputMode = xorInputMode.value;
+        let resultContent = "";
+        let table = "";
+        let leftLength = 0;
+        let rightLength = 0;
+        let resultBytes = null;
+
+        if (xorInputMode.value === "binary") {
+            const leftBits = normalizeBitString(xorLeft.value);
+            const rightBaseBits = normalizeBitString(xorRight.value);
+            const rightBits = xorRepeatKey.value ? repeatStringToLength(rightBaseBits, leftBits.length) : rightBaseBits;
+            if (leftBits.length !== rightBits.length) {
+                throw new Error("A y B deben tener la misma longitud de bits, o activa repetir B como clave.");
+            }
+            const resultBits = Array.from(leftBits)
+                .map((bit, index) => bit === rightBits[index] ? "0" : "1")
+                .join("");
+            resultBytes = bitsToBytes(resultBits);
+            primaryValue = resultBits;
+            table = buildXorBitTable(leftBits, rightBits, resultBits);
+            leftLength = leftBits.length;
+            rightLength = rightBits.length;
+            resultContent = buildTextList("Salida XOR", [
+                `Binario: ${resultBits}`,
+                resultBytes ? `Hex: ${bytesToHex(resultBytes)}` : "",
+                resultBytes ? `Decimal: ${Array.from(resultBytes).join(", ")}` : ""
+            ]);
+        } else {
+            const leftBytes = parseXorBytes(xorLeft.value);
+            const rightBaseBytes = parseXorBytes(xorRight.value);
+            const rightBytes = xorRepeatKey.value ? repeatBytesToLength(rightBaseBytes, leftBytes.length) : rightBaseBytes;
+            if (leftBytes.length !== rightBytes.length) {
+                throw new Error("A y B deben tener la misma longitud en bytes, o activa repetir B como clave.");
+            }
+            resultBytes = new Uint8Array(leftBytes.map((byte, index) => byte ^ rightBytes[index]));
+            const resultHex = bytesToHex(resultBytes);
+            const resultBase64 = bytesToBase64(resultBytes);
+            let resultText = "";
+            try {
+                resultText = bytesToUtf8(resultBytes);
+            } catch {
+                resultText = "No decodificable como UTF-8.";
+            }
+            const leftBits = byteBits(leftBytes).replace(/\s/g, "");
+            const rightBits = byteBits(rightBytes).replace(/\s/g, "");
+            const resultBits = byteBits(resultBytes).replace(/\s/g, "");
+            primaryValue = resultHex;
+            outputMode = "hex";
+            table = buildXorBitTable(leftBits, rightBits, resultBits);
+            leftLength = leftBytes.length;
+            rightLength = rightBytes.length;
+            resultContent = buildTextList("Salida XOR", [
+                `Hex: ${resultHex}`,
+                `Base64: ${resultBase64}`,
+                `Binario: ${byteBits(resultBytes)}`,
+                `UTF-8: ${resultText}`
+            ]);
+        }
+
+        xorResult.value = {
+            primaryValue,
+            outputMode,
+            verdictTone: "verdict-success",
+            verdictTitle: "XOR calculado",
+            verdictBody: xorRepeatKey.value
+                ? "B se ha repetido como clave hasta cubrir A. Aplicar de nuevo XOR con la misma clave recupera A."
+                : "A y B se han combinado bit a bit. Si vuelves a aplicar XOR con B, recuperas A.",
+            summaryCards: [
+                { label: "Formato", value: xorInputMode.value.toUpperCase(), tone: "tone-neutral", note: "Entrada" },
+                { label: "A", value: String(leftLength), tone: "tone-neutral", note: xorInputMode.value === "binary" ? "bits" : "bytes" },
+                { label: "B usado", value: String(rightLength), tone: "tone-neutral", note: xorRepeatKey.value ? "Repetido" : "Directo" },
+                { label: "Reversible", value: "Si", tone: "tone-success", note: "C XOR K = P" }
+            ],
+            signalCards: [
+                { label: "A XOR A", value: "0", tone: "tone-success", note: "Misma entrada se anula" },
+                { label: "A XOR 0", value: "A", tone: "tone-success", note: "Identidad" },
+                { label: "Conmutativa", value: "Si", tone: "tone-success", note: "A XOR B = B XOR A" },
+                { label: "Uso cripto", value: "Base", tone: "tone-neutral", note: "Flujos y one-time pad" }
+            ],
+            panels: [
+                {
+                    title: "Resultado",
+                    badge: "xor",
+                    content: resultContent,
+                    copyValue: primaryValue
+                },
+                {
+                    title: "Tabla bit a bit",
+                    badge: "bits",
+                    content: table,
+                    copyValue: table
+                },
+                {
+                    title: "Lectura tecnica",
+                    badge: "notas",
+                    content: buildTextList("Propiedades usadas", [
+                        "Si dos bits son iguales, el resultado es 0; si son distintos, el resultado es 1.",
+                        "A XOR A = 0 y A XOR 0 = A.",
+                        "Para cifrado simetrico simple: C = P XOR K y P = C XOR K.",
+                        "En practica, reutilizar una clave corta filtra patrones; una clave de un solo uso debe ser tan larga como el mensaje."
+                    ]),
+                    copyValue: "A XOR A = 0\nA XOR 0 = A\nC = P XOR K\nP = C XOR K"
+                }
+            ]
+        };
+    } catch (error) {
+        xorResult.value = buildErrorResult("XOR_FAILED", "No se pudo calcular XOR", error.message);
+    }
+}
+
+function parseLogicBytes(value, mode) {
+    if (mode === "hex") return hexToBytes(value);
+    if (mode === "decimal") return parseDecimalBytes(value);
+    return textToBytes(value);
+}
+
+function booleanOperationLabel(operation = booleanOperation.value) {
+    const item = booleanOperations.find(entry => entry.value === operation);
+    return item?.label || operation.toUpperCase();
+}
+
+function applyBooleanBit(left, right, operation) {
+    const a = Number(left);
+    const b = Number(right || 0);
+    if (operation === "and") return a & b;
+    if (operation === "or") return a | b;
+    if (operation === "xor") return a ^ b;
+    if (operation === "nand") return 1 - (a & b);
+    if (operation === "nor") return 1 - (a | b);
+    if (operation === "xnor") return 1 - (a ^ b);
+    if (operation === "not") return 1 - a;
+    throw new Error(`Operacion no soportada: ${operation}.`);
+}
+
+function applyBooleanByte(left, right, operation) {
+    if (operation === "and") return left & right;
+    if (operation === "or") return left | right;
+    if (operation === "xor") return left ^ right;
+    if (operation === "nand") return (~(left & right)) & 0xff;
+    if (operation === "nor") return (~(left | right)) & 0xff;
+    if (operation === "xnor") return (~(left ^ right)) & 0xff;
+    if (operation === "not") return (~left) & 0xff;
+    throw new Error(`Operacion no soportada: ${operation}.`);
+}
+
+function buildBooleanBitTable(leftBits, rightBits, resultBits, operation) {
+    const maxRows = Math.min(leftBits.length, 64);
+    const header = operation === "not" ? "i  A  NOT A" : `i  A  B  ${operation.toUpperCase()}`;
+    const rows = [header];
+    for (let index = 0; index < maxRows; index += 1) {
+        rows.push(operation === "not"
+            ? `${String(index).padStart(2, "0")}  ${leftBits[index]}     ${resultBits[index]}`
+            : `${String(index).padStart(2, "0")}  ${leftBits[index]}  ${rightBits[index]}     ${resultBits[index]}`);
+    }
+    if (leftBits.length > maxRows) rows.push(`... ${leftBits.length - maxRows} bits mas`);
+    return rows.join("\n");
+}
+
+function booleanTruthTable(operation) {
+    if (operation === "not") {
+        return ["A  NOT A", "0    1", "1    0"].join("\n");
+    }
+    return ["A  B  OUT", "0  0   " + applyBooleanBit(0, 0, operation), "0  1   " + applyBooleanBit(0, 1, operation), "1  0   " + applyBooleanBit(1, 0, operation), "1  1   " + applyBooleanBit(1, 1, operation)].join("\n");
+}
+
+function fillBooleanExample() {
+    booleanInputMode.value = "binary";
+    booleanOperation.value = "nor";
+    booleanRepeatKey.value = false;
+    booleanLeft.value = "1010";
+    booleanRight.value = "1100";
+}
+
+function useBooleanOutputAsInput() {
+    if (!booleanResult.value?.primaryValue) {
+        booleanResult.value = buildErrorResult("BOOLEAN_OUTPUT_EMPTY", "No hay salida", "Calcula primero una operacion para pasar el resultado a A.");
+        return;
+    }
+    booleanLeft.value = booleanResult.value.primaryValue;
+    if (booleanResult.value.outputMode) booleanInputMode.value = booleanResult.value.outputMode;
+}
+
+function runBooleanLab() {
+    if (!booleanLeft.value.trim()) {
+        booleanResult.value = buildErrorResult("BOOLEAN_LEFT_EMPTY", "Falta A", "Introduce el operando A antes de calcular.");
+        return;
+    }
+    if (booleanOperation.value !== "not" && !booleanRight.value.trim()) {
+        booleanResult.value = buildErrorResult("BOOLEAN_RIGHT_EMPTY", "Falta B", "Introduce B o usa NOT para trabajar solo con A.");
+        return;
+    }
+
+    try {
+        let primaryValue = "";
+        let outputMode = booleanInputMode.value;
+        let resultContent = "";
+        let table = "";
+        let leftLength = 0;
+        let rightLength = booleanOperation.value === "not" ? 0 : null;
+        let resultBytes = null;
+
+        if (booleanInputMode.value === "binary") {
+            const leftBits = normalizeBitString(booleanLeft.value);
+            const rightBaseBits = booleanOperation.value === "not" ? "" : normalizeBitString(booleanRight.value);
+            const rightBits = booleanOperation.value === "not"
+                ? ""
+                : (booleanRepeatKey.value ? repeatStringToLength(rightBaseBits, leftBits.length) : rightBaseBits);
+            if (booleanOperation.value !== "not" && leftBits.length !== rightBits.length) {
+                throw new Error("A y B deben tener la misma longitud de bits, o activa repetir B como mascara.");
+            }
+            const resultBits = Array.from(leftBits)
+                .map((bit, index) => String(applyBooleanBit(bit, rightBits[index], booleanOperation.value)))
+                .join("");
+            resultBytes = bitsToBytes(resultBits);
+            primaryValue = resultBits;
+            table = buildBooleanBitTable(leftBits, rightBits, resultBits, booleanOperation.value);
+            leftLength = leftBits.length;
+            rightLength = booleanOperation.value === "not" ? 0 : rightBits.length;
+            resultContent = buildTextList("Salida booleana", [
+                `Binario: ${resultBits}`,
+                resultBytes ? `Hex: ${bytesToHex(resultBytes)}` : "",
+                resultBytes ? `Decimal: ${Array.from(resultBytes).join(", ")}` : ""
+            ]);
+        } else {
+            const leftBytes = parseLogicBytes(booleanLeft.value, booleanInputMode.value);
+            const rightBaseBytes = booleanOperation.value === "not" ? new Uint8Array() : parseLogicBytes(booleanRight.value, booleanInputMode.value);
+            const rightBytes = booleanOperation.value === "not"
+                ? new Uint8Array(leftBytes.length)
+                : (booleanRepeatKey.value ? repeatBytesToLength(rightBaseBytes, leftBytes.length) : rightBaseBytes);
+            if (booleanOperation.value !== "not" && leftBytes.length !== rightBytes.length) {
+                throw new Error("A y B deben tener la misma longitud en bytes, o activa repetir B como mascara.");
+            }
+            resultBytes = new Uint8Array(leftBytes.map((byte, index) => applyBooleanByte(byte, rightBytes[index], booleanOperation.value)));
+            primaryValue = bytesToHex(resultBytes);
+            outputMode = "hex";
+            const leftBits = byteBits(leftBytes).replace(/\s/g, "");
+            const rightBits = booleanOperation.value === "not" ? "" : byteBits(rightBytes).replace(/\s/g, "");
+            const resultBits = byteBits(resultBytes).replace(/\s/g, "");
+            table = buildBooleanBitTable(leftBits, rightBits, resultBits, booleanOperation.value);
+            leftLength = leftBytes.length;
+            rightLength = booleanOperation.value === "not" ? 0 : rightBytes.length;
+            resultContent = buildTextList("Salida booleana", [
+                `Hex: ${primaryValue}`,
+                `Base64: ${bytesToBase64(resultBytes)}`,
+                `Binario: ${byteBits(resultBytes)}`
+            ]);
+        }
+
+        const reversible = ["xor", "xnor", "not"].includes(booleanOperation.value);
+        booleanResult.value = {
+            primaryValue,
+            outputMode,
+            verdictTone: "verdict-success",
+            verdictTitle: `${booleanOperation.value.toUpperCase()} calculado`,
+            verdictBody: booleanOperation.value === "nor"
+                ? "NOR equivale a negar OR: solo produce 1 cuando A y B son 0. Como puerta logica es universal, pero no es reversible como cifrado."
+                : `${booleanOperationLabel()} aplicado bit a bit sobre el material de entrada.`,
+            summaryCards: [
+                { label: "Operacion", value: booleanOperation.value.toUpperCase(), tone: "tone-success", note: booleanOperationLabel() },
+                { label: "Formato", value: booleanInputMode.value.toUpperCase(), tone: "tone-neutral", note: "Entrada" },
+                { label: "A", value: String(leftLength), tone: "tone-neutral", note: booleanInputMode.value === "binary" ? "bits" : "bytes" },
+                { label: "Reversible", value: reversible ? "Si" : "No", tone: reversible ? "tone-success" : "tone-warning", note: reversible ? "Con misma mascara" : "Pierde informacion" }
+            ],
+            signalCards: [
+                { label: "Tabla verdad", value: "Incluida", tone: "tone-success", note: "4 casos" },
+                { label: "B usado", value: booleanOperation.value === "not" ? "N/D" : String(rightLength), tone: "tone-neutral", note: booleanRepeatKey.value ? "Repetido" : "Directo" },
+                { label: "NOR universal", value: booleanOperation.value === "nor" ? "Si" : "N/D", tone: booleanOperation.value === "nor" ? "tone-success" : "tone-neutral", note: "Construye otras puertas" },
+                { label: "Cripto", value: reversible ? "Util" : "Mascara", tone: reversible ? "tone-success" : "tone-warning", note: reversible ? "Puede descifrar" : "No descifra solo" }
+            ],
+            panels: [
+                { title: "Resultado", badge: booleanOperation.value, content: resultContent, copyValue: primaryValue },
+                { title: "Tabla bit a bit", badge: "bits", content: table, copyValue: table },
+                { title: "Tabla de verdad", badge: "truth", content: booleanTruthTable(booleanOperation.value), copyValue: booleanTruthTable(booleanOperation.value) }
+            ]
+        };
+    } catch (error) {
+        booleanResult.value = buildErrorResult("BOOLEAN_FAILED", "No se pudo calcular la operacion", error.message);
+    }
+}
+
+function normalizeVigenereKey(key, alphabet) {
+    const upperChars = alphabetCharacters(alphabet, "uppercase");
+    const lowerChars = alphabetCharacters(alphabet, "lowercase");
+    const shifts = [];
+    Array.from(key).forEach(char => {
+        const upperIndex = upperChars.indexOf(char);
+        const lowerIndex = lowerChars.indexOf(char);
+        const index = upperIndex !== -1 ? upperIndex : lowerIndex;
+        if (index !== -1) shifts.push(index);
+    });
+    if (!shifts.length) {
+        throw new Error("La clave debe contener al menos una letra del alfabeto seleccionado.");
+    }
+    return shifts;
+}
+
+function applyVigenere(value, alphabet, shifts, decrypt = false) {
+    let keyIndex = 0;
+    let transformed = 0;
+    const upperChars = alphabetCharacters(alphabet, "uppercase");
+    const lowerChars = alphabetCharacters(alphabet, "lowercase");
+    const output = Array.from(value).map(char => {
+        const upperIndex = upperChars.indexOf(char);
+        const lowerIndex = lowerChars.indexOf(char);
+        const isUpper = upperIndex !== -1;
+        const sourceIndex = isUpper ? upperIndex : lowerIndex;
+        if (sourceIndex === -1) return char;
+        const shift = shifts[keyIndex % shifts.length];
+        keyIndex += 1;
+        transformed += 1;
+        const directionShift = decrypt ? -shift : shift;
+        const targetIndex = ((sourceIndex + directionShift) % upperChars.length + upperChars.length) % upperChars.length;
+        return isUpper ? upperChars[targetIndex] : lowerChars[targetIndex];
+    }).join("");
+    return { output, transformed, keyUses: keyIndex };
+}
+
+function buildVigenereTrace(value, alphabet, shifts, decrypt = false) {
+    const upperChars = alphabetCharacters(alphabet, "uppercase");
+    const lowerChars = alphabetCharacters(alphabet, "lowercase");
+    const rows = ["i  char  shift  out"];
+    let keyIndex = 0;
+    Array.from(value).some((char, index) => {
+        if (rows.length > 42) return true;
+        const upperIndex = upperChars.indexOf(char);
+        const lowerIndex = lowerChars.indexOf(char);
+        const sourceIndex = upperIndex !== -1 ? upperIndex : lowerIndex;
+        if (sourceIndex === -1) {
+            rows.push(`${String(index).padStart(2, "0")}   ${char}     -     ${char}`);
+            return false;
+        }
+        const shift = shifts[keyIndex % shifts.length];
+        const targetIndex = ((sourceIndex + (decrypt ? -shift : shift)) % upperChars.length + upperChars.length) % upperChars.length;
+        const out = upperIndex !== -1 ? upperChars[targetIndex] : lowerChars[targetIndex];
+        rows.push(`${String(index).padStart(2, "0")}   ${char}    ${String(shift).padStart(2, "0")}     ${out}`);
+        keyIndex += 1;
+        return false;
+    });
+    return rows.join("\n");
+}
+
+function fillVigenereExample() {
+    vigenereAlphabet.value = "spanish";
+    vigenereDirection.value = "encrypt";
+    vigenereKey.value = "FEANOR";
+    vigenereInput.value = "EL MENSAJE VIAJA CIFRADO";
+}
+
+function toggleVigenereDirection() {
+    vigenereDirection.value = vigenereDirection.value === "encrypt" ? "decrypt" : "encrypt";
+}
+
+function useVigenereOutputAsInput() {
+    if (!vigenereResult.value?.primaryValue) {
+        vigenereResult.value = buildErrorResult("VIGENERE_OUTPUT_EMPTY", "No hay salida Vigenere", "Ejecuta primero el cifrado para pasar la salida a la entrada.");
+        return;
+    }
+    vigenereInput.value = vigenereResult.value.primaryValue;
+}
+
+function runVigenereCipher() {
+    if (!vigenereInput.value) {
+        vigenereResult.value = buildErrorResult("VIGENERE_EMPTY", "Falta texto", "Introduce texto antes de ejecutar Vigenere.");
+        return;
+    }
+    try {
+        const alphabet = getAlphabetByValue(vigenereAlphabet.value);
+        const shifts = normalizeVigenereKey(vigenereKey.value, alphabet);
+        const decrypt = vigenereDirection.value === "decrypt";
+        const result = applyVigenere(vigenereInput.value, alphabet, shifts, decrypt);
+        const trace = buildVigenereTrace(vigenereInput.value, alphabet, shifts, decrypt);
+        vigenereResult.value = {
+            primaryValue: result.output,
+            verdictTone: result.transformed ? "verdict-success" : "verdict-warning",
+            verdictTitle: decrypt ? "Vigenere descifrado" : "Vigenere cifrado",
+            verdictBody: "La clave se repite solo sobre letras validas; espacios y signos no consumen clave.",
+            summaryCards: [
+                { label: "Operacion", value: decrypt ? "Descifrar" : "Cifrar", tone: "tone-success", note: "Polialfabetico" },
+                { label: "Clave", value: `${shifts.length} letras`, tone: "tone-neutral", note: "Normalizada" },
+                { label: "Alfabeto", value: `${alphabetCharacters(alphabet).length}`, tone: "tone-neutral", note: alphabet.value },
+                { label: "Letras", value: String(result.transformed), tone: result.transformed ? "tone-success" : "tone-warning", note: "Transformadas" }
+            ],
+            signalCards: [
+                { label: "Clave repetida", value: "Si", tone: "tone-warning", note: "Patron detectable" },
+                { label: "No alfabeticos", value: "Intactos", tone: "tone-neutral", note: "No consumen clave" },
+                { label: "Reversible", value: "Si", tone: "tone-success", note: "Resta desplazamientos" },
+                { label: "Uso", value: "Historico", tone: "tone-neutral", note: "No moderno" }
+            ],
+            panels: [
+                { title: "Resultado", badge: "vig", content: result.output, copyValue: result.output },
+                { title: "Traza", badge: "pasos", content: trace, copyValue: trace },
+                { title: "Clave normalizada", badge: "key", content: shifts.join(", "), copyValue: shifts.join(", ") }
+            ]
+        };
+    } catch (error) {
+        vigenereResult.value = buildErrorResult("VIGENERE_FAILED", "No se pudo ejecutar Vigenere", error.message);
+    }
+}
+
+function gcdNumber(a, b) {
+    let left = Math.abs(a);
+    let right = Math.abs(b);
+    while (right) {
+        const temp = right;
+        right = left % right;
+        left = temp;
+    }
+    return left;
+}
+
+function modInverseNumber(value, modulus) {
+    let a = ((value % modulus) + modulus) % modulus;
+    let m = modulus;
+    let x0 = 0;
+    let x1 = 1;
+    if (modulus === 1) return 0;
+    while (a > 1) {
+        const quotient = Math.floor(a / m);
+        [a, m] = [m, a % m];
+        [x0, x1] = [x1 - quotient * x0, x0];
+    }
+    return x1 < 0 ? x1 + modulus : x1;
+}
+
+function validAffineMultipliers(modulus) {
+    return Array.from({ length: modulus }, (_, index) => index).filter(value => gcdNumber(value, modulus) === 1);
+}
+
+function applyAffine(value, alphabet, a, b, decrypt = false) {
+    const modulus = alphabetCharacters(alphabet).length;
+    if (!Number.isInteger(a) || !Number.isInteger(b)) {
+        throw new Error("a y b deben ser enteros.");
+    }
+    if (gcdNumber(a, modulus) !== 1) {
+        throw new Error(`a=${a} no tiene inverso modulo ${modulus}. Usa uno de: ${validAffineMultipliers(modulus).join(", ")}.`);
+    }
+    const normalizedB = ((b % modulus) + modulus) % modulus;
+    const inverseA = modInverseNumber(a, modulus);
+    const mapper = decrypt
+        ? index => ((inverseA * (index - normalizedB)) % modulus + modulus) % modulus
+        : index => ((a * index + normalizedB) % modulus + modulus) % modulus;
+    return {
+        ...transformAlphabetCharacters(value, alphabet, mapper),
+        normalizedB,
+        inverseA,
+        table: buildSubstitutionPairs(alphabet, mapper)
+    };
+}
+
+function fillAffineExample() {
+    affineAlphabet.value = "english";
+    affineDirection.value = "encrypt";
+    affineA.value = 5;
+    affineB.value = 8;
+    affineInput.value = "AFFINE CIPHER";
+}
+
+function toggleAffineDirection() {
+    affineDirection.value = affineDirection.value === "encrypt" ? "decrypt" : "encrypt";
+}
+
+function useAffineOutputAsInput() {
+    if (!affineResult.value?.primaryValue) {
+        affineResult.value = buildErrorResult("AFFINE_OUTPUT_EMPTY", "No hay salida Afin", "Ejecuta primero Afin para pasar la salida a la entrada.");
+        return;
+    }
+    affineInput.value = affineResult.value.primaryValue;
+}
+
+function runAffineCipher() {
+    if (!affineInput.value) {
+        affineResult.value = buildErrorResult("AFFINE_EMPTY", "Falta texto", "Introduce texto antes de ejecutar Afin.");
+        return;
+    }
+    try {
+        const alphabet = getAlphabetByValue(affineAlphabet.value);
+        const decrypt = affineDirection.value === "decrypt";
+        const result = applyAffine(affineInput.value, alphabet, Number(affineA.value), Number(affineB.value), decrypt);
+        affineResult.value = {
+            primaryValue: result.output,
+            verdictTone: result.transformed ? "verdict-success" : "verdict-warning",
+            verdictTitle: decrypt ? "Afin descifrado" : "Afin cifrado",
+            verdictBody: decrypt
+                ? `Se uso el inverso modular de a: ${result.inverseA}.`
+                : "Cada letra se transforma con una funcion lineal modulo el tamano del alfabeto.",
+            summaryCards: [
+                { label: "Operacion", value: decrypt ? "Descifrar" : "Cifrar", tone: "tone-success", note: "Funcion afin" },
+                { label: "a", value: String(affineA.value), tone: "tone-neutral", note: `inv ${result.inverseA}` },
+                { label: "b", value: String(result.normalizedB), tone: "tone-neutral", note: "Modulo alfabeto" },
+                { label: "Modulo", value: String(alphabetCharacters(alphabet).length), tone: "tone-neutral", note: alphabet.value }
+            ],
+            signalCards: [
+                { label: "gcd(a,m)", value: "1", tone: "tone-success", note: "Invertible" },
+                { label: "Letras", value: String(result.transformed), tone: result.transformed ? "tone-success" : "tone-warning", note: "Transformadas" },
+                { label: "Frecuencia", value: "Conservada", tone: "tone-warning", note: "Sustitucion monoalfabetica" },
+                { label: "Formula", value: decrypt ? "D(y)" : "E(x)", tone: "tone-neutral", note: decrypt ? "invA*(y-b)" : "a*x+b" }
+            ],
+            panels: [
+                { title: "Resultado", badge: "afin", content: result.output, copyValue: result.output },
+                { title: "Tabla de sustitucion", badge: "mapa", content: result.table, copyValue: result.table },
+                {
+                    title: "Lectura tecnica",
+                    badge: "mod",
+                    content: buildTextList("Parametros", [
+                        `m = ${alphabetCharacters(alphabet).length}.`,
+                        `a = ${affineA.value}, b = ${result.normalizedB}.`,
+                        `inverso(a) = ${result.inverseA}.`,
+                        decrypt ? "Descifrado: x = inv(a) * (y - b) mod m." : "Cifrado: y = (a*x + b) mod m."
+                    ]),
+                    copyValue: `a=${affineA.value}\nb=${result.normalizedB}\ninvA=${result.inverseA}`
+                }
+            ]
+        };
+    } catch (error) {
+        affineResult.value = buildErrorResult("AFFINE_FAILED", "No se pudo ejecutar Afin", error.message);
+    }
+}
+
+function normalizeRailFenceRails(value) {
+    const rails = Number(value);
+    if (!Number.isInteger(rails) || rails < 2 || rails > 16) {
+        throw new Error("El numero de railes debe ser un entero entre 2 y 16.");
+    }
+    return rails;
+}
+
+function railFencePattern(length, rails) {
+    if (rails === 2) {
+        return Array.from({ length }, (_, index) => index % 2);
+    }
+    const cycle = (rails - 1) * 2;
+    return Array.from({ length }, (_, index) => {
+        const mod = index % cycle;
+        return mod < rails ? mod : cycle - mod;
+    });
+}
+
+function encryptRailFence(value, rails) {
+    const chars = Array.from(value);
+    const pattern = railFencePattern(chars.length, rails);
+    const rows = Array.from({ length: rails }, () => []);
+    chars.forEach((char, index) => rows[pattern[index]].push(char));
+    return {
+        output: rows.map(row => row.join("")).join(""),
+        rows: rows.map(row => row.join(""))
+    };
+}
+
+function decryptRailFence(value, rails) {
+    const chars = Array.from(value);
+    const pattern = railFencePattern(chars.length, rails);
+    const counts = Array.from({ length: rails }, (_, rail) => pattern.filter(item => item === rail).length);
+    const rows = [];
+    let cursor = 0;
+    counts.forEach(count => {
+        rows.push(chars.slice(cursor, cursor + count));
+        cursor += count;
+    });
+    const positions = Array.from({ length: rails }, () => 0);
+    const output = pattern.map(rail => rows[rail][positions[rail]++]).join("");
+    return { output, rows: rows.map(row => row.join("")) };
+}
+
+function buildRailFenceGrid(value, rails) {
+    const chars = Array.from(value);
+    const pattern = railFencePattern(chars.length, rails);
+    const rows = Array.from({ length: rails }, () => Array.from({ length: chars.length }, () => "."));
+    chars.forEach((char, index) => {
+        rows[pattern[index]][index] = char === " " ? "_" : char;
+    });
+    return rows.map((row, index) => `${String(index + 1).padStart(2, "0")}: ${row.join(" ")}`).join("\n");
+}
+
+function fillRailFenceExample() {
+    railFenceDirection.value = "encrypt";
+    railFenceRails.value = 3;
+    railFenceInput.value = "WE ARE DISCOVERED FLEE AT ONCE";
+}
+
+function toggleRailFenceDirection() {
+    railFenceDirection.value = railFenceDirection.value === "encrypt" ? "decrypt" : "encrypt";
+}
+
+function useRailFenceOutputAsInput() {
+    if (!railFenceResult.value?.primaryValue) {
+        railFenceResult.value = buildErrorResult("RAIL_OUTPUT_EMPTY", "No hay salida Rail Fence", "Ejecuta primero Rail Fence para pasar la salida a la entrada.");
+        return;
+    }
+    railFenceInput.value = railFenceResult.value.primaryValue;
+}
+
+function runRailFenceCipher() {
+    if (!railFenceInput.value) {
+        railFenceResult.value = buildErrorResult("RAIL_EMPTY", "Falta texto", "Introduce texto antes de ejecutar Rail Fence.");
+        return;
+    }
+    try {
+        const rails = normalizeRailFenceRails(railFenceRails.value);
+        const decrypt = railFenceDirection.value === "decrypt";
+        const result = decrypt ? decryptRailFence(railFenceInput.value, rails) : encryptRailFence(railFenceInput.value, rails);
+        const grid = buildRailFenceGrid(decrypt ? result.output : railFenceInput.value, rails);
+        railFenceResult.value = {
+            primaryValue: result.output,
+            verdictTone: "verdict-success",
+            verdictTitle: decrypt ? "Rail Fence descifrado" : "Rail Fence cifrado",
+            verdictBody: "Rail Fence es una transposicion: conserva caracteres y longitud, pero cambia el orden de lectura.",
+            summaryCards: [
+                { label: "Operacion", value: decrypt ? "Descifrar" : "Cifrar", tone: "tone-success", note: "Transposicion" },
+                { label: "Railes", value: String(rails), tone: "tone-neutral", note: "Zigzag" },
+                { label: "Longitud", value: `${Array.from(railFenceInput.value).length} chars`, tone: "tone-neutral", note: "Conservada" },
+                { label: "Reversible", value: "Si", tone: "tone-success", note: "Mismos railes" }
+            ],
+            signalCards: [
+                { label: "Sustitucion", value: "No", tone: "tone-neutral", note: "No cambia letras" },
+                { label: "Espacios", value: "Conservados", tone: "tone-neutral", note: "Tambien signos" },
+                { label: "Frecuencia", value: "Igual", tone: "tone-warning", note: "Solo permuta" },
+                { label: "Seguridad", value: "Historica", tone: "tone-warning", note: "No moderna" }
+            ],
+            panels: [
+                { title: "Resultado", badge: "rail", content: result.output, copyValue: result.output },
+                { title: "Zigzag", badge: "grid", content: grid, copyValue: grid },
+                { title: "Lectura por railes", badge: "filas", content: buildTextList("Railes", result.rows.map((row, index) => `${index + 1}: ${row}`)), copyValue: result.rows.join("\n") }
+            ]
+        };
+    } catch (error) {
+        railFenceResult.value = buildErrorResult("RAIL_FAILED", "No se pudo ejecutar Rail Fence", error.message);
+    }
+}
+
+function parseBigInteger(value, label) {
+    const normalized = String(value ?? "").trim();
+    if (!/^-?\d+$/.test(normalized)) {
+        throw new Error(`${label} debe ser un entero en base 10.`);
+    }
+    return BigInt(normalized);
+}
+
+function positiveModulo(value, modulus) {
+    return ((value % modulus) + modulus) % modulus;
+}
+
+function modPow(base, exponent, modulus) {
+    if (exponent < 0n) {
+        throw new Error("El exponente debe ser igual o mayor que 0.");
+    }
+    let result = 1n;
+    let currentBase = positiveModulo(base, modulus);
+    let currentExponent = exponent;
+    while (currentExponent > 0n) {
+        if (currentExponent % 2n === 1n) {
+            result = (result * currentBase) % modulus;
+        }
+        currentBase = (currentBase * currentBase) % modulus;
+        currentExponent /= 2n;
+    }
+    return result;
+}
+
+function fillModularExample() {
+    modularOperation.value = "mod";
+    modularBase.value = "118613842";
+    modularExponent.value = "";
+    modularModulus.value = "9091";
+}
+
+function fillModuloSimpleExample() {
+    modularOperation.value = "mod";
+    modularBase.value = "60";
+    modularExponent.value = "";
+    modularModulus.value = "12";
+}
+
+function runModularLab() {
+    if (!modularBase.value.trim() || !modularModulus.value.trim()) {
+        modularResult.value = buildErrorResult("MOD_EMPTY", "Faltan numeros", "Introduce A y N antes de calcular la operacion modular.");
+        return;
+    }
+
+    try {
+        const base = parseBigInteger(modularBase.value, "A");
+        const modulus = parseBigInteger(modularModulus.value, "N");
+        if (modulus <= 0n) {
+            throw new Error("N debe ser un entero positivo.");
+        }
+
+        let result;
+        let operationText;
+        let identityText;
+        let exponent = null;
+
+        if (modularOperation.value === "pow") {
+            if (!modularExponent.value.trim()) {
+                throw new Error("Introduce E para calcular A^E % N.");
+            }
+            exponent = parseBigInteger(modularExponent.value, "E");
+            result = modPow(base, exponent, modulus);
+            operationText = `${base}^${exponent} % ${modulus} = ${result}`;
+            identityText = "La potencia modular se calcula reduciendo en cada multiplicacion para no crear enteros gigantes intermedios.";
+        } else {
+            result = positiveModulo(base, modulus);
+            const quotient = (base - result) / modulus;
+            operationText = `${base} % ${modulus} = ${result}`;
+            identityText = `${base} = ${modulus} x ${quotient} + ${result}`;
+        }
+
+        const inRange = result >= 0n && result < modulus;
+        modularResult.value = {
+            primaryValue: result.toString(),
+            verdictTone: "verdict-success",
+            verdictTitle: "Operacion modular calculada",
+            verdictBody: `El resultado queda en el rango 0..N-1. ${modularOperation.value === "mod" ? "El modulo no es reversible: infinitos A pueden dar el mismo resto." : "La potencia modular es una pieza basica en criptografia de clave publica."}`,
+            summaryCards: [
+                { label: "Operacion", value: modularOperation.value === "pow" ? "A^E % N" : "A % N", tone: "tone-neutral", note: "Modo" },
+                { label: "Resultado", value: result.toString(), tone: "tone-success", note: "Resto" },
+                { label: "Modulo N", value: modulus.toString(), tone: "tone-neutral", note: "Entero positivo" },
+                { label: "Rango", value: inRange ? "OK" : "Fuera", tone: inRange ? "tone-success" : "tone-danger", note: "0 <= r < N" }
+            ],
+            signalCards: [
+                { label: "Reversible", value: "No", tone: "tone-warning", note: "Muchos A comparten resto" },
+                { label: "BigInt", value: "Activo", tone: "tone-success", note: "Enteros grandes" },
+                { label: "Cripto", value: "Base", tone: "tone-neutral", note: "RSA/DH/ECC" },
+                { label: "Exponente", value: exponent === null ? "N/D" : exponent.toString(), tone: "tone-neutral", note: modularOperation.value === "pow" ? "E" : "No usado" }
+            ],
+            panels: [
+                {
+                    title: "Resultado",
+                    badge: "mod",
+                    content: buildTextList("Calculo", [operationText, identityText]),
+                    copyValue: result.toString()
+                },
+                {
+                    title: "Lectura tecnica",
+                    badge: "notas",
+                    content: buildTextList("Propiedades", [
+                        "A % N devuelve el resto de dividir A entre N.",
+                        "El resultado siempre queda entre 0 y N - 1 si N es positivo.",
+                        "Saber que x % 5 = 4 no permite recuperar x: 4, 9, 14, 19... cumplen la misma ecuacion.",
+                        modularOperation.value === "pow" ? "A^E % N permite trabajar con potencias enormes reduciendo en cada paso." : ""
+                    ]),
+                    copyValue: `${operationText}\n${identityText}`
+                }
+            ]
+        };
+    } catch (error) {
+        modularResult.value = buildErrorResult("MOD_FAILED", "No se pudo calcular modulo", error.message);
     }
 }
 
@@ -4780,6 +7503,2748 @@ function inspectJsonDocs(context = "comparacion") {
             }
         ]
     };
+}
+
+function handleStegoAnalyzeFile(event) {
+    stegoAnalyzeFile.value = event.target.files?.[0] || null;
+    stegoAnalyzeResult.value = null;
+}
+
+function handleExifFile(event) {
+    exifFile.value = event.target.files?.[0] || null;
+    exifResult.value = null;
+    clearExifDownloads();
+}
+
+function handleMetadataEditorFile(event) {
+    metadataEditorFile.value = event.target.files?.[0] || null;
+    metadataEditorResult.value = null;
+    clearMetadataEditorDownload();
+}
+
+function handleStegoEmbedFile(event) {
+    stegoEmbedFile.value = event.target.files?.[0] || null;
+    stegoEmbedResult.value = null;
+    clearStegoDownload();
+}
+
+function handleStegoExtractFile(event) {
+    stegoExtractFile.value = event.target.files?.[0] || null;
+    stegoExtractResult.value = null;
+}
+
+function handleSteghideFile(event) {
+    steghideFile.value = event.target.files?.[0] || null;
+    steghideResult.value = null;
+    clearSteghideDownload();
+}
+
+function handleSteghideSecretFile(event) {
+    steghideSecretFile.value = event.target.files?.[0] || null;
+    steghideResult.value = null;
+    clearSteghideDownload();
+}
+
+function handleSteghideWordlistFile(event) {
+    steghideWordlistFile.value = event.target.files?.[0] || null;
+    steghideResult.value = null;
+}
+
+function clearStegoAnalyze() {
+    stegoAnalyzeFile.value = null;
+    stegoAnalyzeResult.value = null;
+}
+
+function clearExifAnalysis() {
+    exifFile.value = null;
+    exifResult.value = null;
+    exifTagFilter.value = "";
+    clearExifDownloads();
+}
+
+function clearMetadataEditor() {
+    metadataEditorFile.value = null;
+    metadataEditorTitle.value = "";
+    metadataEditorAuthor.value = "";
+    metadataEditorDescription.value = "";
+    metadataEditorCopyright.value = "";
+    metadataEditorLanguage.value = "spa";
+    metadataEditorTags.value = "";
+    metadataEditorPayloadEncoding.value = "base64";
+    metadataEditorPayload.value = "";
+    metadataEditorResult.value = null;
+    clearMetadataEditorDownload();
+}
+
+function clearStegoExtract() {
+    stegoExtractFile.value = null;
+    stegoExtractResult.value = null;
+}
+
+function clearSteghideLab() {
+    steghideFile.value = null;
+    steghideSecretFile.value = null;
+    steghideWordlistFile.value = null;
+    steghidePassphrase.value = "";
+    steghideEncryption.value = "aes-gcm";
+    steghideCompression.value = "auto";
+    steghideCompressionLevel.value = 6;
+    steghideChecksum.value = true;
+    steghideStoreName.value = true;
+    steghideMaxGuesses.value = 5000;
+    steghideSkipDefaultGuesses.value = false;
+    steghideResult.value = null;
+    clearSteghideDownload();
+}
+
+function clearMetadataEditorDownload() {
+    if (metadataEditorDownloadUrl.value) {
+        URL.revokeObjectURL(metadataEditorDownloadUrl.value);
+    }
+    metadataEditorDownloadUrl.value = "";
+}
+
+function clearExifDownloads() {
+    if (exifTxtDownloadUrl.value) {
+        URL.revokeObjectURL(exifTxtDownloadUrl.value);
+    }
+    if (exifJsonDownloadUrl.value) {
+        URL.revokeObjectURL(exifJsonDownloadUrl.value);
+    }
+    exifTxtDownloadUrl.value = "";
+    exifJsonDownloadUrl.value = "";
+    exifTxtDownloadName.value = "feanor-exif-report.txt";
+    exifJsonDownloadName.value = "feanor-exif-report.json";
+}
+
+function setExifDownloads(baseName, reportText, reportJson) {
+    clearExifDownloads();
+    const safeBase = safeFileBaseName(baseName || "feanor-exif");
+    exifTxtDownloadName.value = `${safeBase}-exif-report.txt`;
+    exifJsonDownloadName.value = `${safeBase}-exif-report.json`;
+    exifTxtDownloadUrl.value = URL.createObjectURL(new Blob([reportText], { type: "text/plain;charset=utf-8" }));
+    exifJsonDownloadUrl.value = URL.createObjectURL(new Blob([safeJson(reportJson)], { type: "application/json;charset=utf-8" }));
+}
+
+function setMetadataEditorDownload(blob, filename) {
+    clearMetadataEditorDownload();
+    metadataEditorDownloadUrl.value = URL.createObjectURL(blob);
+    metadataEditorDownloadName.value = filename;
+}
+
+function clearStegoDownload() {
+    if (stegoEmbedDownloadUrl.value) {
+        URL.revokeObjectURL(stegoEmbedDownloadUrl.value);
+    }
+    stegoEmbedDownloadUrl.value = "";
+}
+
+function setStegoDownload(blob, filename) {
+    clearStegoDownload();
+    stegoEmbedDownloadUrl.value = URL.createObjectURL(blob);
+    stegoEmbedDownloadName.value = filename;
+}
+
+function clearSteghideDownload() {
+    if (steghideDownloadUrl.value) {
+        URL.revokeObjectURL(steghideDownloadUrl.value);
+    }
+    steghideDownloadUrl.value = "";
+    steghideDownloadName.value = "feanor-steghide-output.bin";
+}
+
+function setSteghideDownload(blob, filename) {
+    clearSteghideDownload();
+    steghideDownloadUrl.value = URL.createObjectURL(blob);
+    steghideDownloadName.value = filename;
+}
+
+function safeFileBaseName(name) {
+    return String(name || "feanor-stego")
+        .replace(/\.[^.]+$/, "")
+        .replace(/[^a-z0-9_-]+/gi, "-")
+        .replace(/^-+|-+$/g, "")
+        || "feanor-stego";
+}
+
+function asciiBytes(value) {
+    return Uint8Array.from(String(value ?? ""), char => char.charCodeAt(0) & 0xff);
+}
+
+function concatBytes(...parts) {
+    const total = parts.reduce((sum, part) => sum + part.length, 0);
+    const output = new Uint8Array(total);
+    let offset = 0;
+    parts.forEach(part => {
+        output.set(part, offset);
+        offset += part.length;
+    });
+    return output;
+}
+
+function uint32BytesBE(value) {
+    const number = Number(value) >>> 0;
+    return new Uint8Array([
+        (number >>> 24) & 0xff,
+        (number >>> 16) & 0xff,
+        (number >>> 8) & 0xff,
+        number & 0xff
+    ]);
+}
+
+function uint32BytesLE(value) {
+    const number = Number(value) >>> 0;
+    return new Uint8Array([
+        number & 0xff,
+        (number >>> 8) & 0xff,
+        (number >>> 16) & 0xff,
+        (number >>> 24) & 0xff
+    ]);
+}
+
+function syncsafeToInt(bytes, offset = 0) {
+    return ((bytes[offset] & 0x7f) << 21)
+        | ((bytes[offset + 1] & 0x7f) << 14)
+        | ((bytes[offset + 2] & 0x7f) << 7)
+        | (bytes[offset + 3] & 0x7f);
+}
+
+function intToSyncsafe(value) {
+    const size = Number(value);
+    if (!Number.isInteger(size) || size < 0 || size > 0x0fffffff) {
+        throw new Error("El bloque ID3 supera el tamano permitido por un entero syncsafe.");
+    }
+    return new Uint8Array([
+        (size >>> 21) & 0x7f,
+        (size >>> 14) & 0x7f,
+        (size >>> 7) & 0x7f,
+        size & 0x7f
+    ]);
+}
+
+function xmlEscape(value) {
+    return String(value ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&apos;");
+}
+
+function metadataTagsList() {
+    return metadataEditorTags.value
+        .split(",")
+        .map(item => item.trim())
+        .filter(Boolean);
+}
+
+function encodeMetadataPayload() {
+    const payload = metadataEditorPayload.value;
+    if (!payload) return "";
+    if (metadataEditorPayloadEncoding.value === "base64") return utf8ToBase64(payload);
+    if (metadataEditorPayloadEncoding.value === "base64url") return base64ToBase64Url(utf8ToBase64(payload));
+    if (metadataEditorPayloadEncoding.value === "hex") return bytesToHex(textToBytes(payload));
+    return payload;
+}
+
+function buildMetadataDescriptor(file, format, mode) {
+    const encodedPayload = encodeMetadataPayload();
+    const tags = metadataTagsList();
+    const generatedAt = new Date().toISOString();
+    const fields = {
+        title: metadataEditorTitle.value.trim(),
+        creator: metadataEditorAuthor.value.trim(),
+        description: metadataEditorDescription.value.trim(),
+        copyright: metadataEditorCopyright.value.trim(),
+        language: metadataEditorLanguage.value,
+        software: "CodiceFeanor metadata lab",
+        tags,
+        feanorPayloadEncoding: metadataEditorPayloadEncoding.value,
+        feanorPayload: encodedPayload,
+        sourceName: file.name,
+        targetContainer: format.container,
+        writeMode: mode,
+        generatedAt
+    };
+
+    return {
+        fields,
+        encodedPayload,
+        lines: [
+            fields.title ? `Title: ${fields.title}` : "",
+            fields.creator ? `Creator/Artist: ${fields.creator}` : "",
+            fields.description ? `Description: ${fields.description}` : "",
+            fields.copyright ? `Copyright: ${fields.copyright}` : "",
+            tags.length ? `Tags: ${tags.join(", ")}` : "",
+            encodedPayload ? `FeanorPayload(${fields.feanorPayloadEncoding}): ${encodedPayload}` : "",
+            `Software: ${fields.software}`,
+            `GeneratedAt: ${generatedAt}`
+        ].filter(Boolean)
+    };
+}
+
+function fillMetadataEditorExample() {
+    metadataEditorType.value = "mp3";
+    metadataEditorMode.value = "auto";
+    metadataEditorTitle.value = "Laboratorio ID3 Feanor";
+    metadataEditorAuthor.value = "equipo-forense";
+    metadataEditorDescription.value = "MP3 con comentario y payload codificado para practicar lectura de metadatos.";
+    metadataEditorCopyright.value = "Uso educativo";
+    metadataEditorLanguage.value = "spa";
+    metadataEditorTags.value = "ctf, metadata, id3";
+    metadataEditorPayloadEncoding.value = "base64";
+    metadataEditorPayload.value = safeJson({
+        lab: "metadata-editor",
+        objetivo: "insertar texto codificado en MP3",
+        nota: "buscar frame TXXX FeanorEncodedPayload"
+    });
+}
+
+function looksLikeMp3(bytes, file) {
+    const extension = (file?.name?.split(".").pop() || "").toLowerCase();
+    return startsWithBytes(bytes, [0x49, 0x44, 0x33])
+        || (bytes[0] === 0xff && (bytes[1] & 0xe0) === 0xe0)
+        || extension === "mp3";
+}
+
+function id3TextFrame(id, value) {
+    if (!value) return new Uint8Array();
+    return id3Frame(id, concatBytes(new Uint8Array([0x03]), textToBytes(value)));
+}
+
+function id3TxxxFrame(description, value) {
+    if (!value) return new Uint8Array();
+    return id3Frame("TXXX", concatBytes(
+        new Uint8Array([0x03]),
+        textToBytes(description),
+        new Uint8Array([0x00]),
+        textToBytes(value)
+    ));
+}
+
+function id3CommentFrame(language, description, value) {
+    if (!value) return new Uint8Array();
+    const lang = asciiBytes(String(language || "und").slice(0, 3).padEnd(3, "x"));
+    return id3Frame("COMM", concatBytes(
+        new Uint8Array([0x03]),
+        lang,
+        textToBytes(description),
+        new Uint8Array([0x00]),
+        textToBytes(value)
+    ));
+}
+
+function id3Frame(id, body) {
+    return concatBytes(
+        asciiBytes(id),
+        intToSyncsafe(body.length),
+        new Uint8Array([0x00, 0x00]),
+        body
+    );
+}
+
+function buildId3v24Tag(descriptor) {
+    const fields = descriptor.fields;
+    const frames = [
+        id3TextFrame("TIT2", fields.title),
+        id3TextFrame("TPE1", fields.creator),
+        id3TextFrame("TCOP", fields.copyright),
+        id3TextFrame("TSSE", fields.software),
+        id3CommentFrame(fields.language, "FeanorComment", fields.description),
+        id3TxxxFrame("FeanorEncodedPayload", fields.feanorPayload),
+        id3TxxxFrame("FeanorPayloadEncoding", fields.feanorPayloadEncoding),
+        id3TxxxFrame("FeanorTags", fields.tags.join(", "))
+    ].filter(frame => frame.length);
+    const body = concatBytes(...frames);
+    return concatBytes(
+        asciiBytes("ID3"),
+        new Uint8Array([0x04, 0x00, 0x00]),
+        intToSyncsafe(body.length),
+        body
+    );
+}
+
+function writeMp3Metadata(bytes, file, descriptor) {
+    if (!looksLikeMp3(bytes, file)) {
+        throw new Error("El fichero no parece MP3. Revisa el selector o sube un .mp3 real.");
+    }
+    let audioStart = 0;
+    let replacedOldTag = false;
+    if (startsWithBytes(bytes, [0x49, 0x44, 0x33]) && bytes.length >= 10) {
+        audioStart = 10 + syncsafeToInt(bytes, 6);
+        replacedOldTag = true;
+    }
+    const tag = buildId3v24Tag(descriptor);
+    return {
+        bytes: concatBytes(tag, bytes.slice(audioStart)),
+        technicalLines: [
+            "Formato directo: ID3v2.4.",
+            `Tag ID3 escrito: ${formatBytesSize(tag.length)}.`,
+            replacedOldTag ? `Etiqueta ID3 anterior reemplazada: ${formatBytesSize(audioStart)}.` : "El MP3 no tenia etiqueta ID3v2 inicial legible.",
+            "Payload guardado en TXXX:FeanorEncodedPayload."
+        ]
+    };
+}
+
+let pngCrcTable = null;
+
+function getPngCrcTable() {
+    if (pngCrcTable) return pngCrcTable;
+    pngCrcTable = new Uint32Array(256);
+    for (let index = 0; index < 256; index += 1) {
+        let value = index;
+        for (let bit = 0; bit < 8; bit += 1) {
+            value = (value & 1) ? (0xedb88320 ^ (value >>> 1)) : (value >>> 1);
+        }
+        pngCrcTable[index] = value >>> 0;
+    }
+    return pngCrcTable;
+}
+
+function pngCrc32(bytes) {
+    const table = getPngCrcTable();
+    let crc = 0xffffffff;
+    bytes.forEach(byte => {
+        crc = table[(crc ^ byte) & 0xff] ^ (crc >>> 8);
+    });
+    return (crc ^ 0xffffffff) >>> 0;
+}
+
+function makePngChunk(type, data) {
+    const typeBytes = asciiBytes(type);
+    return concatBytes(
+        uint32BytesBE(data.length),
+        typeBytes,
+        data,
+        uint32BytesBE(pngCrc32(concatBytes(typeBytes, data)))
+    );
+}
+
+function makePngItxtChunk(keyword, value, language = "und") {
+    const safeKeyword = String(keyword).replace(/[^\x20-\x7e]/g, "").slice(0, 79) || "Feanor";
+    return makePngChunk("iTXt", concatBytes(
+        asciiBytes(safeKeyword),
+        new Uint8Array([0x00, 0x00, 0x00]),
+        asciiBytes(language),
+        new Uint8Array([0x00, 0x00]),
+        textToBytes(value)
+    ));
+}
+
+function writePngMetadata(bytes, descriptor) {
+    if (!startsWithBytes(bytes, [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a])) {
+        throw new Error("El fichero no tiene firma PNG valida.");
+    }
+    const parsed = parsePngChunks(bytes);
+    const iend = parsed.chunks.find(chunk => chunk.type === "IEND");
+    if (!iend) {
+        throw new Error("No se encontro chunk IEND; no es seguro reescribir el PNG.");
+    }
+    const fields = descriptor.fields;
+    const chunks = [
+        fields.title ? makePngItxtChunk("Title", fields.title, fields.language) : new Uint8Array(),
+        fields.creator ? makePngItxtChunk("Author", fields.creator, fields.language) : new Uint8Array(),
+        fields.description ? makePngItxtChunk("Description", fields.description, fields.language) : new Uint8Array(),
+        fields.copyright ? makePngItxtChunk("Copyright", fields.copyright, fields.language) : new Uint8Array(),
+        makePngItxtChunk("Software", fields.software, fields.language),
+        fields.feanorPayload ? makePngItxtChunk("FeanorPayload", fields.feanorPayload, fields.language) : new Uint8Array(),
+        makePngItxtChunk("FeanorEncoding", fields.feanorPayloadEncoding, fields.language),
+        fields.tags.length ? makePngItxtChunk("Keywords", fields.tags.join(", "), fields.language) : new Uint8Array()
+    ].filter(chunk => chunk.length);
+    const inserted = concatBytes(...chunks);
+    return {
+        bytes: concatBytes(bytes.slice(0, iend.offset), inserted, bytes.slice(iend.offset)),
+        technicalLines: [
+            "Formato directo: PNG iTXt UTF-8.",
+            `Chunks insertados antes de IEND: ${chunks.length}.`,
+            `Metadatos nuevos: ${formatBytesSize(inserted.length)}.`,
+            "No se han modificado IDAT ni los pixeles."
+        ]
+    };
+}
+
+function writeJpegMetadata(bytes, descriptor) {
+    if (!startsWithBytes(bytes, [0xff, 0xd8])) {
+        throw new Error("El fichero no tiene cabecera JPEG SOI.");
+    }
+    const comment = [
+        "CodiceFeanor metadata",
+        ...descriptor.lines
+    ].join("\n");
+    const commentBytes = textToBytes(comment);
+    if (commentBytes.length > 65533) {
+        throw new Error("El comentario JPEG supera el maximo de 65533 bytes.");
+    }
+    const length = commentBytes.length + 2;
+    const segment = concatBytes(
+        new Uint8Array([0xff, 0xfe, (length >>> 8) & 0xff, length & 0xff]),
+        commentBytes
+    );
+    return {
+        bytes: concatBytes(bytes.slice(0, 2), segment, bytes.slice(2)),
+        technicalLines: [
+            "Formato directo: segmento JPEG COM.",
+            `Comentario insertado: ${formatBytesSize(commentBytes.length)}.`,
+            "No se reinterpreta APP1/EXIF para evitar mover MakerNotes."
+        ]
+    };
+}
+
+function buildSvgMetadataBlock(descriptor) {
+    const fields = descriptor.fields;
+    const tags = fields.tags.map(tag => `<dc:subject>${xmlEscape(tag)}</dc:subject>`).join("\n        ");
+    return `<metadata id="feanor-metadata">
+    <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:feanor="https://local.feanor/metadata">
+      <rdf:Description>
+        <dc:title>${xmlEscape(fields.title)}</dc:title>
+        <dc:creator>${xmlEscape(fields.creator)}</dc:creator>
+        <dc:description>${xmlEscape(fields.description)}</dc:description>
+        <dc:rights>${xmlEscape(fields.copyright)}</dc:rights>
+        ${tags}
+        <feanor:payloadEncoding>${xmlEscape(fields.feanorPayloadEncoding)}</feanor:payloadEncoding>
+        <feanor:payload>${xmlEscape(fields.feanorPayload)}</feanor:payload>
+        <feanor:software>${xmlEscape(fields.software)}</feanor:software>
+      </rdf:Description>
+    </rdf:RDF>
+  </metadata>`;
+}
+
+function writeSvgMetadata(bytes, descriptor) {
+    const text = bytesToUtf8(bytes);
+    const svgOpen = text.match(/<svg\b[^>]*>/i);
+    if (!svgOpen) {
+        throw new Error("No se encontro etiqueta <svg> inicial.");
+    }
+    const withoutOldBlock = text.replace(/\s*<metadata id="feanor-metadata">[\s\S]*?<\/metadata>\s*/i, "\n");
+    const output = withoutOldBlock.replace(/<svg\b[^>]*>/i, match => `${match}\n  ${buildSvgMetadataBlock(descriptor)}\n`);
+    return {
+        bytes: textToBytes(output),
+        technicalLines: [
+            "Formato directo: bloque SVG metadata XML.",
+            "Si ya existia metadata id=feanor-metadata, se reemplazo.",
+            "El payload queda escapado como XML."
+        ]
+    };
+}
+
+function wavInfoSubchunk(id, value) {
+    if (!value) return new Uint8Array();
+    const data = concatBytes(textToBytes(value), new Uint8Array([0x00]));
+    const pad = data.length % 2 ? new Uint8Array([0x00]) : new Uint8Array();
+    return concatBytes(asciiBytes(id), uint32BytesLE(data.length), data, pad);
+}
+
+function writeWavMetadata(bytes, descriptor) {
+    if (asciiSlice(bytes, 0, 4) !== "RIFF" || asciiSlice(bytes, 8, 12) !== "WAVE") {
+        throw new Error("El fichero no es un RIFF/WAVE valido.");
+    }
+    const fields = descriptor.fields;
+    const comment = [
+        fields.description,
+        fields.feanorPayload ? `FeanorPayload(${fields.feanorPayloadEncoding}): ${fields.feanorPayload}` : ""
+    ].filter(Boolean).join("\n");
+    const subchunks = [
+        wavInfoSubchunk("INAM", fields.title),
+        wavInfoSubchunk("IART", fields.creator),
+        wavInfoSubchunk("ICMT", comment),
+        wavInfoSubchunk("ICOP", fields.copyright),
+        wavInfoSubchunk("ISFT", fields.software),
+        wavInfoSubchunk("IKEY", fields.tags.join(", "))
+    ].filter(chunk => chunk.length);
+    const listData = concatBytes(asciiBytes("INFO"), ...subchunks);
+    const pad = listData.length % 2 ? new Uint8Array([0x00]) : new Uint8Array();
+    const listChunk = concatBytes(asciiBytes("LIST"), uint32BytesLE(listData.length), listData, pad);
+    const output = concatBytes(bytes, listChunk);
+    if (output.length - 8 > 0xffffffff) {
+        throw new Error("El WAV resultante supera el tamano RIFF clasico.");
+    }
+    const patched = output.slice();
+    patched.set(uint32BytesLE(patched.length - 8), 4);
+    return {
+        bytes: patched,
+        technicalLines: [
+            "Formato directo: RIFF LIST/INFO.",
+            `Subchunks INFO escritos: ${subchunks.length}.`,
+            `Tamano RIFF actualizado: ${formatBytesSize(patched.length)}.`
+        ]
+    };
+}
+
+function buildXmpSidecar(descriptor) {
+    const fields = descriptor.fields;
+    const subjects = fields.tags.map(tag => `<rdf:li>${xmlEscape(tag)}</rdf:li>`).join("");
+    return `<?xml version="1.0" encoding="UTF-8"?>
+<x:xmpmeta xmlns:x="adobe:ns:meta/">
+  <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:xmp="http://ns.adobe.com/xap/1.0/" xmlns:feanor="https://local.feanor/metadata">
+    <rdf:Description rdf:about="">
+      <dc:title><rdf:Alt><rdf:li xml:lang="x-default">${xmlEscape(fields.title)}</rdf:li></rdf:Alt></dc:title>
+      <dc:creator><rdf:Seq><rdf:li>${xmlEscape(fields.creator)}</rdf:li></rdf:Seq></dc:creator>
+      <dc:description><rdf:Alt><rdf:li xml:lang="x-default">${xmlEscape(fields.description)}</rdf:li></rdf:Alt></dc:description>
+      <dc:rights><rdf:Alt><rdf:li xml:lang="x-default">${xmlEscape(fields.copyright)}</rdf:li></rdf:Alt></dc:rights>
+      <dc:subject><rdf:Bag>${subjects}</rdf:Bag></dc:subject>
+      <xmp:CreatorTool>${xmlEscape(fields.software)}</xmp:CreatorTool>
+      <feanor:PayloadEncoding>${xmlEscape(fields.feanorPayloadEncoding)}</feanor:PayloadEncoding>
+      <feanor:Payload>${xmlEscape(fields.feanorPayload)}</feanor:Payload>
+      <feanor:SourceName>${xmlEscape(fields.sourceName)}</feanor:SourceName>
+      <feanor:TargetContainer>${xmlEscape(fields.targetContainer)}</feanor:TargetContainer>
+    </rdf:Description>
+  </rdf:RDF>
+</x:xmpmeta>
+`;
+}
+
+function buildMetadataSidecar(file, format, descriptor) {
+    if (format.mime === "application/json") {
+        return {
+            bytes: textToBytes(safeJson({
+                type: "CodiceFeanorMetadataSidecar",
+                sourceFile: file.name,
+                targetContainer: format.container,
+                fields: descriptor.fields,
+                notes: [
+                    "Descriptor seguro para aplicar a contenedores ZIP/Office/EPUB con una herramienta especifica.",
+                    "No modifica el fichero original desde el navegador."
+                ]
+            })),
+            mime: "application/json",
+            extension: "json"
+        };
+    }
+    return {
+        bytes: textToBytes(buildXmpSidecar(descriptor)),
+        mime: "application/rdf+xml",
+        extension: "xmp"
+    };
+}
+
+function metadataCoverageLines() {
+    return metadataEditorTypes.map(item =>
+        `${item.label}: ${item.direct ? "escritura directa en cliente" : "sidecar seguro / formato candidato"}`
+    );
+}
+
+function metadataOutputName(file, format, mode, extension) {
+    const base = safeFileBaseName(file.name || "feanor-metadata");
+    if (mode === "sidecar") return `${base}-feanor-metadata.${extension}`;
+    return `${base}-metadata.${format.extension}`;
+}
+
+function buildMetadataEditorResult({ file, format, descriptor, mode, outputName, oldSize, newSize, technicalLines }) {
+    const direct = mode === "direct";
+    const payloadBytes = textToBytes(metadataEditorPayload.value).length;
+    return {
+        primaryValue: descriptor.encodedPayload,
+        verdictTone: "verdict-success",
+        verdictTitle: direct ? "Metadatos escritos en el fichero" : "Sidecar de metadatos generado",
+        verdictBody: direct
+            ? `Se genero una copia del ${format.family.toLowerCase()} con metadatos nuevos sin subir nada a servidor.`
+            : "El formato seleccionado es susceptible de metadatos, pero se entrega un sidecar seguro para no corromper el contenedor.",
+        summaryCards: [
+            { label: "Tipo", value: format.family, tone: "tone-neutral", note: format.container },
+            { label: "Modo", value: direct ? "Directo" : "Sidecar", tone: direct ? "tone-success" : "tone-warning", note: metadataEditorMode.value },
+            { label: "Payload", value: payloadBytes ? formatBytesSize(payloadBytes) : "0 B", tone: payloadBytes ? "tone-success" : "tone-neutral", note: metadataEditorPayloadEncoding.value },
+            { label: "Salida", value: outputName, tone: "tone-success", note: formatBytesSize(newSize) }
+        ],
+        signalCards: [
+            { label: "Original", value: formatBytesSize(oldSize), tone: "tone-neutral", note: file.name },
+            { label: "Nuevo", value: formatBytesSize(newSize), tone: "tone-success", note: `${newSize - oldSize >= 0 ? "+" : ""}${formatBytesSize(Math.abs(newSize - oldSize))}` },
+            { label: "Campos", value: String(descriptor.lines.length), tone: "tone-success", note: "Metadatos" },
+            { label: "Privacidad", value: "Revisar", tone: "tone-warning", note: "Ahora contiene datos" }
+        ],
+        panels: [
+            {
+                title: "Resultado",
+                badge: direct ? "file" : "sidecar",
+                content: buildTextList("Fichero generado", [
+                    `Archivo: ${outputName}`,
+                    `Operacion: ${direct ? "modificacion directa" : "sidecar XMP/JSON"}`,
+                    `Contenedor: ${format.container}`,
+                    `Descarga disponible desde el boton de la herramienta.`
+                ]),
+                copyValue: outputName
+            },
+            {
+                title: "Metadatos escritos",
+                badge: "meta",
+                content: buildTextList("Campos", descriptor.lines),
+                copyValue: descriptor.lines.join("\n")
+            },
+            {
+                title: "Detalles tecnicos",
+                badge: "tech",
+                content: buildTextList("Implementacion", technicalLines),
+                copyValue: technicalLines.join("\n")
+            },
+            {
+                title: "Detalles de formatos soportados",
+                badge: "map",
+                content: buildTextList("Cobertura", metadataCoverageLines()),
+                copyValue: metadataCoverageLines().join("\n")
+            }
+        ]
+    };
+}
+
+async function runMetadataEditor() {
+    if (!metadataEditorFile.value) {
+        metadataEditorResult.value = buildErrorResult("METADATA_FILE_EMPTY", "Falta fichero", "Selecciona un fichero local para escribir o crear metadatos.");
+        return;
+    }
+
+    const format = selectedMetadataEditorType.value;
+    const requestedDirect = metadataEditorMode.value === "direct";
+    const mode = metadataEditorMode.value === "sidecar" || !format.direct ? "sidecar" : "direct";
+
+    if (requestedDirect && !format.direct) {
+        metadataEditorResult.value = buildErrorResult(
+            "METADATA_DIRECT_UNSUPPORTED",
+            "Escritura directa no segura",
+            `${format.label} puede contener metadatos, pero este lab genera sidecar para no romper su estructura interna. Cambia el modo a Auto o Sidecar.`
+        );
+        return;
+    }
+
+    try {
+        const file = metadataEditorFile.value;
+        const bytes = new Uint8Array(await file.arrayBuffer());
+        const descriptor = buildMetadataDescriptor(file, format, mode);
+        let outputBytes;
+        let outputMime = format.mime;
+        let outputExtension = format.extension;
+        let technicalLines = [];
+
+        if (mode === "sidecar") {
+            const sidecar = buildMetadataSidecar(file, format, descriptor);
+            outputBytes = sidecar.bytes;
+            outputMime = sidecar.mime;
+            outputExtension = sidecar.extension;
+            technicalLines = [
+                `Formato seleccionado: ${format.label}.`,
+                "Se crea sidecar porque el contenedor requiere reescritura estructural o libreria especializada.",
+                `Referencia del fichero original: ${file.name}.`
+            ];
+        } else if (format.value === "mp3") {
+            ({ bytes: outputBytes, technicalLines } = writeMp3Metadata(bytes, file, descriptor));
+        } else if (format.value === "wav") {
+            ({ bytes: outputBytes, technicalLines } = writeWavMetadata(bytes, descriptor));
+        } else if (format.value === "png") {
+            ({ bytes: outputBytes, technicalLines } = writePngMetadata(bytes, descriptor));
+        } else if (format.value === "jpeg") {
+            ({ bytes: outputBytes, technicalLines } = writeJpegMetadata(bytes, descriptor));
+        } else if (format.value === "svg") {
+            ({ bytes: outputBytes, technicalLines } = writeSvgMetadata(bytes, descriptor));
+        } else {
+            throw new Error("Selector sin escritor directo asociado.");
+        }
+
+        const outputName = metadataOutputName(file, format, mode, outputExtension);
+        const blob = new Blob([outputBytes], { type: outputMime });
+        setMetadataEditorDownload(blob, outputName);
+        metadataEditorResult.value = buildMetadataEditorResult({
+            file,
+            format,
+            descriptor,
+            mode,
+            outputName,
+            oldSize: file.size,
+            newSize: outputBytes.length,
+            technicalLines
+        });
+    } catch (error) {
+        metadataEditorResult.value = buildErrorResult("METADATA_WRITE_FAILED", "No se pudieron generar metadatos", error.message);
+    }
+}
+
+function readUint32BE(bytes, offset) {
+    return ((bytes[offset] << 24) >>> 0) + (bytes[offset + 1] << 16) + (bytes[offset + 2] << 8) + bytes[offset + 3];
+}
+
+function readUint32LE(bytes, offset) {
+    return (bytes[offset] | (bytes[offset + 1] << 8) | (bytes[offset + 2] << 16) | (bytes[offset + 3] << 24)) >>> 0;
+}
+
+function parsePngTextChunk(type, data) {
+    if (type === "zTXt") {
+        const keywordEnd = data.indexOf(0);
+        const keyword = keywordEnd >= 0 ? asciiSlice(data, 0, keywordEnd) : "zTXt";
+        return `${keyword}: texto comprimido`;
+    }
+
+    if (type === "tEXt") {
+        const keywordEnd = data.indexOf(0);
+        if (keywordEnd < 0) return asciiSlice(data, 0, Math.min(data.length, 240));
+        const keyword = asciiSlice(data, 0, keywordEnd);
+        const value = asciiSlice(data, keywordEnd + 1, Math.min(data.length, keywordEnd + 241));
+        return `${keyword}: ${value}`;
+    }
+
+    if (type === "iTXt") {
+        return asciiSlice(data, 0, Math.min(data.length, 260)).replace(/\0/g, " | ");
+    }
+
+    return "";
+}
+
+function parsePngChunks(bytes) {
+    const chunks = [];
+    let offset = 8;
+    let endOffset = bytes.length;
+
+    while (offset + 12 <= bytes.length) {
+        const length = readUint32BE(bytes, offset);
+        const type = asciiSlice(bytes, offset + 4, offset + 8);
+        const dataStart = offset + 8;
+        const dataEnd = dataStart + length;
+        const chunkEnd = dataEnd + 4;
+
+        if (length < 0 || dataEnd > bytes.length || chunkEnd > bytes.length) break;
+
+        const data = bytes.slice(dataStart, dataEnd);
+        chunks.push({
+            type,
+            length,
+            offset,
+            text: parsePngTextChunk(type, data)
+        });
+
+        offset = chunkEnd;
+        if (type === "IEND") {
+            endOffset = chunkEnd;
+            break;
+        }
+    }
+
+    return { chunks, endOffset };
+}
+
+function jpegMarkerName(marker) {
+    const names = {
+        0xc0: "SOF0",
+        0xc2: "SOF2",
+        0xc4: "DHT",
+        0xdb: "DQT",
+        0xda: "SOS",
+        0xdd: "DRI",
+        0xe0: "APP0/JFIF",
+        0xe1: "APP1/EXIF-XMP",
+        0xe2: "APP2/ICC",
+        0xed: "APP13/IPTC",
+        0xfe: "COM"
+    };
+    return names[marker] || (marker >= 0xe0 && marker <= 0xef ? `APP${marker - 0xe0}` : `0x${marker.toString(16)}`);
+}
+
+function parseJpegSegments(bytes) {
+    const segments = [];
+    let offset = 2;
+
+    while (offset + 4 < bytes.length) {
+        if (bytes[offset] !== 0xff) {
+            offset += 1;
+            continue;
+        }
+        while (bytes[offset] === 0xff) offset += 1;
+        const marker = bytes[offset];
+        if (marker === 0xda || marker === 0xd9) break;
+        const length = (bytes[offset + 1] << 8) | bytes[offset + 2];
+        if (!Number.isFinite(length) || length < 2) break;
+        segments.push({ marker, name: jpegMarkerName(marker), length });
+        offset += 1 + length;
+    }
+
+    const eoiIndex = lastIndexOfBytes(bytes, [0xff, 0xd9]);
+    return {
+        segments,
+        endOffset: eoiIndex >= 0 ? eoiIndex + 2 : bytes.length
+    };
+}
+
+function extractPdfHints(bytes) {
+    const text = asciiSlice(bytes, 0, bytes.length);
+    const keys = ["Title", "Author", "Subject", "Keywords", "Creator", "Producer", "CreationDate", "ModDate"];
+    const metadataLines = keys.flatMap(key => {
+        const match = text.match(new RegExp(`/${key}\\s*\\(([^)]{0,240})\\)`));
+        return match ? [`${key}: ${match[1]}`] : [];
+    });
+    const indicators = [
+        text.includes("/JavaScript") ? "PDF con referencia a JavaScript embebido." : "",
+        text.includes("/EmbeddedFile") ? "PDF con referencia a fichero embebido." : "",
+        text.includes("/OpenAction") ? "PDF con accion de apertura definida." : ""
+    ].filter(Boolean);
+    const eofIndex = lastIndexOfBytes(bytes, textToBytes("%%EOF"));
+    const appendedBytes = eofIndex >= 0 ? Math.max(0, bytes.length - (eofIndex + 5)) : 0;
+
+    return { metadataLines, indicators, appendedBytes };
+}
+
+function extractXmlValueLines(xml, maxLines = 28) {
+    const lines = [];
+    const pattern = /<([A-Za-z0-9:_-]+)[^>]*>([^<]{1,500})<\/\1>/g;
+    let match = pattern.exec(xml);
+    while (match && lines.length < maxLines) {
+        const value = match[2].replace(/\s+/g, " ").trim();
+        if (value) {
+            lines.push(`${match[1]}: ${value}`);
+        }
+        match = pattern.exec(xml);
+    }
+    return lines;
+}
+
+async function inspectZipLikeFile(file) {
+    const metadataLines = [];
+    const formatLines = [];
+    const indicators = [];
+
+    try {
+        const { default: JSZip } = await import("jszip");
+        const zip = await JSZip.loadAsync(file);
+        const entries = Object.values(zip.files);
+        const names = entries.map(entry => entry.name);
+        formatLines.push(`Entradas ZIP: ${entries.length}`);
+        formatLines.push(...names.slice(0, 30).map(name => `- ${name}`));
+
+        const metadataFiles = [
+            "docProps/core.xml",
+            "docProps/app.xml",
+            "docProps/custom.xml",
+            "[Content_Types].xml",
+            "META-INF/manifest.xml"
+        ];
+
+        for (const path of metadataFiles) {
+            const entry = zip.file(path);
+            if (entry) {
+                const xml = await entry.async("string");
+                metadataLines.push(`${path}:`);
+                metadataLines.push(...extractXmlValueLines(xml, 12).map(line => `  ${line}`));
+            }
+        }
+
+        const unusualEntries = names.filter(name => /secret|hidden|payload|stego|\.bin$/i.test(name));
+        if (unusualEntries.length) {
+            indicators.push(`Entradas con nombres sensibles: ${unusualEntries.slice(0, 6).join(", ")}.`);
+        }
+    } catch (error) {
+        indicators.push(`No se pudo abrir como ZIP en navegador: ${error.message}.`);
+    }
+
+    return { metadataLines, formatLines, indicators };
+}
+
+async function collectExifMetadata(file, type) {
+    if (type.family !== "image" || type.label === "SVG" || type.label === "GIF" || type.label === "BMP") {
+        return [];
+    }
+
+    try {
+        const exifr = await import("exifr");
+        const metadata = await exifr.parse(file, {
+            tiff: true,
+            ifd0: true,
+            exif: true,
+            gps: true,
+            xmp: true,
+            iptc: true,
+            icc: true,
+            jfif: true
+        });
+        return objectToLines(metadata);
+    } catch {
+        return [];
+    }
+}
+
+function pickMetadataLines(metadata, keys) {
+    return keys
+        .filter(key => metadata?.[key] !== undefined && metadata?.[key] !== null && sanitizeMetadataValue(metadata[key]) !== "")
+        .map(key => `${key}: ${sanitizeMetadataValue(metadata[key])}`);
+}
+
+function categorizeExifMetadata(metadata) {
+    const groups = {
+        camera: pickMetadataLines(metadata, ["Make", "Model", "LensMake", "LensModel", "Lens", "SerialNumber", "LensSerialNumber", "BodySerialNumber"]),
+        capture: pickMetadataLines(metadata, ["DateTimeOriginal", "CreateDate", "ModifyDate", "ExposureTime", "FNumber", "ISO", "FocalLength", "FocalLengthIn35mmFormat", "ExposureProgram", "MeteringMode", "Flash", "WhiteBalance", "ExposureCompensation"]),
+        gps: pickMetadataLines(metadata, ["latitude", "longitude", "GPSLatitude", "GPSLongitude", "GPSAltitude", "GPSDateStamp", "GPSTimeStamp", "GPSImgDirection", "GPSMapDatum"]),
+        software: pickMetadataLines(metadata, ["Software", "CreatorTool", "ProcessingSoftware", "Artist", "Creator", "Copyright", "ImageDescription", "DocumentName", "HostComputer"]),
+        image: pickMetadataLines(metadata, ["ImageWidth", "ImageHeight", "ExifImageWidth", "ExifImageHeight", "Orientation", "ColorSpace", "ProfileDescription", "BitsPerSample", "Compression", "PhotometricInterpretation"])
+    };
+    const usedKeys = new Set(Object.values(groups).flatMap(lines => lines.map(line => line.split(":")[0])));
+    const raw = Object.entries(metadata || {})
+        .filter(([key, value]) => !usedKeys.has(key) && value !== undefined && value !== null && sanitizeMetadataValue(value) !== "")
+        .sort(([left], [right]) => left.localeCompare(right))
+        .map(([key, value]) => `${key}: ${sanitizeMetadataValue(value)}`);
+    return { ...groups, raw };
+}
+
+function gpsMapLink(metadata) {
+    const latitude = Number(metadata?.latitude ?? metadata?.GPSLatitude);
+    const longitude = Number(metadata?.longitude ?? metadata?.GPSLongitude);
+    if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) return "";
+    return `https://www.openstreetmap.org/?mlat=${latitude}&mlon=${longitude}#map=15/${latitude}/${longitude}`;
+}
+
+async function parseExifMetadata(file) {
+    const exifr = await import("exifr");
+    return await exifr.parse(file, {
+        tiff: true,
+        ifd0: true,
+        ifd1: true,
+        exif: true,
+        gps: true,
+        xmp: true,
+        iptc: true,
+        icc: true,
+        jfif: true,
+        ihdr: true,
+        mergeOutput: true
+    });
+}
+
+function truncateExifText(value, limit = 760) {
+    const text = String(value ?? "").replace(/\s+/g, " ").trim();
+    if (text.length <= limit) return text;
+    return `${text.slice(0, limit - 3)}...`;
+}
+
+function exifPrintableValue(value) {
+    if (value instanceof Date) return value.toISOString();
+    if (value instanceof ArrayBuffer) {
+        const bytes = new Uint8Array(value);
+        return `<binary ${formatBytesSize(bytes.byteLength)} ${bytesToHex(bytes.slice(0, 18))}${bytes.byteLength > 18 ? "..." : ""}>`;
+    }
+    if (ArrayBuffer.isView(value)) {
+        const bytes = new Uint8Array(value.buffer, value.byteOffset, value.byteLength);
+        return `<binary ${formatBytesSize(bytes.byteLength)} ${bytesToHex(bytes.slice(0, 18))}${bytes.byteLength > 18 ? "..." : ""}>`;
+    }
+    if (Array.isArray(value)) return value.map(item => exifPrintableValue(item)).join(", ");
+    if (value && typeof value === "object") {
+        if (value.description) return truncateExifText(value.description);
+        try {
+            return truncateExifText(JSON.stringify(value, (key, item) => {
+                if (item instanceof Date) return item.toISOString();
+                if (item instanceof ArrayBuffer || ArrayBuffer.isView(item)) return exifPrintableValue(item);
+                return item;
+            }));
+        } catch {
+            return truncateExifText(sanitizeMetadataValue(value));
+        }
+    }
+    return truncateExifText(value);
+}
+
+function inferExifGroup(tag) {
+    const key = String(tag || "").toLowerCase();
+    if (/gps|latitude|longitude|altitude|geotag|location|mapdatum/.test(key)) return "GPS";
+    if (/iptc|caption|byline|credit|source|city|province|country|headline|keywords/.test(key)) return "IPTC";
+    if (/xmp|creator|creatortool|rights|subject|dc:|photoshop:|description|title/.test(key)) return "XMP";
+    if (/icc|profile|colorspace|colorprofile/.test(key)) return "ICC_Profile";
+    if (/maker|makernote|serial|ownername|bodyserial|lensserial/.test(key)) return "MakerNotes";
+    if (/make|model|lens|camera|focallength/.test(key)) return "EXIF:Camera";
+    if (/date|time|subsec|timezone|offsettime/.test(key)) return "EXIF:Time";
+    if (/exposure|fnumber|iso|aperture|shutter|flash|metering|whitebalance|brightness/.test(key)) return "EXIF:Exposure";
+    if (/width|height|orientation|compression|bits|resolution|photometric|samples|thumbnail|image/.test(key)) return "EXIF:Image";
+    if (/jfif/.test(key)) return "JFIF";
+    return "EXIF";
+}
+
+function classifyExifRisk(tag, group, value) {
+    const text = `${group} ${tag} ${value}`.toLowerCase();
+    if (/gps|latitude|longitude|altitude|geotag|location|mapdatum|city|province|country|address/.test(text)) {
+        return { level: "high", tone: "tone-warning", label: "Ubicacion" };
+    }
+    if (/serial|owner|artist|author|creator|copyright|rights|byline|credit|hostcomputer|username|user|email|deviceid|imei|documentname|imagedescription/.test(text)) {
+        return { level: "warning", tone: "tone-warning", label: "Identidad" };
+    }
+    if (/software|creatortool|processingsoftware|modifydate|createdate|datetime|make|model|lens/.test(text)) {
+        return { level: "info", tone: "tone-neutral", label: "Contexto" };
+    }
+    return { level: "neutral", tone: "tone-neutral", label: "Tecnico" };
+}
+
+function makeExifRow(group, tag, value, source = "metadata") {
+    const printable = exifPrintableValue(value);
+    const risk = source === "container-warning"
+        ? { level: "warning", tone: "tone-warning", label: "Indicador" }
+        : classifyExifRisk(tag, group, printable);
+    return {
+        group,
+        tag: String(tag || "Tag"),
+        value: printable,
+        source,
+        riskLevel: risk.level,
+        riskTone: risk.tone,
+        riskLabel: risk.label
+    };
+}
+
+function splitMetadataLine(line, fallbackTag) {
+    const text = String(line || "");
+    const separator = text.indexOf(":");
+    if (separator < 0) return { tag: fallbackTag, value: text };
+    return {
+        tag: text.slice(0, separator).trim() || fallbackTag,
+        value: text.slice(separator + 1).trim()
+    };
+}
+
+function buildExifRows(metadata, file, bytes, type, sha256, entropy, container, parseError) {
+    const magic = bytesToHex(bytes.slice(0, Math.min(16, bytes.length))).match(/.{1,2}/g)?.join(" ") || "N/D";
+    const fileRows = [
+        makeExifRow("File", "FileName", file.name, "file"),
+        makeExifRow("File", "FileSize", formatBytesSize(file.size), "file"),
+        makeExifRow("File", "FileType", type.label, "file"),
+        makeExifRow("File", "MIMEType", file.type || "N/D", "file"),
+        makeExifRow("File", "MagicBytes", magic, "file"),
+        makeExifRow("File", "SHA256", sha256 || "No disponible", "file"),
+        makeExifRow("File", "Entropy", `${entropy.toFixed(2)} bits/byte`, "file")
+    ];
+
+    if (parseError) {
+        fileRows.push(makeExifRow("Parser", "BrowserExifParser", parseError, "container-warning"));
+    }
+
+    const metadataRows = Object.entries(metadata || {})
+        .filter(([, value]) => value !== undefined && value !== null && exifPrintableValue(value) !== "")
+        .sort(([left], [right]) => left.localeCompare(right))
+        .map(([tag, value]) => makeExifRow(inferExifGroup(tag), tag, value, "metadata"));
+
+    const containerRows = [
+        ...(container?.metadataLines || []).slice(0, 36).map((line, index) => {
+            const item = splitMetadataLine(line, `ContainerMetadata${index + 1}`);
+            return makeExifRow("Container", item.tag, item.value, "container");
+        }),
+        ...(container?.formatLines || []).slice(0, 42).map((line, index) =>
+            makeExifRow("Structure", `Block${String(index + 1).padStart(2, "0")}`, line, "container")
+        ),
+        ...(container?.indicators || []).map((line, index) =>
+            makeExifRow("Warnings", `Indicator${index + 1}`, line, "container-warning")
+        )
+    ];
+
+    return {
+        rows: [...fileRows, ...metadataRows, ...containerRows],
+        metadataRows,
+        containerRows,
+        fileRows
+    };
+}
+
+function filterExifRows(rows) {
+    const tokens = exifTagFilter.value
+        .toLowerCase()
+        .split(/[,\s]+/)
+        .map(token => token.trim())
+        .filter(Boolean);
+    if (!tokens.length) return rows;
+    return rows.filter(row => {
+        const haystack = `${row.group} ${row.tag} ${row.value} ${row.source} ${row.riskLabel}`.toLowerCase();
+        return tokens.every(token => haystack.includes(token));
+    });
+}
+
+function exifGroupPriority(group) {
+    const order = [
+        "File",
+        "Parser",
+        "Warnings",
+        "GPS",
+        "XMP",
+        "IPTC",
+        "MakerNotes",
+        "EXIF:Camera",
+        "EXIF:Time",
+        "EXIF:Exposure",
+        "EXIF:Image",
+        "ICC_Profile",
+        "JFIF",
+        "Container",
+        "Structure",
+        "EXIF"
+    ];
+    const index = order.indexOf(group);
+    return index >= 0 ? index : order.length;
+}
+
+function sortExifRows(rows, profile) {
+    const riskPriority = { high: 0, warning: 1, info: 2, neutral: 3 };
+    return [...rows].sort((left, right) => {
+        if (profile === "privacy") {
+            const leftFile = left.group === "File" ? -1 : 0;
+            const rightFile = right.group === "File" ? -1 : 0;
+            if (leftFile !== rightFile) return leftFile - rightFile;
+            const riskDiff = (riskPriority[left.riskLevel] ?? 4) - (riskPriority[right.riskLevel] ?? 4);
+            if (riskDiff) return riskDiff;
+        }
+        if (profile === "exiftool") {
+            const groupDiff = left.group.localeCompare(right.group);
+            if (groupDiff) return groupDiff;
+            return left.tag.localeCompare(right.tag);
+        }
+        const groupDiff = exifGroupPriority(left.group) - exifGroupPriority(right.group);
+        if (groupDiff) return groupDiff;
+        return left.tag.localeCompare(right.tag);
+    });
+}
+
+function rowsForExifReport(rows) {
+    const sorted = sortExifRows(filterExifRows(rows), exifProfile.value);
+    if (exifDetailMode.value === "raw" || exifProfile.value === "forensic") return sorted;
+    if (exifProfile.value === "privacy" || exifDetailMode.value === "risks") {
+        const focused = sorted.filter(row =>
+            row.group === "File"
+            || row.group === "Parser"
+            || row.group === "Warnings"
+            || row.riskLevel === "high"
+            || row.riskLevel === "warning"
+            || /^(Make|Model|Lens|LensModel|Software|CreatorTool|DateTimeOriginal|CreateDate|ModifyDate)$/i.test(row.tag)
+        );
+        return focused.length ? focused : sorted.slice(0, 90);
+    }
+    return sorted.slice(0, 140);
+}
+
+function formatExifToolLikeReport(rows, file, type, sha256) {
+    const command = selectedExifProfile.value.command;
+    const width = Math.min(34, Math.max(12, ...rows.map(row => row.tag.length)));
+    const lines = [
+        "# CodiceFeanor EXIF report",
+        `# Perfil: ${selectedExifProfile.value.label}`,
+        `# Inspiracion CLI: ${command}`,
+        `# Archivo: ${file.name}`,
+        `# Tipo detectado: ${type.label}`,
+        `# SHA-256: ${sha256 || "No disponible"}`,
+        ""
+    ];
+    if (!rows.length) {
+        lines.push("# No hay filas que coincidan con el filtro actual.");
+        return lines.join("\n");
+    }
+    rows.forEach(row => {
+        lines.push(`[${row.group}] ${row.tag.padEnd(width, " ")} : ${row.value}`);
+    });
+    return lines.join("\n");
+}
+
+function summarizeExifGroups(rows) {
+    const counts = rows.reduce((map, row) => {
+        map.set(row.group, (map.get(row.group) || 0) + 1);
+        return map;
+    }, new Map());
+    return Array.from(counts.entries())
+        .sort(([left], [right]) => exifGroupPriority(left) - exifGroupPriority(right) || left.localeCompare(right))
+        .map(([group, count]) => `${group}: ${count} campos`);
+}
+
+function buildExifRiskLines(rows) {
+    const riskRows = rows
+        .filter(row => row.riskLevel === "high" || row.riskLevel === "warning")
+        .sort((left, right) => (left.riskLevel === "high" ? -1 : 1) - (right.riskLevel === "high" ? -1 : 1))
+        .slice(0, 24);
+    if (!riskRows.length) {
+        return [
+            "No se han detectado GPS, identidad, seriales ni indicadores evidentes en los metadatos legibles.",
+            "Aun asi, una imagen puede contener datos no interpretados por el navegador o ya procesados fuera del EXIF visible."
+        ];
+    }
+    return riskRows.map(row => `${row.riskLabel}: [${row.group}] ${row.tag} = ${row.value}`);
+}
+
+function buildExifKeyLines(groups, mapLink) {
+    return [
+        ...groups.camera.slice(0, 8).map(line => `Camara: ${line}`),
+        ...groups.capture.slice(0, 8).map(line => `Captura: ${line}`),
+        ...groups.gps.slice(0, 8).map(line => `GPS: ${line}`),
+        mapLink ? `GPS: mapa OpenStreetMap ${mapLink}` : "",
+        ...groups.software.slice(0, 8).map(line => `Origen: ${line}`),
+        ...groups.image.slice(0, 8).map(line => `Imagen: ${line}`)
+    ].filter(Boolean);
+}
+
+function buildExifProfileNotes(metadataRows, reportRows, parseError) {
+    return [
+        `Perfil usado: ${selectedExifProfile.value.label}.`,
+        `Tags EXIF/XMP/IPTC/ICC legibles: ${metadataRows.length}.`,
+        `Filas mostradas por el filtro actual: ${reportRows.length}.`,
+        exifTagFilter.value.trim() ? `Filtro aplicado: ${exifTagFilter.value.trim()}.` : "Filtro aplicado: ninguno.",
+        parseError ? `Aviso parser: ${parseError}` : "",
+        "Los exports TXT y JSON se generan localmente; no se sube el fichero a ningun servidor."
+    ].filter(Boolean);
+}
+
+function decodeId3TextFrame(body) {
+    if (!body?.length) return "";
+    const encoding = body[0];
+    const data = body.slice(1).filter(byte => byte !== 0x00);
+    try {
+        if (encoding === 0x03) return new TextDecoder("utf-8").decode(data);
+        if (encoding === 0x00) return new TextDecoder("latin1").decode(data);
+        if (encoding === 0x01 || encoding === 0x02) return new TextDecoder("utf-16").decode(data);
+    } catch {
+        return asciiSlice(data, 0, Math.min(data.length, 220));
+    }
+    return asciiSlice(data, 0, Math.min(data.length, 220));
+}
+
+function decodeId3CommentFrame(body) {
+    if (!body?.length) return "";
+    const encoding = body[0];
+    const content = body.slice(4);
+    const separator = content.indexOf(0x00);
+    const textBytes = separator >= 0 ? content.slice(separator + 1) : content;
+    return decodeId3TextFrame(concatBytes(new Uint8Array([encoding]), textBytes));
+}
+
+function decodeId3UserTextFrame(body) {
+    if (!body?.length) return "";
+    const encoding = body[0];
+    const content = body.slice(1);
+    const separator = content.indexOf(0x00);
+    const descriptionBytes = separator >= 0 ? content.slice(0, separator) : content;
+    const valueBytes = separator >= 0 ? content.slice(separator + 1) : new Uint8Array();
+    const description = decodeId3TextFrame(concatBytes(new Uint8Array([encoding]), descriptionBytes));
+    const value = decodeId3TextFrame(concatBytes(new Uint8Array([encoding]), valueBytes));
+    return value ? `${description}: ${value}` : description;
+}
+
+function parseId3Metadata(bytes) {
+    const metadataLines = [];
+    const formatLines = [];
+    if (!startsWithBytes(bytes, [0x49, 0x44, 0x33]) || bytes.length < 10) {
+        return { metadataLines, formatLines };
+    }
+    const version = bytes[3];
+    const tagSize = syncsafeToInt(bytes, 6);
+    const tagEnd = Math.min(bytes.length, 10 + tagSize);
+    formatLines.push(`ID3v2.${version}.0 (${formatBytesSize(tagSize)})`);
+    let offset = 10;
+    while (offset + 10 <= tagEnd && metadataLines.length < 30) {
+        const id = asciiSlice(bytes, offset, offset + 4);
+        if (!/^[A-Z0-9]{4}$/.test(id)) break;
+        const size = version === 4 ? syncsafeToInt(bytes, offset + 4) : readUint32BE(bytes, offset + 4);
+        if (!size || offset + 10 + size > tagEnd) break;
+        const body = bytes.slice(offset + 10, offset + 10 + size);
+        if (id.startsWith("T") && id !== "TXXX") {
+            metadataLines.push(`${id}: ${decodeId3TextFrame(body)}`);
+        } else if (id === "TXXX") {
+            metadataLines.push(`TXXX: ${decodeId3UserTextFrame(body)}`);
+        } else if (id === "COMM") {
+            metadataLines.push(`COMM: ${decodeId3CommentFrame(body).replace(/\0/g, " | ")}`);
+        } else if (id === "APIC") {
+            metadataLines.push("APIC: imagen de portada embebida.");
+        }
+        formatLines.push(`${id} (${formatBytesSize(size)})`);
+        offset += 10 + size;
+    }
+    return { metadataLines, formatLines };
+}
+
+function parseRiffChunks(bytes) {
+    const chunks = [];
+    if (bytes.length < 12 || asciiSlice(bytes, 0, 4) !== "RIFF") return chunks;
+    let offset = 12;
+    while (offset + 8 <= bytes.length && chunks.length < 80) {
+        const id = asciiSlice(bytes, offset, offset + 4);
+        const size = readUint32LE(bytes, offset + 4);
+        const dataStart = offset + 8;
+        const dataEnd = dataStart + size;
+        if (!id.trim() || dataEnd > bytes.length) break;
+        chunks.push({ id, size, offset, dataStart, dataEnd });
+        offset = dataEnd + (size % 2);
+    }
+    return chunks;
+}
+
+function parseWavInfoMetadata(bytes) {
+    const metadataLines = [];
+    const formatLines = [];
+    const chunks = parseRiffChunks(bytes);
+    formatLines.push(...chunks.slice(0, 36).map(chunk => `${chunk.id} (${formatBytesSize(chunk.size)}) @${chunk.offset}`));
+    chunks
+        .filter(chunk => chunk.id === "LIST" && asciiSlice(bytes, chunk.dataStart, chunk.dataStart + 4) === "INFO")
+        .forEach(listChunk => {
+            let offset = listChunk.dataStart + 4;
+            while (offset + 8 <= listChunk.dataEnd && metadataLines.length < 30) {
+                const id = asciiSlice(bytes, offset, offset + 4);
+                const size = readUint32LE(bytes, offset + 4);
+                const valueStart = offset + 8;
+                const valueEnd = Math.min(valueStart + size, listChunk.dataEnd);
+                const value = bytesToUtf8(bytes.slice(valueStart, valueEnd)).replace(/\0+$/g, "").trim();
+                if (value) metadataLines.push(`${id}: ${value}`);
+                offset = valueEnd + (size % 2);
+            }
+        });
+    return { metadataLines, formatLines };
+}
+
+function parseMp4Atoms(bytes) {
+    const formatLines = [];
+    const metadataLines = [];
+    let offset = 0;
+    while (offset + 8 <= bytes.length && formatLines.length < 40) {
+        let size = readUint32BE(bytes, offset);
+        const type = asciiSlice(bytes, offset + 4, offset + 8);
+        let headerSize = 8;
+        if (size === 1 && offset + 16 <= bytes.length) {
+            const high = readUint32BE(bytes, offset + 8);
+            const low = readUint32BE(bytes, offset + 12);
+            size = high * 0x100000000 + low;
+            headerSize = 16;
+        }
+        if (!type.trim() || size < headerSize || offset + size > bytes.length) break;
+        formatLines.push(`${type} (${formatBytesSize(size)}) @${offset}`);
+        if (type === "ftyp") {
+            const major = asciiSlice(bytes, offset + 8, offset + 12);
+            const brands = [];
+            for (let cursor = offset + 16; cursor + 4 <= offset + size; cursor += 4) {
+                brands.push(asciiSlice(bytes, cursor, cursor + 4));
+            }
+            metadataLines.push(`ftyp major brand: ${major}`);
+            if (brands.length) metadataLines.push(`compatible brands: ${brands.slice(0, 12).join(", ")}`);
+        }
+        offset += size;
+    }
+    return { metadataLines, formatLines };
+}
+
+function parseWebpChunks(bytes) {
+    const metadataLines = [];
+    const chunks = parseRiffChunks(bytes);
+    const formatLines = chunks.slice(0, 40).map(chunk => `${chunk.id} (${formatBytesSize(chunk.size)}) @${chunk.offset}`);
+    chunks.forEach(chunk => {
+        if (chunk.id === "EXIF") metadataLines.push("EXIF: chunk EXIF presente en WebP.");
+        if (chunk.id === "XMP ") metadataLines.push("XMP: chunk XMP presente en WebP.");
+        if (chunk.id === "ICCP") metadataLines.push("ICCP: perfil de color presente.");
+    });
+    return { metadataLines, formatLines };
+}
+
+function collectContainerHints(bytes, type) {
+    const metadataLines = [];
+    const formatLines = [];
+    const indicators = [];
+    let appendedBytes = 0;
+
+    if (type.label === "PNG") {
+        const parsed = parsePngChunks(bytes);
+        formatLines.push(...parsed.chunks.map(chunk => `${chunk.type} (${formatBytesSize(chunk.length)}) @${chunk.offset}`));
+        metadataLines.push(...parsed.chunks.filter(chunk => chunk.text).map(chunk => `${chunk.type}: ${chunk.text}`));
+        appendedBytes = Math.max(0, bytes.length - parsed.endOffset);
+    } else if (type.label === "JPEG") {
+        const parsed = parseJpegSegments(bytes);
+        formatLines.push(...parsed.segments.map(segment => `${segment.name} (${formatBytesSize(segment.length)})`));
+        if (parsed.segments.some(segment => segment.marker === 0xe1)) metadataLines.push("APP1 presente: posible EXIF/XMP.");
+        if (parsed.segments.some(segment => segment.marker === 0xfe)) metadataLines.push("COM presente: comentario JPEG.");
+        appendedBytes = Math.max(0, bytes.length - parsed.endOffset);
+    } else if (type.label === "GIF") {
+        const trailerIndex = lastIndexOfBytes(bytes, [0x3b]);
+        appendedBytes = trailerIndex >= 0 ? Math.max(0, bytes.length - (trailerIndex + 1)) : 0;
+    } else if (type.label === "MP3") {
+        const id3 = parseId3Metadata(bytes);
+        metadataLines.push(...id3.metadataLines);
+        formatLines.push(...id3.formatLines);
+    } else if (type.label === "WAV") {
+        const wav = parseWavInfoMetadata(bytes);
+        metadataLines.push(...wav.metadataLines);
+        formatLines.push(...wav.formatLines);
+    } else if (type.label === "WEBP") {
+        const webp = parseWebpChunks(bytes);
+        metadataLines.push(...webp.metadataLines);
+        formatLines.push(...webp.formatLines);
+    } else if (["MP4/MOV", "M4A/MP4", "AVIF", "HEIC", "HEIX", "HEVC", "HEVX", "MIF1", "MSF1"].includes(type.label)) {
+        const mp4 = parseMp4Atoms(bytes);
+        metadataLines.push(...mp4.metadataLines);
+        formatLines.push(...mp4.formatLines);
+    } else if (type.label === "AVI") {
+        const riff = parseRiffChunks(bytes);
+        formatLines.push(...riff.slice(0, 40).map(chunk => `${chunk.id} (${formatBytesSize(chunk.size)}) @${chunk.offset}`));
+    } else if (type.label === "PDF") {
+        const pdf = extractPdfHints(bytes);
+        metadataLines.push(...pdf.metadataLines);
+        indicators.push(...pdf.indicators);
+        appendedBytes = pdf.appendedBytes;
+    }
+
+    if (appendedBytes > 8) {
+        indicators.push(`Hay ${formatBytesSize(appendedBytes)} despues del final declarado del formato.`);
+    }
+
+    return { metadataLines, formatLines, indicators, appendedBytes };
+}
+
+async function imageFileToCanvas(file) {
+    const url = URL.createObjectURL(file);
+    try {
+        const image = await new Promise((resolve, reject) => {
+            const img = new Image();
+            img.onload = () => resolve(img);
+            img.onerror = () => reject(new Error("El navegador no pudo decodificar la imagen."));
+            img.src = url;
+        });
+        const canvas = document.createElement("canvas");
+        canvas.width = image.naturalWidth || image.width;
+        canvas.height = image.naturalHeight || image.height;
+        const context = canvas.getContext("2d", { willReadFrequently: true });
+        if (!context || !canvas.width || !canvas.height) {
+            throw new Error("No se pudo preparar el canvas local.");
+        }
+        context.drawImage(image, 0, 0);
+        return {
+            canvas,
+            context,
+            imageData: context.getImageData(0, 0, canvas.width, canvas.height),
+            width: canvas.width,
+            height: canvas.height
+        };
+    } finally {
+        URL.revokeObjectURL(url);
+    }
+}
+
+function calculateLsbCapacityBytes(imageData) {
+    const pixels = imageData.data.length / 4;
+    return Math.floor((pixels * 3) / 8);
+}
+
+function readLsbBytes(imageData, byteLength) {
+    const output = new Uint8Array(byteLength);
+    const data = imageData.data;
+    for (let bitIndex = 0; bitIndex < byteLength * 8; bitIndex += 1) {
+        const pixel = Math.floor(bitIndex / 3);
+        const channel = bitIndex % 3;
+        const bit = data[pixel * 4 + channel] & 1;
+        output[Math.floor(bitIndex / 8)] = (output[Math.floor(bitIndex / 8)] << 1) | bit;
+    }
+    return output;
+}
+
+function writeLsbBytes(imageData, payload) {
+    const data = imageData.data;
+    for (let bitIndex = 0; bitIndex < payload.length * 8; bitIndex += 1) {
+        const byte = payload[Math.floor(bitIndex / 8)];
+        const bit = (byte >> (7 - (bitIndex % 8))) & 1;
+        const pixel = Math.floor(bitIndex / 3);
+        const channel = bitIndex % 3;
+        data[pixel * 4 + channel] = (data[pixel * 4 + channel] & 0xfe) | bit;
+    }
+}
+
+function bytesEqual(left, right) {
+    if (left.length !== right.length) return false;
+    return left.every((byte, index) => byte === right[index]);
+}
+
+function buildStegoPacket(payloadBytes) {
+    const packet = new Uint8Array(STEGO_HEADER_BYTES + payloadBytes.length);
+    packet.set(STEGO_MAGIC_BYTES, 0);
+    const lengthOffset = STEGO_MAGIC_BYTES.length;
+    packet[lengthOffset] = (payloadBytes.length >>> 24) & 0xff;
+    packet[lengthOffset + 1] = (payloadBytes.length >>> 16) & 0xff;
+    packet[lengthOffset + 2] = (payloadBytes.length >>> 8) & 0xff;
+    packet[lengthOffset + 3] = payloadBytes.length & 0xff;
+    packet.set(payloadBytes, STEGO_HEADER_BYTES);
+    return packet;
+}
+
+function readStegoPacketFromImageData(imageData) {
+    const capacityBytes = calculateLsbCapacityBytes(imageData);
+    if (capacityBytes < STEGO_HEADER_BYTES) {
+        throw new Error("La imagen no tiene capacidad suficiente para contener una cabecera Feanor.");
+    }
+
+    const header = readLsbBytes(imageData, STEGO_HEADER_BYTES);
+    const magic = header.slice(0, STEGO_MAGIC_BYTES.length);
+    if (!bytesEqual(magic, STEGO_MAGIC_BYTES)) {
+        throw new Error("No se encontro cabecera LSB de Feanor en esta imagen.");
+    }
+
+    const length = readUint32BE(header, STEGO_MAGIC_BYTES.length);
+    if (length < 0 || length > capacityBytes - STEGO_HEADER_BYTES) {
+        throw new Error("La cabecera existe, pero la longitud declarada no encaja con la capacidad de la imagen.");
+    }
+
+    const packet = readLsbBytes(imageData, STEGO_HEADER_BYTES + length);
+    const payloadBytes = packet.slice(STEGO_HEADER_BYTES);
+    return {
+        payloadBytes,
+        payloadText: bytesToUtf8(payloadBytes),
+        capacityBytes
+    };
+}
+
+function readUint16LE(bytes, offset) {
+    return (bytes[offset] | (bytes[offset + 1] << 8)) >>> 0;
+}
+
+function uint16BytesLE(value) {
+    const number = Number(value) >>> 0;
+    return new Uint8Array([number & 0xff, (number >>> 8) & 0xff]);
+}
+
+function steghideCompatibilityForType(type) {
+    if (["JPEG", "BMP", "WAV", "AU"].includes(type.label)) {
+        return {
+            native: true,
+            frontend: type.label === "JPEG" ? "canvas" : "direct",
+            note: type.label === "JPEG"
+                ? "Steghide nativo soporta JPEG en dominio de frecuencia; el navegador lo procesa como canvas y exporta PNG."
+                : "Compatible con escritura LSB directa de laboratorio."
+        };
+    }
+    if (type.family === "image" && type.label !== "SVG") {
+        return {
+            native: false,
+            frontend: "canvas",
+            note: "No es formato Steghide nativo, pero el navegador puede probar LSB y exportar PNG."
+        };
+    }
+    return {
+        native: false,
+        frontend: "analysis",
+        note: "Steghide real no usa este contenedor como cover; el lab puede analizarlo, pero no incrustar en modo compatible."
+    };
+}
+
+function getBmpCarrierIndexes(bytes) {
+    if (!startsWithBytes(bytes, [0x42, 0x4d]) || bytes.length < 54) {
+        throw new Error("El fichero no tiene cabecera BMP valida.");
+    }
+    const pixelOffset = readUint32LE(bytes, 10);
+    const dibSize = readUint32LE(bytes, 14);
+    const width = readUint32LE(bytes, 18);
+    const heightRaw = readUint32LE(bytes, 22);
+    const bpp = readUint16LE(bytes, 28);
+    const compression = readUint32LE(bytes, 30);
+    if (dibSize < 40 || pixelOffset >= bytes.length) throw new Error("BMP no soportado: cabecera DIB inesperada.");
+    if (![24, 32].includes(bpp)) throw new Error("BMP soportado en frontend solo con 24 o 32 bits por pixel.");
+    if (compression !== 0) throw new Error("BMP comprimido no soportado para escritura LSB directa.");
+    const indexes = [];
+    for (let index = pixelOffset; index < bytes.length; index += 1) indexes.push(index);
+    return {
+        indexes,
+        detail: [
+            `BMP ${width}x${heightRaw & 0x7fffffff}, ${bpp} bpp.`,
+            `Offset de pixeles: ${pixelOffset}.`,
+            `Bytes portadores LSB: ${formatBytesSize(indexes.length)}.`
+        ]
+    };
+}
+
+function getWavCarrierIndexes(bytes) {
+    if (asciiSlice(bytes, 0, 4) !== "RIFF" || asciiSlice(bytes, 8, 12) !== "WAVE") {
+        throw new Error("El fichero no parece WAV RIFF.");
+    }
+    const chunks = parseRiffChunks(bytes);
+    const dataChunk = chunks.find(chunk => chunk.id === "data");
+    if (!dataChunk) throw new Error("No se encontro chunk data en el WAV.");
+    const indexes = [];
+    for (let index = dataChunk.dataStart; index < dataChunk.dataEnd; index += 1) indexes.push(index);
+    return {
+        indexes,
+        detail: [
+            `WAV RIFF con ${chunks.length} chunks detectados.`,
+            `Chunk data: ${formatBytesSize(dataChunk.size)} @${dataChunk.dataStart}.`,
+            `Bytes portadores LSB: ${formatBytesSize(indexes.length)}.`
+        ]
+    };
+}
+
+function getAuCarrierIndexes(bytes) {
+    if (!startsWithBytes(bytes, [0x2e, 0x73, 0x6e, 0x64]) || bytes.length < 24) {
+        throw new Error("El fichero no tiene cabecera AU/SND valida.");
+    }
+    const headerSize = readUint32BE(bytes, 4);
+    const dataSizeRaw = readUint32BE(bytes, 8);
+    const encoding = readUint32BE(bytes, 12);
+    const sampleRate = readUint32BE(bytes, 16);
+    const channels = readUint32BE(bytes, 20);
+    if (headerSize < 24 || headerSize >= bytes.length) throw new Error("Cabecera AU no soportada.");
+    const dataEnd = dataSizeRaw === 0xffffffff ? bytes.length : Math.min(bytes.length, headerSize + dataSizeRaw);
+    const indexes = [];
+    for (let index = headerSize; index < dataEnd; index += 1) indexes.push(index);
+    return {
+        indexes,
+        detail: [
+            `AU/SND encoding=${encoding}, ${sampleRate} Hz, ${channels} canales.`,
+            `Offset de audio: ${headerSize}.`,
+            `Bytes portadores LSB: ${formatBytesSize(indexes.length)}.`
+        ]
+    };
+}
+
+function getByteCarrier(bytes, type) {
+    if (type.label === "BMP") return { mode: "byte", extension: "bmp", mime: "image/bmp", ...getBmpCarrierIndexes(bytes) };
+    if (type.label === "WAV") return { mode: "byte", extension: "wav", mime: "audio/wav", ...getWavCarrierIndexes(bytes) };
+    if (type.label === "AU") return { mode: "byte", extension: "au", mime: "audio/basic", ...getAuCarrierIndexes(bytes) };
+    return null;
+}
+
+function canvasCarrierIndexes(imageData) {
+    const indexes = [];
+    for (let index = 0; index < imageData.data.length; index += 1) {
+        if (index % 4 !== 3) indexes.push(index);
+    }
+    return indexes;
+}
+
+async function getSteghideCarrier(file, bytes, type, preferCanvas = false) {
+    const byteCarrier = preferCanvas ? null : getByteCarrier(bytes, type);
+    if (byteCarrier) {
+        return {
+            ...byteCarrier,
+            sourceBytes: bytes,
+            capacityBytes: Math.floor(byteCarrier.indexes.length / 8)
+        };
+    }
+    if (type.family === "image" && type.label !== "SVG") {
+        const image = await imageFileToCanvas(file);
+        const indexes = canvasCarrierIndexes(image.imageData);
+        return {
+            mode: "canvas",
+            extension: "png",
+            mime: "image/png",
+            indexes,
+            image,
+            capacityBytes: Math.floor(indexes.length / 8),
+            detail: [
+                `Canvas local ${image.width}x${image.height}.`,
+                "La salida se exporta como PNG para conservar bits LSB.",
+                `Bytes portadores LSB: ${formatBytesSize(indexes.length)}.`
+            ]
+        };
+    }
+    throw new Error("Este formato no permite incrustacion frontend en el laboratorio Steghide.");
+}
+
+function steghideXorshift(seed) {
+    let state = seed >>> 0;
+    if (!state) state = 0x9e3779b9;
+    return () => {
+        state ^= (state << 13) >>> 0;
+        state ^= state >>> 17;
+        state ^= (state << 5) >>> 0;
+        return state >>> 0;
+    };
+}
+
+async function steghideSeedFromPassphrase(passphrase) {
+    const subtle = getSubtleCrypto();
+    const material = textToBytes(`feanor-steghide-order:${passphrase ?? ""}`);
+    const digest = new Uint8Array(await subtle.digest("SHA-256", material));
+    return readUint32BE(digest, 0) || 0x9e3779b9;
+}
+
+function steghidePermutation(length, seed) {
+    const order = new Uint32Array(length);
+    for (let index = 0; index < length; index += 1) order[index] = index;
+    const random = steghideXorshift(seed);
+    for (let index = length - 1; index > 0; index -= 1) {
+        const swapIndex = random() % (index + 1);
+        const current = order[index];
+        order[index] = order[swapIndex];
+        order[swapIndex] = current;
+    }
+    return order;
+}
+
+function writePacketToCarrierBytes(bytes, indexes, packet, seed) {
+    const bitCount = packet.length * 8;
+    if (bitCount > indexes.length) {
+        throw new Error(`El payload necesita ${formatBytesSize(packet.length)} y el portador solo ofrece ${formatBytesSize(Math.floor(indexes.length / 8))}.`);
+    }
+    const output = new Uint8Array(bytes);
+    const order = steghidePermutation(indexes.length, seed);
+    for (let bitIndex = 0; bitIndex < bitCount; bitIndex += 1) {
+        const byte = packet[Math.floor(bitIndex / 8)];
+        const bit = (byte >> (7 - (bitIndex % 8))) & 1;
+        const carrierIndex = indexes[order[bitIndex]];
+        output[carrierIndex] = (output[carrierIndex] & 0xfe) | bit;
+    }
+    return output;
+}
+
+function readPacketBytesFromCarrierBytes(bytes, indexes, seed, byteLength) {
+    const bitCount = byteLength * 8;
+    if (bitCount > indexes.length) {
+        throw new Error("El portador no tiene capacidad suficiente para leer esa cantidad de bytes.");
+    }
+    const order = steghidePermutation(indexes.length, seed);
+    const output = new Uint8Array(byteLength);
+    for (let bitIndex = 0; bitIndex < bitCount; bitIndex += 1) {
+        const carrierIndex = indexes[order[bitIndex]];
+        output[Math.floor(bitIndex / 8)] = (output[Math.floor(bitIndex / 8)] << 1) | (bytes[carrierIndex] & 1);
+    }
+    return output;
+}
+
+async function bytesThroughCompressionStream(bytes, mode) {
+    const streamCtor = mode === "compress" ? globalThis.CompressionStream : globalThis.DecompressionStream;
+    if (!streamCtor) return { bytes, used: false };
+    try {
+        const format = "deflate";
+        const stream = new Blob([bytes]).stream().pipeThrough(new streamCtor(format));
+        return {
+            bytes: new Uint8Array(await new Response(stream).arrayBuffer()),
+            used: true
+        };
+    } catch {
+        return { bytes, used: false };
+    }
+}
+
+async function deriveSteghideAesKey(passphrase, salt, usages) {
+    if (!passphrase) throw new Error("AES-GCM necesita passphrase.");
+    const subtle = getSubtleCrypto();
+    const baseKey = await subtle.importKey("raw", textToBytes(passphrase), "PBKDF2", false, ["deriveKey"]);
+    return await subtle.deriveKey(
+        { name: "PBKDF2", salt, iterations: STEGHIDE_KDF_ITERATIONS, hash: "SHA-256" },
+        baseKey,
+        { name: "AES-GCM", length: 256 },
+        false,
+        usages
+    );
+}
+
+async function buildSteghidePacket(secretFile, passphrase) {
+    const originalBytes = new Uint8Array(await secretFile.arrayBuffer());
+    const crc = pngCrc32(originalBytes).toString(16).padStart(8, "0");
+    let storedBytes = originalBytes;
+    let compressionUsed = false;
+    if (steghideCompression.value === "auto") {
+        const compressed = await bytesThroughCompressionStream(originalBytes, "compress");
+        compressionUsed = compressed.used && compressed.bytes.length < originalBytes.length;
+        storedBytes = compressionUsed ? compressed.bytes : originalBytes;
+    }
+
+    const salt = globalThis.crypto?.getRandomValues ? globalThis.crypto.getRandomValues(new Uint8Array(16)) : textToBytes(randomHex(16)).slice(0, 16);
+    const iv = globalThis.crypto?.getRandomValues ? globalThis.crypto.getRandomValues(new Uint8Array(12)) : textToBytes(randomHex(12)).slice(0, 12);
+    let payloadBytes = storedBytes;
+    if (steghideEncryption.value === "aes-gcm") {
+        const key = await deriveSteghideAesKey(passphrase, salt, ["encrypt"]);
+        payloadBytes = new Uint8Array(await getSubtleCrypto().encrypt({ name: "AES-GCM", iv }, key, storedBytes));
+    }
+
+    const header = {
+        format: STEGHIDE_MAGIC_TEXT,
+        version: 1,
+        originalName: steghideStoreName.value ? secretFile.name : "",
+        fallbackName: `${safeFileBaseName(secretFile.name)}.out`,
+        mime: secretFile.type || "application/octet-stream",
+        originalSize: originalBytes.length,
+        storedSize: storedBytes.length,
+        payloadSize: payloadBytes.length,
+        encrypted: steghideEncryption.value === "aes-gcm",
+        encryption: steghideEncryption.value === "aes-gcm" ? "AES-GCM" : "none",
+        kdf: steghideEncryption.value === "aes-gcm" ? "PBKDF2-SHA256" : "none",
+        iterations: steghideEncryption.value === "aes-gcm" ? STEGHIDE_KDF_ITERATIONS : 0,
+        salt: steghideEncryption.value === "aes-gcm" ? bytesToBase64(salt) : "",
+        iv: steghideEncryption.value === "aes-gcm" ? bytesToBase64(iv) : "",
+        compressed: compressionUsed,
+        compression: compressionUsed ? "deflate" : "none",
+        compressionLevel: Number(steghideCompressionLevel.value) || 6,
+        checksum: Boolean(steghideChecksum.value),
+        crc32: steghideChecksum.value ? crc : "",
+        createdAt: new Date().toISOString()
+    };
+    const headerBytes = textToBytes(safeJson(header));
+    return {
+        packet: concatBytes(
+            STEGHIDE_MAGIC_BYTES,
+            uint32BytesBE(headerBytes.length),
+            headerBytes,
+            payloadBytes
+        ),
+        header,
+        originalBytes
+    };
+}
+
+function parseSteghidePacketHeader(probe) {
+    if (!bytesEqual(probe.slice(0, STEGHIDE_MAGIC_BYTES.length), STEGHIDE_MAGIC_BYTES)) {
+        throw new Error("No se encontro cabecera FEANOR_STEGHIDE_V1 con esa passphrase.");
+    }
+    const headerLength = readUint32BE(probe, STEGHIDE_MAGIC_BYTES.length);
+    if (!headerLength || headerLength > 65536) {
+        throw new Error("Cabecera detectada, pero la longitud no es valida.");
+    }
+    return headerLength;
+}
+
+async function prepareSteghideExtraction(file) {
+    const bytes = new Uint8Array(await file.arrayBuffer());
+    const type = detectFileType(bytes, file);
+    const carrier = await getSteghideCarrier(file, bytes, type, false);
+    const carrierBytes = carrier.mode === "canvas" ? carrier.image.imageData.data : carrier.sourceBytes;
+    return { bytes, type, carrier, carrierBytes };
+}
+
+async function extractSteghidePacketFromPrepared(prepared, passphrase, headerOnly = false) {
+    const { type, carrier, carrierBytes } = prepared;
+    const seed = await steghideSeedFromPassphrase(passphrase);
+    const probe = readPacketBytesFromCarrierBytes(carrierBytes, carrier.indexes, seed, STEGHIDE_HEADER_BYTES);
+    const headerLength = parseSteghidePacketHeader(probe);
+    const headerPacket = readPacketBytesFromCarrierBytes(carrierBytes, carrier.indexes, seed, STEGHIDE_HEADER_BYTES + headerLength);
+    const header = JSON.parse(bytesToUtf8(headerPacket.slice(STEGHIDE_HEADER_BYTES)));
+    const totalLength = STEGHIDE_HEADER_BYTES + headerLength + Number(header.payloadSize || 0);
+    if (headerOnly) return { header, carrier, type, packetLength: totalLength };
+    if (!header.payloadSize || totalLength > carrier.capacityBytes) {
+        throw new Error("El tamano declarado del payload no encaja con la capacidad del portador.");
+    }
+    const packet = readPacketBytesFromCarrierBytes(carrierBytes, carrier.indexes, seed, totalLength);
+    let payload = packet.slice(STEGHIDE_HEADER_BYTES + headerLength);
+    if (header.encrypted) {
+        const key = await deriveSteghideAesKey(passphrase, base64ToBytes(header.salt), ["decrypt"]);
+        payload = new Uint8Array(await getSubtleCrypto().decrypt({ name: "AES-GCM", iv: base64ToBytes(header.iv) }, key, payload));
+    }
+    if (header.compressed) {
+        const decompressed = await bytesThroughCompressionStream(payload, "decompress");
+        if (!decompressed.used) throw new Error("El navegador no pudo descomprimir el payload deflate.");
+        payload = decompressed.bytes;
+    }
+    if (header.checksum) {
+        const crc = pngCrc32(payload).toString(16).padStart(8, "0");
+        if (crc !== header.crc32) throw new Error("CRC32 no coincide; passphrase incorrecta o datos alterados.");
+    }
+    return { header, payload, carrier, type, packetLength: totalLength };
+}
+
+async function extractSteghidePacketFromCarrier(file, passphrase, headerOnly = false) {
+    return await extractSteghidePacketFromPrepared(await prepareSteghideExtraction(file), passphrase, headerOnly);
+}
+
+function steghideNativeCommandLines(fileName, secretName = "secret.bin", outputName = "stego-output") {
+    const pass = steghidePassphrase.value ? ` -p "${steghidePassphrase.value.replace(/"/g, "\\\"")}"` : "";
+    const compression = steghideCompression.value === "none"
+        ? " -Z"
+        : ` -z ${Number(steghideCompressionLevel.value) || 6}`;
+    const checksum = steghideChecksum.value ? "" : " -K";
+    const name = steghideStoreName.value ? "" : " -N";
+    return [
+        `steghide info "${fileName}"${pass}`,
+        `steghide embed -cf "${fileName}" -ef "${secretName}" -sf "${outputName}"${pass}${compression}${checksum}${name}`,
+        `steghide extract -sf "${fileName}" -xf "extracted-${secretName}"${pass}`,
+        `stegseek "${fileName}" "wordlist.txt"`,
+        `stegseek --seed "${fileName}"`,
+        "stegseek --help -v"
+    ];
+}
+
+function steghideResultPanels(commandLines, details = [], extraPanels = []) {
+    return [
+        {
+            title: "Comandos nativos equivalentes",
+            badge: "cli",
+            content: commandLines.join("\n"),
+            copyValue: commandLines.join("\n")
+        },
+        {
+            title: "Lectura tecnica",
+            badge: "lab",
+            content: buildTextList("Steghide / StegSeek", details),
+            copyValue: details.join("\n")
+        },
+        ...extraPanels
+    ];
+}
+
+function fillSteghideExample() {
+    steghideOperation.value = "info";
+    steghidePassphrase.value = "feanor-lab";
+    steghideEncryption.value = "aes-gcm";
+    steghideCompression.value = "auto";
+    steghideCompressionLevel.value = 6;
+    steghideChecksum.value = true;
+    steghideStoreName.value = true;
+    steghideMaxGuesses.value = 5000;
+    steghideSkipDefaultGuesses.value = false;
+    steghideResult.value = {
+        verdictTone: "verdict-success",
+        verdictTitle: "Ejemplo cargado",
+        verdictBody: "Sube un BMP/WAV/AU para salida directa o una imagen compatible para salida PNG por canvas. Sube tambien un fichero secreto si quieres incrustar.",
+        summaryCards: [
+            { label: "Passphrase", value: "Lista", tone: "tone-success", note: "feanor-lab" },
+            { label: "Cifrado", value: "AES-GCM", tone: "tone-success", note: "PBKDF2" },
+            { label: "Compresion", value: "Auto", tone: "tone-neutral", note: "deflate si compensa" },
+            { label: "Checksum", value: "CRC32", tone: "tone-success", note: "Integridad" }
+        ],
+        panels: steghideResultPanels(steghideNativeCommandLines("cover.jpg", "secret.txt", "stego.jpg"), [
+            "Steghide real: JPEG/BMP/WAV/AU, cifrado Rijndael-128 CBC por defecto, compresion y CRC32.",
+            "StegSeek real: crack por wordlist y modo --seed para detectar contenido Steghide.",
+            "Frontend: formato de laboratorio FEANOR_STEGHIDE_V1 con posiciones pseudoaleatorias derivadas de passphrase."
+        ])
+    };
+}
+
+async function analyzeImageLsb(file, type) {
+    if (type.family !== "image" || type.label === "SVG") return null;
+    try {
+        const { imageData, width, height } = await imageFileToCanvas(file);
+        const data = imageData.data;
+        let ones = 0;
+        const totalBits = (data.length / 4) * 3;
+        for (let index = 0; index < data.length; index += 4) {
+            ones += data[index] & 1;
+            ones += data[index + 1] & 1;
+            ones += data[index + 2] & 1;
+        }
+        let hasFeanorPayload = false;
+        try {
+            readStegoPacketFromImageData(imageData);
+            hasFeanorPayload = true;
+        } catch {
+            hasFeanorPayload = false;
+        }
+        return {
+            width,
+            height,
+            capacityBytes: calculateLsbCapacityBytes(imageData),
+            lsbRatio: ones / totalBits,
+            hasFeanorPayload
+        };
+    } catch {
+        return null;
+    }
+}
+
+function canvasToPngBlob(canvas) {
+    return new Promise((resolve, reject) => {
+        canvas.toBlob(blob => {
+            if (blob) resolve(blob);
+            else reject(new Error("No se pudo exportar el PNG generado."));
+        }, "image/png");
+    });
+}
+
+async function analyzeExifFile() {
+    if (!exifFile.value) {
+        exifResult.value = buildErrorResult("EXIF_FILE_EMPTY", "Falta imagen", "Selecciona una imagen local para extraer sus metadatos.");
+        return;
+    }
+
+    try {
+        const file = exifFile.value;
+        const bytes = new Uint8Array(await file.arrayBuffer());
+        const type = detectFileType(bytes, file);
+        const entropy = byteShannonEntropy(bytes);
+        const sha256 = globalThis.crypto?.subtle
+            ? bytesToHex(new Uint8Array(await globalThis.crypto.subtle.digest("SHA-256", bytes)))
+            : "";
+        let container = { metadataLines: [], formatLines: [], indicators: [], appendedBytes: 0 };
+        try {
+            container = collectContainerHints(bytes, type);
+        } catch (error) {
+            container.indicators = [`No se pudo inspeccionar el contenedor: ${error.message}`];
+        }
+
+        let metadata = {};
+        let parseError = "";
+        try {
+            metadata = await parseExifMetadata(file) || {};
+        } catch (error) {
+            parseError = error.message;
+        }
+
+        const builtRows = buildExifRows(metadata, file, bytes, type, sha256, entropy, container, parseError);
+        const reportRows = rowsForExifReport(builtRows.rows);
+        const allSortedRows = sortExifRows(builtRows.rows, "forensic");
+        const reportText = formatExifToolLikeReport(reportRows, file, type, sha256);
+        const groups = categorizeExifMetadata(metadata);
+        const mapLink = gpsMapLink(metadata);
+        const metadataCount = builtRows.metadataRows.length;
+        const highRisks = builtRows.rows.filter(row => row.riskLevel === "high");
+        const warningRisks = builtRows.rows.filter(row => row.riskLevel === "warning");
+        const hasGps = highRisks.length > 0 || groups.gps.length > 0;
+        const hasIdentity = warningRisks.length > 0;
+        const hasContainerWarnings = builtRows.rows.some(row => row.group === "Warnings" || row.group === "Parser");
+        const noMetadata = metadataCount === 0;
+        const riskTone = hasGps || hasIdentity || hasContainerWarnings || noMetadata ? "verdict-warning" : "verdict-success";
+        const riskLabel = hasGps
+            ? "Ubicacion visible"
+            : hasIdentity
+                ? "Identidad visible"
+                : hasContainerWarnings
+                    ? "Revisar contenedor"
+                    : noMetadata
+                        ? "Sin EXIF visible"
+                        : "Metadatos tecnicos";
+        const riskLines = buildExifRiskLines(builtRows.rows);
+        const groupLines = summarizeExifGroups(allSortedRows);
+        const keyLines = buildExifKeyLines(groups, mapLink);
+        const profileNotes = buildExifProfileNotes(builtRows.metadataRows, reportRows, parseError);
+        const rawJson = {
+            file: {
+                name: file.name,
+                size: file.size,
+                browserMime: file.type || "",
+                detectedType: type,
+                sha256: sha256 || null,
+                entropy
+            },
+            profile: {
+                value: exifProfile.value,
+                label: selectedExifProfile.value.label,
+                detailMode: exifDetailMode.value,
+                filter: exifTagFilter.value.trim()
+            },
+            rows: allSortedRows,
+            shownRows: reportRows,
+            metadata,
+            container
+        };
+        setExifDownloads(file.name, reportText, rawJson);
+
+        exifResult.value = {
+            verdictTone: riskTone,
+            verdictTitle: noMetadata ? "Reporte generado sin EXIF legible" : "Reporte EXIF generado",
+            verdictBody: hasGps
+                ? "Hay datos de ubicacion o GPS en las filas legibles. Revisa antes de compartir esta imagen."
+                : hasIdentity
+                    ? "Hay campos que pueden identificar autor, dispositivo, flujo de edicion o procedencia."
+                    : noMetadata
+                        ? "El contenedor se pudo inspeccionar, pero no hay tags EXIF/XMP/IPTC/ICC accesibles desde el navegador."
+                        : "Los metadatos se han organizado en un reporte exportable con grupos, tags y lectura de privacidad.",
+            summaryCards: [
+                { label: "Tipo", value: type.label, tone: "tone-neutral", note: file.type || "MIME" },
+                { label: "Tags", value: String(metadataCount), tone: metadataCount ? "tone-success" : "tone-warning", note: "Metadatos parseados" },
+                { label: "GPS", value: hasGps ? "Si" : "No", tone: hasGps ? "tone-warning" : "tone-success", note: "Ubicacion" },
+                { label: "Riesgo", value: riskLabel, tone: hasGps || hasIdentity || hasContainerWarnings ? "tone-warning" : "tone-success", note: "Privacidad" }
+            ],
+            signalCards: [
+                { label: "Perfil", value: selectedExifProfile.value.badge, tone: "tone-neutral", note: selectedExifProfile.value.label },
+                { label: "Filtro", value: exifTagFilter.value.trim() ? "Activo" : "No", tone: exifTagFilter.value.trim() ? "tone-warning" : "tone-success", note: `${reportRows.length} filas` },
+                { label: "SHA-256", value: sha256 ? "Si" : "No", tone: sha256 ? "tone-success" : "tone-neutral", note: "Huella local" },
+                { label: "Export", value: "TXT/JSON", tone: "tone-success", note: "Sin servidor" }
+            ],
+            panels: [
+                {
+                    title: "Resultado",
+                    badge: "GAS",
+                    content: reportText,
+                    copyValue: reportText
+                },
+                {
+                    title: "Riesgos y lectura rapida",
+                    badge: "priv",
+                    content: buildTextList("Privacidad", [...riskLines, ...profileNotes]),
+                    copyValue: [...riskLines, ...profileNotes].join("\n")
+                },
+                {
+                    title: "Grupos detectados",
+                    badge: "grp",
+                    content: buildTextList("Grupos", groupLines),
+                    copyValue: groupLines.join("\n")
+                },
+                {
+                    title: "Campos clave",
+                    badge: "key",
+                    content: buildTextList("Lectura organizada", keyLines),
+                    copyValue: keyLines.join("\n")
+                },
+                {
+                    title: "Estructura del contenedor",
+                    badge: "bin",
+                    content: buildTextList("Bloques", [
+                        ...container.indicators,
+                        ...(container.formatLines || []).slice(0, exifDetailMode.value === "raw" ? 80 : 24),
+                        ...(container.metadataLines || []).slice(0, 16)
+                    ]),
+                    copyValue: [
+                        ...container.indicators,
+                        ...(container.formatLines || []),
+                        ...(container.metadataLines || [])
+                    ].join("\n")
+                },
+                {
+                    title: "JSON crudo",
+                    badge: "raw",
+                    content: exifDetailMode.value === "raw" ? safeJson(rawJson) : "Disponible en la descarga JSON. Cambia la vista a Crudo / auditoria para verlo dentro del panel.",
+                    copyValue: safeJson(rawJson)
+                }
+            ]
+        };
+    } catch (error) {
+        exifResult.value = buildErrorResult("EXIF_ANALYZE_FAILED", "No se pudo extraer EXIF", error.message);
+    }
+}
+
+async function runSteghideInfo() {
+    if (!steghideFile.value) {
+        steghideResult.value = buildErrorResult("STEGHIDE_FILE_EMPTY", "Falta cover/stegofile", "Selecciona un JPEG, BMP, WAV, AU o una imagen compatible.");
+        return;
+    }
+
+    try {
+        const file = steghideFile.value;
+        const bytes = new Uint8Array(await file.arrayBuffer());
+        const type = detectFileType(bytes, file);
+        const compatibility = steghideCompatibilityForType(type);
+        let carrier = null;
+        let carrierLines = [];
+        try {
+            carrier = await getSteghideCarrier(file, bytes, type, false);
+            carrierLines = carrier.detail;
+        } catch (error) {
+            carrierLines = [`No se pudo preparar portador frontend: ${error.message}`];
+        }
+        const container = collectContainerHints(bytes, type);
+        const entropy = byteShannonEntropy(bytes);
+        const commands = steghideNativeCommandLines(file.name, steghideSecretFile.value?.name || "secret.bin", `${safeFileBaseName(file.name)}-steg.${type.extension || "bin"}`);
+        const capacityBytes = carrier?.capacityBytes || 0;
+        const secretSize = steghideSecretFile.value?.size || 0;
+        const fitsSecret = secretSize ? secretSize < capacityBytes : null;
+
+        steghideOperation.value = "info";
+        steghideResult.value = {
+            verdictTone: compatibility.native || carrier ? "verdict-success" : "verdict-warning",
+            verdictTitle: "Info Steghide generada",
+            verdictBody: compatibility.native
+                ? "El fichero pertenece a una familia soportada por Steghide nativo. El laboratorio calcula capacidad frontend y comandos equivalentes."
+                : "El formato no es Steghide nativo; se ofrece analisis local y, si es imagen decodificable, modo canvas/PNG.",
+            summaryCards: [
+                { label: "Tipo", value: type.label, tone: compatibility.native ? "tone-success" : "tone-warning", note: compatibility.native ? "Steghide nativo" : "No nativo" },
+                { label: "Capacidad", value: capacityBytes ? formatBytesSize(capacityBytes) : "N/D", tone: capacityBytes ? "tone-success" : "tone-warning", note: "LSB frontend" },
+                { label: "Entropy", value: `${entropy.toFixed(2)}`, tone: entropy > 7.85 ? "tone-warning" : "tone-neutral", note: "bits/byte" },
+                { label: "Secreto", value: secretSize ? formatBytesSize(secretSize) : "N/D", tone: fitsSecret === false ? "tone-warning" : "tone-neutral", note: fitsSecret === null ? "No seleccionado" : fitsSecret ? "Encaja sin overhead" : "Grande" }
+            ],
+            signalCards: [
+                { label: "Frontend", value: compatibility.frontend, tone: carrier ? "tone-success" : "tone-warning", note: compatibility.note },
+                { label: "Compresion", value: steghideCompression.value === "auto" ? `z${steghideCompressionLevel.value}` : "-Z", tone: "tone-neutral", note: "Opcion lab" },
+                { label: "Cifrado", value: steghideEncryption.value === "aes-gcm" ? "AES-GCM" : "none", tone: steghideEncryption.value === "aes-gcm" ? "tone-success" : "tone-warning", note: "Frontend" },
+                { label: "Checksum", value: steghideChecksum.value ? "CRC32" : "No", tone: steghideChecksum.value ? "tone-success" : "tone-warning", note: steghideChecksum.value ? "Validacion" : "-K" }
+            ],
+            panels: steghideResultPanels(commands, [
+                ...carrierLines,
+                ...container.indicators,
+                `Formato detectado por magic bytes: ${type.label}.`,
+                `Compatibilidad: ${compatibility.note}`,
+                "Steghide real detecta formato por cabecera, no por extension.",
+                "StegSeek real puede probar wordlists contra contenido Steghide nativo; el navegador prueba wordlists contra FEANOR_STEGHIDE_V1."
+            ], [
+                {
+                    title: "Estructura visible",
+                    badge: "fmt",
+                    content: buildTextList("Contenedor", [
+                        ...(container.formatLines || []).slice(0, 36),
+                        ...(container.metadataLines || []).slice(0, 16)
+                    ]),
+                    copyValue: [...(container.formatLines || []), ...(container.metadataLines || [])].join("\n")
+                }
+            ])
+        };
+    } catch (error) {
+        steghideResult.value = buildErrorResult("STEGHIDE_INFO_FAILED", "No se pudo generar info", error.message);
+    }
+}
+
+async function embedSteghidePayload() {
+    if (!steghideFile.value) {
+        steghideResult.value = buildErrorResult("STEGHIDE_COVER_EMPTY", "Falta cover file", "Selecciona un fichero portador antes de incrustar.");
+        return;
+    }
+    if (!steghideSecretFile.value) {
+        steghideResult.value = buildErrorResult("STEGHIDE_SECRET_EMPTY", "Falta embedded file", "Selecciona el fichero secreto que quieres ocultar.");
+        return;
+    }
+    if (steghideEncryption.value === "aes-gcm" && !steghidePassphrase.value) {
+        steghideResult.value = buildErrorResult("STEGHIDE_PASSPHRASE_EMPTY", "Falta passphrase", "AES-GCM y el orden pseudoaleatorio necesitan una passphrase.");
+        return;
+    }
+
+    try {
+        const file = steghideFile.value;
+        const coverBytes = new Uint8Array(await file.arrayBuffer());
+        const type = detectFileType(coverBytes, file);
+        const carrier = await getSteghideCarrier(file, coverBytes, type, false);
+        const built = await buildSteghidePacket(steghideSecretFile.value, steghidePassphrase.value);
+        const seed = await steghideSeedFromPassphrase(steghidePassphrase.value);
+        if (built.packet.length > carrier.capacityBytes) {
+            throw new Error(`Paquete ${formatBytesSize(built.packet.length)} mayor que capacidad ${formatBytesSize(carrier.capacityBytes)}.`);
+        }
+
+        let blob = null;
+        let extension = carrier.extension;
+        if (carrier.mode === "canvas") {
+            const outputData = writePacketToCarrierBytes(carrier.image.imageData.data, carrier.indexes, built.packet, seed);
+            carrier.image.imageData.data.set(outputData);
+            carrier.image.context.putImageData(carrier.image.imageData, 0, 0);
+            blob = await canvasToPngBlob(carrier.image.canvas);
+            extension = "png";
+        } else {
+            const outputBytes = writePacketToCarrierBytes(carrier.sourceBytes, carrier.indexes, built.packet, seed);
+            blob = new Blob([outputBytes], { type: carrier.mime });
+        }
+        const outputName = `${safeFileBaseName(file.name)}-feanor-steghide.${extension}`;
+        setSteghideDownload(blob, outputName);
+        const commands = steghideNativeCommandLines(file.name, steghideSecretFile.value.name, outputName);
+        const overhead = built.packet.length - built.header.payloadSize;
+
+        steghideOperation.value = "embed";
+        steghideResult.value = {
+            verdictTone: "verdict-success",
+            verdictTitle: "Payload incrustado",
+            verdictBody: carrier.mode === "canvas"
+                ? "El payload se ha escrito en pixeles decodificados y se ha exportado como PNG para conservar los bits."
+                : "El payload se ha escrito directamente sobre bytes portadores del formato seleccionado.",
+            summaryCards: [
+                { label: "Salida", value: outputName, tone: "tone-success", note: carrier.mode === "canvas" ? "PNG" : type.label },
+                { label: "Secreto", value: formatBytesSize(built.originalBytes.length), tone: "tone-success", note: steghideSecretFile.value.name },
+                { label: "Paquete", value: formatBytesSize(built.packet.length), tone: "tone-neutral", note: `${formatBytesSize(overhead)} overhead` },
+                { label: "Uso", value: `${((built.packet.length / carrier.capacityBytes) * 100).toFixed(2)}%`, tone: "tone-success", note: "Capacidad LSB" }
+            ],
+            signalCards: [
+                { label: "Orden", value: "PRNG", tone: "tone-success", note: "Passphrase -> SHA-256 -> xorshift" },
+                { label: "Cifrado", value: built.header.encryption, tone: built.header.encrypted ? "tone-success" : "tone-warning", note: built.header.kdf },
+                { label: "Compresion", value: built.header.compression, tone: built.header.compressed ? "tone-success" : "tone-neutral", note: built.header.compressed ? `${built.header.originalSize} -> ${built.header.storedSize}` : "Sin ahorro" },
+                { label: "CRC32", value: built.header.checksum ? built.header.crc32 : "No", tone: built.header.checksum ? "tone-success" : "tone-warning", note: "Checksum" }
+            ],
+            panels: steghideResultPanels(commands, [
+                ...carrier.detail,
+                `Magic interno: ${STEGHIDE_MAGIC_TEXT}.`,
+                `Nombre embebido: ${built.header.originalName || "no guardado"}.`,
+                `Descarga generada: ${outputName}.`,
+                "El formato frontend no es binariamente compatible con steghide nativo; reproduce su flujo operativo en navegador."
+            ], [
+                {
+                    title: "Cabecera del paquete",
+                    badge: "json",
+                    content: safeJson(built.header),
+                    copyValue: safeJson(built.header)
+                }
+            ])
+        };
+    } catch (error) {
+        steghideResult.value = buildErrorResult("STEGHIDE_EMBED_FAILED", "No se pudo incrustar", error.message);
+    }
+}
+
+async function extractSteghidePayload() {
+    if (!steghideFile.value) {
+        steghideResult.value = buildErrorResult("STEGHIDE_STEGO_EMPTY", "Falta stego file", "Selecciona el fichero que contiene datos ocultos.");
+        return;
+    }
+
+    try {
+        const extracted = await extractSteghidePacketFromCarrier(steghideFile.value, steghidePassphrase.value, false);
+        const outputName = steghideStoreName.value && extracted.header.originalName
+            ? extracted.header.originalName
+            : extracted.header.fallbackName || `${safeFileBaseName(steghideFile.value.name)}.out`;
+        setSteghideDownload(new Blob([extracted.payload], { type: extracted.header.mime || "application/octet-stream" }), outputName);
+        const commands = steghideNativeCommandLines(steghideFile.value.name, outputName, steghideFile.value.name);
+
+        steghideOperation.value = "extract";
+        steghideResult.value = {
+            primaryValue: bytesToHex(extracted.payload.slice(0, Math.min(64, extracted.payload.length))),
+            verdictTone: "verdict-success",
+            verdictTitle: "Payload extraido",
+            verdictBody: "La cabecera, el descifrado y el checksum han validado con la passphrase indicada.",
+            summaryCards: [
+                { label: "Archivo", value: outputName, tone: "tone-success", note: extracted.header.mime || "binario" },
+                { label: "Tamano", value: formatBytesSize(extracted.payload.length), tone: "tone-success", note: "Payload recuperado" },
+                { label: "Cifrado", value: extracted.header.encryption, tone: extracted.header.encrypted ? "tone-success" : "tone-warning", note: extracted.header.kdf },
+                { label: "CRC32", value: extracted.header.checksum ? "OK" : "No", tone: extracted.header.checksum ? "tone-success" : "tone-warning", note: extracted.header.crc32 || "-K" }
+            ],
+            signalCards: [
+                { label: "Tipo", value: extracted.type.label, tone: "tone-neutral", note: "Portador" },
+                { label: "Compresion", value: extracted.header.compression, tone: extracted.header.compressed ? "tone-success" : "tone-neutral", note: extracted.header.compressed ? "Descomprimido" : "No usada" },
+                { label: "Paquete", value: formatBytesSize(extracted.packetLength), tone: "tone-neutral", note: "Bytes ocultos" },
+                { label: "Descarga", value: "Lista", tone: "tone-success", note: outputName }
+            ],
+            panels: steghideResultPanels(commands, [
+                `Magic interno: ${extracted.header.format}.`,
+                `Nombre original: ${extracted.header.originalName || "no guardado"}.`,
+                `Tamano original declarado: ${formatBytesSize(extracted.header.originalSize)}.`,
+                "La descarga contiene el payload recuperado."
+            ], [
+                {
+                    title: "Cabecera recuperada",
+                    badge: "json",
+                    content: safeJson(extracted.header),
+                    copyValue: safeJson(extracted.header)
+                },
+                {
+                    title: "Primeros bytes Hex",
+                    badge: "hex",
+                    content: bytesToHex(extracted.payload.slice(0, Math.min(512, extracted.payload.length))),
+                    copyValue: bytesToHex(extracted.payload)
+                }
+            ])
+        };
+    } catch (error) {
+        steghideResult.value = buildErrorResult("STEGHIDE_EXTRACT_FAILED", "No se pudo extraer", error.message);
+    }
+}
+
+function defaultSteghideGuesses(file) {
+    const base = safeFileBaseName(file?.name || "");
+    return ["", base, file?.name || "", "password", "pass", "secret", "stego", "steghide", "feanor-lab"]
+        .filter((value, index, list) => list.indexOf(value) === index);
+}
+
+async function readSteghideWordlist() {
+    if (!steghideWordlistFile.value) return [];
+    const text = await steghideWordlistFile.value.text();
+    return text
+        .split(/\r?\n/)
+        .map(line => line.trim())
+        .filter(Boolean);
+}
+
+async function crackSteghideWordlist() {
+    if (!steghideFile.value) {
+        steghideResult.value = buildErrorResult("STEGHIDE_CRACK_FILE_EMPTY", "Falta stego file", "Selecciona el fichero a probar.");
+        return;
+    }
+    if (!steghideWordlistFile.value && steghideSkipDefaultGuesses.value) {
+        steghideResult.value = buildErrorResult("STEGHIDE_WORDLIST_EMPTY", "Falta wordlist", "Sube un TXT de passwords o permite guesses extra.");
+        return;
+    }
+
+    try {
+        const wordlist = await readSteghideWordlist();
+        const guesses = steghideSkipDefaultGuesses.value
+            ? wordlist
+            : [...defaultSteghideGuesses(steghideFile.value), ...wordlist];
+        const uniqueGuesses = Array.from(new Set(guesses)).slice(0, Math.max(1, Number(steghideMaxGuesses.value) || 5000));
+        const prepared = await prepareSteghideExtraction(steghideFile.value);
+        const started = performance.now();
+        let found = null;
+        let header = null;
+        let attempts = 0;
+        for (const guess of uniqueGuesses) {
+            attempts += 1;
+            try {
+                const probe = await extractSteghidePacketFromPrepared(prepared, guess, true);
+                found = guess;
+                header = probe.header;
+                break;
+            } catch {
+                // Continue with next candidate.
+            }
+        }
+        const elapsedMs = performance.now() - started;
+        const commands = steghideNativeCommandLines(steghideFile.value.name, "secret.bin", `${safeFileBaseName(steghideFile.value.name)}.out`);
+
+        steghideOperation.value = "crack";
+        steghideResult.value = {
+            verdictTone: found !== null ? "verdict-success" : "verdict-warning",
+            verdictTitle: found !== null ? "Passphrase encontrada" : "Wordlist agotada",
+            verdictBody: found !== null
+                ? "La cabecera del formato frontend valido con una passphrase candidata. Usa Extraer para recuperar el payload."
+                : "No se encontro una passphrase valida para FEANOR_STEGHIDE_V1 dentro del limite configurado.",
+            summaryCards: [
+                { label: "Intentos", value: String(attempts), tone: "tone-neutral", note: `${uniqueGuesses.length} candidatos` },
+                { label: "Tiempo", value: `${elapsedMs.toFixed(0)} ms`, tone: "tone-neutral", note: "Navegador" },
+                { label: "Resultado", value: found !== null ? "Encontrada" : "No", tone: found !== null ? "tone-success" : "tone-warning", note: found !== null ? "Header OK" : "Sin match" },
+                { label: "Modo", value: "Wordlist", tone: "tone-neutral", note: "StegSeek-like frontend" }
+            ],
+            signalCards: [
+                { label: "Passphrase", value: found !== null ? (found || "<vacia>") : "N/D", tone: found !== null ? "tone-success" : "tone-neutral", note: "Candidata" },
+                { label: "Wordlist", value: steghideWordlistFile.value?.name || "Default", tone: "tone-neutral", note: steghideSkipDefaultGuesses.value ? "Solo wordlist" : "Con guesses" },
+                { label: "Native", value: "stegseek", tone: "tone-success", note: "Comando generado" },
+                { label: "Limite", value: String(steghideMaxGuesses.value), tone: "tone-neutral", note: "Max intentos" }
+            ],
+            panels: steghideResultPanels(commands, [
+                "StegSeek nativo prueba passwords contra steghide real a velocidad muy superior.",
+                "El crack del navegador solo aplica al formato FEANOR_STEGHIDE_V1 y se limita para no bloquear la interfaz.",
+                found !== null ? `Passphrase encontrada: ${found || "<vacia>"}.` : "Amplia la wordlist o sube el fichero a StegSeek nativo si sospechas Steghide real."
+            ], [
+                {
+                    title: "Cabecera encontrada",
+                    badge: "json",
+                    content: header ? safeJson(header) : "Sin cabecera valida.",
+                    copyValue: header ? safeJson(header) : ""
+                }
+            ])
+        };
+    } catch (error) {
+        steghideResult.value = buildErrorResult("STEGHIDE_CRACK_FAILED", "No se pudo ejecutar crack", error.message);
+    }
+}
+
+async function runSteghideSeedProbe() {
+    if (!steghideFile.value) {
+        steghideResult.value = buildErrorResult("STEGHIDE_SEED_FILE_EMPTY", "Falta stego file", "Selecciona el fichero para revisar modo seed/probe.");
+        return;
+    }
+
+    try {
+        const file = steghideFile.value;
+        const bytes = new Uint8Array(await file.arrayBuffer());
+        const type = detectFileType(bytes, file);
+        const compatibility = steghideCompatibilityForType(type);
+        let emptyProbe = null;
+        let emptyError = "";
+        try {
+            emptyProbe = await extractSteghidePacketFromCarrier(file, "", true);
+        } catch (error) {
+            emptyError = error.message;
+        }
+        const container = collectContainerHints(bytes, type);
+        const commands = steghideNativeCommandLines(file.name, "secret.bin", `${safeFileBaseName(file.name)}.out`);
+
+        steghideOperation.value = "seed";
+        steghideResult.value = {
+            verdictTone: emptyProbe ? "verdict-success" : "verdict-warning",
+            verdictTitle: emptyProbe ? "Probe sin passphrase detectado" : "Seed nativo recomendado",
+            verdictBody: emptyProbe
+                ? "Se detecto una cabecera frontend con passphrase vacia. Puedes extraerla sin diccionario."
+                : "No se detecto cabecera frontend sin passphrase. Para Steghide real, el modo --seed requiere StegSeek nativo.",
+            summaryCards: [
+                { label: "Tipo", value: type.label, tone: compatibility.native ? "tone-success" : "tone-warning", note: compatibility.native ? "Steghide nativo" : "No nativo" },
+                { label: "--seed", value: compatibility.native ? "Aplica" : "No nativo", tone: compatibility.native ? "tone-success" : "tone-warning", note: "StegSeek real" },
+                { label: "Probe", value: emptyProbe ? "Match" : "No", tone: emptyProbe ? "tone-success" : "tone-neutral", note: "Passphrase vacia" },
+                { label: "Warnings", value: String(container.indicators.length), tone: container.indicators.length ? "tone-warning" : "tone-success", note: "Contenedor" }
+            ],
+            signalCards: [
+                { label: "CVE", value: "2021-27211", tone: "tone-warning", note: "Seed de Steghide" },
+                { label: "Rango", value: "2^32", tone: "tone-warning", note: "No viable en JS UI" },
+                { label: "Frontend", value: emptyProbe ? "Detectado" : "Sin match", tone: emptyProbe ? "tone-success" : "tone-neutral", note: "FEANOR_STEGHIDE_V1" },
+                { label: "Native", value: "stegseek --seed", tone: "tone-success", note: "Comando generado" }
+            ],
+            panels: steghideResultPanels(commands, [
+                "StegSeek --seed intenta patrones de embedding para detectar contenido Steghide y extraer si no hay cifrado.",
+                "El navegador no ejecuta el barrido completo 2^32 para no congelar la UI ni fingir rendimiento nativo.",
+                emptyProbe ? "Hay cabecera frontend con passphrase vacia." : `Probe frontend: ${emptyError}`,
+                ...container.indicators
+            ], [
+                {
+                    title: "Cabecera probe",
+                    badge: "seed",
+                    content: emptyProbe ? safeJson(emptyProbe.header) : "Sin cabecera frontend con passphrase vacia.",
+                    copyValue: emptyProbe ? safeJson(emptyProbe.header) : ""
+                }
+            ])
+        };
+    } catch (error) {
+        steghideResult.value = buildErrorResult("STEGHIDE_SEED_FAILED", "No se pudo ejecutar seed/probe", error.message);
+    }
+}
+
+async function analyzeStegoFile() {
+    if (!stegoAnalyzeFile.value) {
+        stegoAnalyzeResult.value = buildErrorResult("STEGO_FILE_EMPTY", "Falta fichero", "Selecciona un fichero local para analizar.");
+        return;
+    }
+
+    try {
+        const file = stegoAnalyzeFile.value;
+        const bytes = new Uint8Array(await file.arrayBuffer());
+        const type = detectFileType(bytes, file);
+        const entropy = byteShannonEntropy(bytes);
+        const entropyText = `${entropy.toFixed(2)} bits/byte`;
+        const strings = scanPrintableStrings(bytes);
+        const container = collectContainerHints(bytes, type);
+        const exifLines = await collectExifMetadata(file, type);
+        const zipInfo = type.family === "archive" ? await inspectZipLikeFile(file) : { metadataLines: [], formatLines: [], indicators: [] };
+        const lsb = await analyzeImageLsb(file, type);
+        const sha256 = globalThis.crypto?.subtle
+            ? bytesToHex(new Uint8Array(await globalThis.crypto.subtle.digest("SHA-256", bytes)))
+            : "No disponible";
+
+        const indicators = [
+            ...container.indicators,
+            ...zipInfo.indicators,
+            findBytes(bytes, STEGO_MAGIC_BYTES) >= 0 ? "Cabecera Feanor visible en bytes crudos." : "",
+            lsb?.hasFeanorPayload ? "Cabecera LSB de Feanor detectada en pixeles." : "",
+            entropy > 7.85 && bytes.length > 4096 ? "Entropia global muy alta; puede ser compresion, cifrado o contenido aleatorio." : "",
+            strings.some(line => /password|secret|token|private|payload|stego/i.test(line)) ? "Cadenas imprimibles con terminos sensibles." : ""
+        ].filter(Boolean);
+
+        const metadataLines = [
+            ...exifLines.map(line => `EXIF/XMP/IPTC: ${line}`),
+            ...container.metadataLines,
+            ...zipInfo.metadataLines
+        ];
+        const formatLines = [
+            `Nombre: ${file.name}`,
+            `MIME navegador: ${file.type || "N/D"}`,
+            `Magic bytes: ${bytesToHex(bytes.slice(0, 16))}`,
+            `SHA-256: ${sha256}`,
+            lsb ? `Imagen: ${lsb.width}x${lsb.height}, capacidad LSB aprox ${formatBytesSize(lsb.capacityBytes)}` : "",
+            lsb ? `Balance LSB RGB: ${(lsb.lsbRatio * 100).toFixed(2)}% de unos` : "",
+            ...container.formatLines,
+            ...zipInfo.formatLines
+        ].filter(Boolean);
+
+        const highRisk = lsb?.hasFeanorPayload || findBytes(bytes, STEGO_MAGIC_BYTES) >= 0 || container.appendedBytes > 128;
+        const mediumRisk = !highRisk && (indicators.length > 0 || metadataLines.length > 0 || entropy > 7.85);
+        const verdictTone = highRisk ? "verdict-danger" : mediumRisk ? "verdict-warning" : "verdict-success";
+        const riskLabel = highRisk ? "Alta" : mediumRisk ? "Media" : "Baja";
+        const findings = indicators.length
+            ? indicators
+            : ["No se han detectado cabeceras Feanor, datos anexados claros ni indicadores fuertes en el analisis local."];
+
+        stegoAnalyzeResult.value = {
+            verdictTone,
+            verdictTitle: `Sospecha ${riskLabel.toLowerCase()}`,
+            verdictBody: highRisk
+                ? "Hay senales compatibles con datos ocultos o bytes fuera de la estructura esperada."
+                : mediumRisk
+                    ? "Se han encontrado metadatos o senales que conviene revisar manualmente."
+                    : "El fichero no muestra senales claras en las pruebas locales disponibles.",
+            summaryCards: [
+                { label: "Tipo", value: type.label, tone: "tone-neutral", note: type.family },
+                { label: "Tamano", value: formatBytesSize(file.size), tone: "tone-neutral", note: "Fichero local" },
+                { label: "Riesgo", value: riskLabel, tone: highRisk ? "tone-danger" : mediumRisk ? "tone-warning" : "tone-success", note: "Indicadores" },
+                { label: "Entropia", value: entropyText, tone: entropy > 7.85 ? "tone-warning" : "tone-success", note: "Global" }
+            ],
+            signalCards: [
+                { label: "Metadatos", value: String(metadataLines.length), tone: metadataLines.length ? "tone-warning" : "tone-success", note: "Campos visibles" },
+                { label: "Cadenas", value: String(strings.length), tone: strings.length ? "tone-neutral" : "tone-success", note: "ASCII imprimible" },
+                { label: "LSB Feanor", value: lsb?.hasFeanorPayload ? "Si" : "No", tone: lsb?.hasFeanorPayload ? "tone-danger" : "tone-success", note: "Cabecera propia" },
+                { label: "Bytes anexos", value: container.appendedBytes ? formatBytesSize(container.appendedBytes) : "No", tone: container.appendedBytes ? "tone-warning" : "tone-success", note: "Tras final" }
+            ],
+            panels: [
+                {
+                    title: "Resultado",
+                    badge: "scan",
+                    content: buildTextList("Hallazgos", findings),
+                    copyValue: findings.join("\n")
+                },
+                {
+                    title: "Cadenas visibles",
+                    badge: "ascii",
+                    content: buildTextList("Cadenas", strings.map(line => line.length > 220 ? `${line.slice(0, 220)}...` : line)),
+                    copyValue: strings.join("\n")
+                },
+                {
+                    title: "Metadatos detectados",
+                    badge: "meta",
+                    content: buildTextList("Campos", metadataLines),
+                    copyValue: metadataLines.join("\n")
+                },
+                {
+                    title: "Detalles de formato",
+                    badge: type.label,
+                    content: buildTextList("Estructura", formatLines),
+                    copyValue: formatLines.join("\n")
+                }
+            ]
+        };
+    } catch (error) {
+        stegoAnalyzeResult.value = buildErrorResult("STEGO_ANALYZE_FAILED", "No se pudo analizar el fichero", error.message);
+    }
+}
+
+function fillStegoPayloadExample() {
+    stegoEmbedPayload.value = safeJson({
+        laboratorio: "Feanor",
+        tipo: "LSB RGB",
+        nota: "Payload oculto en PNG local"
+    });
+}
+
+async function embedStegoPayload() {
+    if (!stegoEmbedFile.value) {
+        stegoEmbedResult.value = buildErrorResult("STEGO_IMAGE_EMPTY", "Falta imagen", "Selecciona una imagen portadora para incrustar datos.");
+        return;
+    }
+    if (!stegoEmbedPayload.value) {
+        stegoEmbedResult.value = buildErrorResult("STEGO_PAYLOAD_EMPTY", "Faltan datos", "Introduce el texto que quieres ocultar.");
+        return;
+    }
+
+    try {
+        const payloadBytes = textToBytes(stegoEmbedPayload.value);
+        const packet = buildStegoPacket(payloadBytes);
+        const { canvas, context, imageData, width, height } = await imageFileToCanvas(stegoEmbedFile.value);
+        const capacityBytes = calculateLsbCapacityBytes(imageData);
+        if (packet.length > capacityBytes) {
+            throw new Error(`El payload necesita ${formatBytesSize(packet.length)} y la imagen solo ofrece ${formatBytesSize(capacityBytes)} utiles.`);
+        }
+
+        writeLsbBytes(imageData, packet);
+        context.putImageData(imageData, 0, 0);
+        const blob = await canvasToPngBlob(canvas);
+        const filename = `${safeFileBaseName(stegoEmbedFile.value.name)}-feanor-stego.png`;
+        setStegoDownload(blob, filename);
+
+        stegoEmbedResult.value = {
+            verdictTone: "verdict-success",
+            verdictTitle: "Payload incrustado",
+            verdictBody: "Se ha escrito una cabecera Feanor y el texto UTF-8 en LSB RGB. Descarga el PNG para conservarlo.",
+            summaryCards: [
+                { label: "Imagen", value: `${width}x${height}`, tone: "tone-neutral", note: "Canvas local" },
+                { label: "Payload", value: formatBytesSize(payloadBytes.length), tone: "tone-success", note: `${stegoEmbedPayload.value.length} chars` },
+                { label: "Capacidad", value: formatBytesSize(capacityBytes), tone: "tone-neutral", note: "RGB LSB" },
+                { label: "Uso", value: `${((packet.length / capacityBytes) * 100).toFixed(2)}%`, tone: "tone-success", note: "Ocupacion" }
+            ],
+            signalCards: [
+                { label: "Formato salida", value: "PNG", tone: "tone-success", note: "Sin recomprimir con perdida" },
+                { label: "Cabecera", value: STEGO_MAGIC_TEXT, tone: "tone-success", note: "Extractor Feanor" },
+                { label: "Cifrado", value: "No", tone: "tone-warning", note: "Solo ocultacion" },
+                { label: "Descarga", value: filename, tone: "tone-success", note: "Lista" }
+            ],
+            panels: [
+                {
+                    title: "Resultado",
+                    badge: "png",
+                    content: buildTextList("PNG generado", [
+                        `Archivo: ${filename}`,
+                        `Payload incrustado: ${formatBytesSize(payloadBytes.length)}.`,
+                        `Cabecera interna: ${STEGO_MAGIC_TEXT}.`,
+                        "Usa el boton Descargar PNG antes de salir de la vista."
+                    ]),
+                    copyValue: filename
+                },
+                {
+                    title: "Payload oculto",
+                    badge: "utf8",
+                    content: stegoEmbedPayload.value,
+                    copyValue: stegoEmbedPayload.value
+                }
+            ]
+        };
+    } catch (error) {
+        stegoEmbedResult.value = buildErrorResult("STEGO_EMBED_FAILED", "No se pudo incrustar el payload", error.message);
+    }
+}
+
+async function extractStegoPayload() {
+    if (!stegoExtractFile.value) {
+        stegoExtractResult.value = buildErrorResult("STEGO_EXTRACT_EMPTY", "Falta imagen", "Selecciona una imagen para extraer datos.");
+        return;
+    }
+
+    try {
+        const { imageData, width, height } = await imageFileToCanvas(stegoExtractFile.value);
+        const extracted = readStegoPacketFromImageData(imageData);
+
+        stegoExtractResult.value = {
+            primaryValue: extracted.payloadText,
+            verdictTone: "verdict-success",
+            verdictTitle: "Payload recuperado",
+            verdictBody: "La imagen contiene una cabecera Feanor valida y el texto se ha reconstruido desde LSB RGB.",
+            summaryCards: [
+                { label: "Imagen", value: `${width}x${height}`, tone: "tone-neutral", note: "Canvas local" },
+                { label: "Payload", value: formatBytesSize(extracted.payloadBytes.length), tone: "tone-success", note: "UTF-8" },
+                { label: "Capacidad", value: formatBytesSize(extracted.capacityBytes), tone: "tone-neutral", note: "RGB LSB" },
+                { label: "Cabecera", value: "Valida", tone: "tone-success", note: STEGO_MAGIC_TEXT }
+            ],
+            signalCards: [
+                { label: "Texto", value: `${extracted.payloadText.length} chars`, tone: "tone-success", note: "Decodificado" },
+                { label: "Hex", value: `${bytesToHex(extracted.payloadBytes).length} chars`, tone: "tone-neutral", note: "Payload bruto" },
+                { label: "Origen", value: "LSB RGB", tone: "tone-success", note: "Feanor" },
+                { label: "Integridad", value: "Cabecera OK", tone: "tone-success", note: "Longitud coherente" }
+            ],
+            panels: [
+                {
+                    title: "Resultado",
+                    badge: "texto",
+                    content: extracted.payloadText,
+                    copyValue: extracted.payloadText
+                },
+                {
+                    title: "Payload Hex",
+                    badge: "hex",
+                    content: bytesToHex(extracted.payloadBytes),
+                    copyValue: bytesToHex(extracted.payloadBytes)
+                }
+            ]
+        };
+    } catch (error) {
+        stegoExtractResult.value = buildErrorResult("STEGO_EXTRACT_FAILED", "No se encontraron datos extraibles", error.message);
+    }
 }
 
 function parseJsonSignInput() {
@@ -5449,6 +10914,10 @@ function runRegexTest() {
     flex-direction: column;
 }
 
+.feanor-page--tool .container.py-5 {
+    padding-top: calc(var(--main-header-height) + var(--secondary-header-height) + 24px) !important;
+}
+
 .section-box {
     background: #0f172a;
     border: 1px solid #1e293b;
@@ -5464,83 +10933,139 @@ function runRegexTest() {
 }
 
 .hash-module {
-    order: 1;
+    order: 21;
 }
 
 .symmetric-module {
-    order: 2;
+    order: 25;
 }
 
 .asymmetric-module {
-    order: 3;
+    order: 29;
 }
 
 .signature-module {
-    order: 4;
+    order: 30;
 }
 
 .aead-module {
-    order: 5;
+    order: 26;
 }
 
 .ecdh-module {
-    order: 6;
+    order: 31;
 }
 
 .kdf-module {
-    order: 7;
+    order: 22;
 }
 
 .certificate-module {
-    order: 8;
+    order: 33;
 }
 
 .key-converter-module {
-    order: 9;
+    order: 32;
 }
 
 .jwt-module {
-    order: 10;
+    order: 28;
 }
 
 .transform-module {
-    order: 11;
+    order: 9;
 }
 
 .byte-inspector-module {
-    order: 12;
+    order: 10;
 }
 
 .json-module {
-    order: 13;
+    order: 12;
 }
 
 .json-sign-module {
-    order: 14;
+    order: 24;
 }
 
 .secret-module {
-    order: 15;
-}
-
-.entropy-module {
-    order: 16;
-}
-
-.otp-module {
-    order: 17;
-}
-
-.timing-module {
-    order: 18;
-}
-
-.regex-module {
     order: 19;
 }
 
-.copy-toast {
+.entropy-module {
     order: 20;
+}
+
+.otp-module {
+    order: 27;
+}
+
+.timing-module {
+    order: 23;
+}
+
+.regex-module {
+    order: 11;
+}
+
+.copy-toast {
+    order: 34;
+}
+
+.caesar-module {
+    order: 1;
+}
+
+.xor-module {
+    order: 3;
+}
+
+.atbash-module {
+    order: 2;
+}
+
+.boolean-ops-module {
+    order: 4;
+}
+
+.vigenere-module {
+    order: 5;
+}
+
+.affine-module {
+    order: 6;
+}
+
+.rail-fence-module {
+    order: 7;
+}
+
+.modular-module {
+    order: 8;
+}
+
+.stego-analyze-module {
+    order: 13;
+}
+
+.exif-module {
+    order: 14;
+}
+
+.metadata-editor-module {
+    order: 15;
+}
+
+.stego-embed-module {
+    order: 16;
+}
+
+.stego-extract-module {
+    order: 17;
+}
+
+.steghide-suite-module {
+    order: 18;
 }
 
 .intro-layout {
@@ -5606,6 +11131,82 @@ function runRegexTest() {
 .intro-emblem small {
     color: #94a3b8;
     line-height: 1.6;
+}
+
+.utilities-summary {
+    order: 1;
+}
+
+.utility-group-list {
+    display: grid;
+    gap: 18px;
+}
+
+.utility-group {
+    display: grid;
+    gap: 14px;
+    min-width: 0;
+}
+
+.utility-group-head {
+    display: grid;
+    gap: 6px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #1e293b;
+}
+
+.utility-group-head span {
+    color: #f8fafc;
+    font-size: 1.02rem;
+    font-weight: 700;
+}
+
+.utility-group-head p {
+    margin: 0;
+    color: #94a3b8;
+    line-height: 1.6;
+}
+
+.utility-link-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.utility-link {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 7px 10px;
+    align-items: center;
+    min-width: 0;
+    padding: 14px;
+    border: 1px solid #1f2937;
+    border-radius: 8px;
+    background: #111827;
+    color: #cbd5e1;
+    text-decoration: none;
+    transition: border-color 0.18s ease, background 0.18s ease, transform 0.18s ease;
+}
+
+.utility-link:hover,
+.utility-link:focus {
+    background: #151f2e;
+    border-color: rgba(214, 167, 86, 0.48);
+    color: #f8fafc;
+    transform: translateY(-1px);
+}
+
+.utility-link strong {
+    color: #f8fafc;
+    font-size: 0.98rem;
+    font-weight: 700;
+}
+
+.utility-link p {
+    grid-column: 1 / -1;
+    margin: 0;
+    color: #94a3b8;
+    line-height: 1.55;
 }
 
 .tool-card,
@@ -5813,6 +11414,126 @@ function runRegexTest() {
     grid-column: 1 / -1;
 }
 
+.mode-segment {
+    display: inline-grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 4px;
+    width: min(420px, 100%);
+    padding: 4px;
+    margin: 0 0 16px;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    background: #0b1220;
+}
+
+.mode-segment button {
+    min-height: 38px;
+    border: 0;
+    border-radius: 6px;
+    background: transparent;
+    color: #94a3b8;
+    font-weight: 700;
+}
+
+.mode-segment button:hover,
+.mode-segment button:focus {
+    color: #f8fafc;
+}
+
+.mode-segment button.active {
+    background: #334155;
+    color: #f8fafc;
+}
+
+.base64-category-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 10px;
+    margin: 0 0 16px;
+}
+
+.category-chip {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 4px 8px;
+    align-items: center;
+    min-height: 86px;
+    padding: 12px;
+    border: 1px solid #1f2937;
+    border-radius: 8px;
+    background: #111827;
+    color: #cbd5e1;
+    text-align: left;
+}
+
+.category-chip:hover,
+.category-chip:focus,
+.category-chip.active {
+    border-color: rgba(214, 167, 86, 0.5);
+    background: #151f2e;
+    color: #f8fafc;
+}
+
+.category-chip span {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 44px;
+    padding: 4px 8px;
+    border: 1px solid #334155;
+    border-radius: 999px;
+    color: #d6a756;
+    font-size: 0.72rem;
+    font-weight: 800;
+}
+
+.category-chip strong {
+    min-width: 0;
+    color: #f8fafc;
+    font-size: 0.92rem;
+}
+
+.category-chip small {
+    grid-column: 1 / -1;
+    color: #94a3b8;
+    line-height: 1.45;
+}
+
+.transform-preview-panel {
+    display: grid;
+    gap: 12px;
+    margin: 16px 0 18px;
+    padding: 16px;
+    border: 1px solid #1f2937;
+    border-radius: 8px;
+    background: #111827;
+}
+
+.transform-preview-panel img,
+.transform-preview-panel video,
+.transform-preview-panel audio,
+.transform-preview-panel iframe {
+    width: 100%;
+    max-height: 360px;
+    border: 1px solid #1e293b;
+    border-radius: 8px;
+    background: #020617;
+}
+
+.transform-preview-panel img {
+    object-fit: contain;
+}
+
+.transform-preview-panel iframe {
+    min-height: 360px;
+}
+
+.transform-preview-panel a {
+    color: #d6a756;
+    text-decoration: none;
+    font-weight: 700;
+}
+
 .asymmetric-transfer-grid {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -5986,6 +11707,35 @@ function runRegexTest() {
     margin: 0 0 18px;
     color: #94a3b8;
     line-height: 1.6;
+}
+
+.metadata-format-strip {
+    display: grid;
+    grid-template-columns: auto minmax(0, 0.65fr) minmax(0, 1.35fr);
+    align-items: center;
+    gap: 12px;
+    margin: 14px 0 4px;
+    padding: 12px 14px;
+    border: 1px solid rgba(148, 163, 184, 0.22);
+    border-radius: 8px;
+    background: rgba(15, 23, 42, 0.58);
+}
+
+.metadata-format-strip strong {
+    color: #f8fafc;
+    font-size: 0.94rem;
+}
+
+.exif-format-strip strong,
+.steghide-format-strip strong {
+    font-family: "Consolas", "Courier New", monospace;
+    word-break: break-word;
+}
+
+.metadata-format-strip p {
+    margin: 0;
+    color: #94a3b8;
+    line-height: 1.5;
 }
 
 .inline-code {
@@ -6283,8 +12033,16 @@ function runRegexTest() {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
+    .base64-category-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
     .asymmetric-transfer-grid {
         grid-template-columns: minmax(0, 1fr);
+    }
+
+    .utility-link-grid {
+        grid-template-columns: 1fr;
     }
 }
 
@@ -6317,6 +12075,19 @@ function runRegexTest() {
     .control-grid,
     .compact-grid {
         grid-template-columns: 1fr;
+    }
+
+    .base64-category-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .metadata-format-strip {
+        grid-template-columns: 1fr;
+        align-items: flex-start;
+    }
+
+    .mode-segment {
+        width: 100%;
     }
 
     .inline-actions {

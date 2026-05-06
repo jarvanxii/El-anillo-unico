@@ -221,7 +221,7 @@ export default {
   display: flex;
   align-items: center;
   gap: 8px;
-  cursor: pointer;
+  cursor: var(--cursor-pointer), pointer;
   color: #d4af37;
   font-family: "Cinzel Decorative", serif;
   font-size: 14px;
@@ -295,7 +295,7 @@ export default {
   font-size: 13px;
   font-weight: 600;
   letter-spacing: .3px;
-  cursor: pointer;
+  cursor: var(--cursor-pointer), pointer;
   border-left: 1px solid rgba(212, 175, 55, 0.18);
   border-right: 1px solid rgba(212, 175, 55, 0.18);
   transition: all .22s ease;
@@ -368,7 +368,7 @@ export default {
   padding: 6px 2px;
   border-bottom: 1px solid rgba(255, 214, 102, 0.08);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  cursor: pointer;
+  cursor: var(--cursor-pointer), pointer;
 }
 
 .submenu a:hover {
@@ -413,7 +413,7 @@ export default {
   height: 18px;
   background: transparent;
   border: none;
-  cursor: pointer;
+  cursor: var(--cursor-pointer), pointer;
   padding: 0;
   z-index: 100001;
 }
@@ -463,7 +463,7 @@ export default {
   font-family: "Cinzel", serif;
   font-size: 14px;
   font-weight: 600;
-  cursor: pointer;
+  cursor: var(--cursor-pointer), pointer;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -498,7 +498,7 @@ export default {
   line-height: 1.35;
   border-bottom: 1px solid rgba(212, 175, 55, 0.08);
   transition: all 0.3s ease;
-  cursor: pointer;
+  cursor: var(--cursor-pointer), pointer;
 }
 
 .mobile-sub-items a:hover {

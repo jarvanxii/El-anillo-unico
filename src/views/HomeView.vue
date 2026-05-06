@@ -591,7 +591,7 @@ main {
     border-radius: 4px;
     padding: 36px 24px 32px;
     text-align: center;
-    cursor: pointer;
+    cursor: var(--cursor-pointer), pointer;
     text-decoration: none;
     display: block;
     color: inherit;

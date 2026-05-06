@@ -1054,7 +1054,7 @@ export default {
     border: 1px solid rgba(255, 255, 255, 0.1);
     background: transparent;
     color: #475569;
-    cursor: pointer;
+    cursor: var(--cursor-pointer), pointer;
     transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
 }
 

@@ -1146,7 +1146,7 @@ export default {
     color: #dbe5ef;
     font-size: 0.64rem;
     font-weight: 700;
-    cursor: pointer;
+    cursor: var(--cursor-pointer), pointer;
     transition: border-color 0.2s ease, background 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
 }
 
@@ -1223,7 +1223,7 @@ export default {
 
 .btn-main:disabled {
     opacity: 0.56;
-    cursor: not-allowed;
+    cursor: var(--cursor-not-allowed), not-allowed;
     box-shadow: none;
     transform: none;
     filter: saturate(0.75);
@@ -1330,7 +1330,7 @@ export default {
     color: rgba(207, 219, 231, 0.76);
     font-size: 0.88rem;
     font-weight: 600;
-    cursor: pointer;
+    cursor: var(--cursor-pointer), pointer;
     transition: border-color 0.18s ease, background 0.18s ease, color 0.18s ease;
 }
 

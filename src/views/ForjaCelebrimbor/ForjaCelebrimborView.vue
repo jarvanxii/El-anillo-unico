@@ -189,7 +189,7 @@ export default {
     text-align: left;
     margin: 0;
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.035);
-    cursor: pointer;
+    cursor: var(--cursor-pointer), pointer;
     transition:
         transform 0.18s ease,
         border-color 0.18s ease,

@@ -70,8 +70,8 @@
                     <a @click="$router.push('/el-concilio-de-elrond')">
                         Chat
                     </a>
-                    <a href="http://192.168.0.254/#/" target="_blank">
-                        Películas, Series Y Juegos
+                    <a href="https://lapipadegandalf.com/#/" target="_blank">
+                        Películas, Series y TV
                     </a>
                     <a @click="$router.push('/la-jarra-de-pippin')">
                         Humor

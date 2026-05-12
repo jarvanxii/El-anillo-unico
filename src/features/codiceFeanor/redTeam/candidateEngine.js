@@ -142,6 +142,66 @@ export const redTeamDefaultCharsets = {
     "4": "aeiourstln0123456789"
 };
 
+export const hashcatActionOptions = [
+    { value: "attack", label: "Ataque normal", flag: "", summary: "Ejecuta el ataque seleccionado contra un fichero de hashes." },
+    { value: "identify", label: "--identify", flag: "--identify", summary: "Intenta detectar el tipo de hash sin lanzar un ataque." },
+    { value: "show", label: "--show", flag: "--show", summary: "Muestra founds ya presentes en el potfile." },
+    { value: "left", label: "--left", flag: "--left", summary: "Muestra hashes pendientes segun el potfile." },
+    { value: "benchmark", label: "-b / --benchmark", flag: "-b", summary: "Mide rendimiento local de Hashcat para el modo elegido." },
+    { value: "stdout", label: "--stdout", flag: "--stdout", summary: "Genera candidatos por stdout sin probar hashes." },
+    { value: "keyspace", label: "--keyspace", flag: "--keyspace", summary: "Calcula el espacio de claves del ataque configurado." },
+    { value: "hash-info", label: "--hash-info", flag: "--hash-info", summary: "Muestra informacion del modo de hash seleccionado." }
+];
+
+export const hashcatAttackModeOptions = [
+    { value: "straight", label: "-a 0 | Straight diccionario | wordlist", hashcatMode: "0", needsPrimaryWordlist: true },
+    { value: "rules", label: "-a 0 | Wordlist + reglas | -r", hashcatMode: "0", needsPrimaryWordlist: true, needsRule: true },
+    { value: "combinator", label: "-a 1 | Combinator | wordlist + wordlist", hashcatMode: "1", needsPrimaryWordlist: true, needsSecondaryWordlist: true },
+    { value: "mask", label: "-a 3 | Mask brute-force | mascara", hashcatMode: "3", needsMask: true },
+    { value: "hybridWordMask", label: "-a 6 | Wordlist + mask | palabra?d?d", hashcatMode: "6", needsPrimaryWordlist: true, needsMask: true },
+    { value: "hybridMaskWord", label: "-a 7 | Mask + wordlist | ?u?lpalabra", hashcatMode: "7", needsPrimaryWordlist: true, needsMask: true },
+    { value: "association", label: "-a 9 | Association | contexto", hashcatMode: "9", needsPrimaryWordlist: true }
+];
+
+export const hashcatRuleFileOptions = [
+    { value: "none", label: "Sin reglas", summary: "Usa la wordlist tal cual." },
+    { value: "rules/best64.rule", label: "rules/best64.rule", summary: "Reglas pequenas y rapidas para primera pasada." },
+    { value: "rules/dive.rule", label: "rules/dive.rule", summary: "Reglas amplias para auditorias con mas presupuesto." },
+    { value: "rules/rockyou-30000.rule", label: "rules/rockyou-30000.rule", summary: "Reglas entrenadas sobre patrones RockYou." },
+    { value: "rules/OneRuleToRuleThemStill.rule", label: "OneRuleToRuleThemStill", summary: "Regla externa popular; instala el fichero en tu entorno." },
+    { value: "custom", label: "Personalizado", summary: "Permite escribir una ruta de regla propia." }
+];
+
+export const hashcatWorkloadOptions = [
+    { value: "1", label: "-w 1 | Bajo | escritorio interactivo" },
+    { value: "2", label: "-w 2 | Por defecto | equilibrado" },
+    { value: "3", label: "-w 3 | Alto | auditoria dedicada" },
+    { value: "4", label: "-w 4 | Pesadilla | maximo rendimiento" }
+];
+
+export const hashcatDeviceTypeOptions = [
+    { value: "", label: "Auto | sin -D | Hashcat decide" },
+    { value: "1", label: "-D 1 | CPU | procesadores" },
+    { value: "2", label: "-D 2 | GPU | aceleradores" },
+    { value: "1,2", label: "-D 1,2 | CPU + GPU | mixto" }
+];
+
+export const hashcatSeparatorOptions = [
+    { value: ":", label: "-p : | dos puntos | hash:plain" },
+    { value: ";", label: "-p ; | punto y coma | CSV seguro" },
+    { value: ",", label: "-p , | coma | CSV simple" },
+    { value: "\\t", label: "-p TAB | tabulador | TSV" }
+];
+
+export const hashcatOutfileFormatOptions = [
+    { value: "1,2", label: "1,2 | hash:plain | formato defensivo" },
+    { value: "2", label: "2 | plain | solo password" },
+    { value: "1", label: "1 | hash | solo hash" },
+    { value: "3", label: "3 | hex-plain | plaintext en hex" },
+    { value: "1,2,3", label: "1,2,3 | hash:plain:hex | trazabilidad" },
+    { value: "custom", label: "Personalizado | lista numerica | avanzado" }
+];
+
 const BUILTIN_CHARSETS = {
     "?l": "abcdefghijklmnopqrstuvwxyz",
     "?u": "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
@@ -418,38 +478,16 @@ function hashModeOrAuto(hashModeId, detectedModes = []) {
     return detectedModes[0] || null;
 }
 
-export function buildHashcatCommand({
-    hashModeId = "auto",
-    detectedModes = [],
-    attackMode = "straight",
-    rulePreset = "exact",
-    mask = "",
-    customCharsets = {},
-    optimized = true,
-    username = false,
-    workload = 3,
-    increment = false,
-    hashFile = "hashes.txt",
-    wordlistFile = "wordlist.txt",
-    secondWordlistFile = "wordlist2.txt",
-    outputFile = "found.txt"
-} = {}) {
-    const hashMode = hashModeOrAuto(hashModeId, detectedModes);
-    const attack = redTeamAttackModes.find(item => item.value === attackMode) || redTeamAttackModes[0];
-    const rule = redTeamRulePresets.find(item => item.value === rulePreset) || redTeamRulePresets[0];
-    const parts = ["hashcat"];
-    if (hashMode?.hashcatMode) parts.push("-m", hashMode.hashcatMode);
-    if (/^\d+$/.test(String(attack.hashcatMode))) parts.push("-a", attack.hashcatMode);
-    if (optimized) parts.push("-O");
-    if (username) parts.push("--username");
-    if (workload) parts.push("-w", String(workload));
-    if (increment && ["mask", "hybridWordMask", "hybridMaskWord"].includes(attackMode)) parts.push("--increment");
-    ["1", "2", "3", "4"].forEach(id => {
-        const value = customCharsets[id];
-        if (value) parts.push(`-${id}`, shellQuote(value));
-    });
-    parts.push(shellQuote(hashFile));
+function hashcatAttackModeNumber(attackMode) {
+    return (hashcatAttackModeOptions.find(item => item.value === attackMode) || hashcatAttackModeOptions[0]).hashcatMode;
+}
 
+function pushPositiveNumberOption(parts, flag, value) {
+    const number = Number(value);
+    if (Number.isFinite(number) && number > 0) parts.push(flag, String(Math.trunc(number)));
+}
+
+function pushHashcatCandidateSource(parts, { attackMode, mask, wordlistFile, secondWordlistFile }) {
     if (attackMode === "mask") {
         parts.push(shellQuote(mask || "?l?l?l?l?d?d"));
     } else if (attackMode === "hybridWordMask") {
@@ -461,15 +499,111 @@ export function buildHashcatCommand({
     } else {
         parts.push(shellQuote(wordlistFile));
     }
+}
 
-    if (attackMode === "rules" && rule.hashcatRule) {
+export function buildHashcatCommand({
+    action = "attack",
+    hashModeId = "auto",
+    detectedModes = [],
+    attackMode = "straight",
+    rulePreset = "exact",
+    ruleFile = "",
+    customRuleFile = "",
+    mask = "",
+    customCharsets = {},
+    optimized = true,
+    username = false,
+    workload = 3,
+    increment = false,
+    incrementMin = 0,
+    incrementMax = 0,
+    deviceTypes = "",
+    deviceIds = "",
+    separator = ":",
+    session = "",
+    restore = false,
+    status = false,
+    statusJson = false,
+    statusTimer = 60,
+    potfilePath = "",
+    outfileFormat = "1,2",
+    customOutfileFormat = "",
+    runtime = 0,
+    skip = 0,
+    limitCandidates = 0,
+    removeFound = false,
+    quiet = false,
+    hashFile = "hashes.txt",
+    wordlistFile = "wordlist.txt",
+    secondWordlistFile = "wordlist2.txt",
+    outputFile = "found.txt"
+} = {}) {
+    const hashMode = hashModeOrAuto(hashModeId, detectedModes);
+    const rule = redTeamRulePresets.find(item => item.value === rulePreset) || redTeamRulePresets[0];
+    const parts = ["hashcat"];
+    const attackNumber = hashcatAttackModeNumber(attackMode);
+    const selectedAction = hashcatActionOptions.find(item => item.value === action) || hashcatActionOptions[0];
+    const needsAttackShape = ["attack", "stdout", "keyspace"].includes(action);
+
+    if (restore) {
+        parts.push("--restore");
+        if (session) parts.push("--session", shellQuote(session));
+        return parts.join(" ");
+    }
+
+    if (selectedAction.flag) parts.push(selectedAction.flag);
+    if (hashMode?.hashcatMode && action !== "identify") parts.push("-m", hashMode.hashcatMode);
+    if (needsAttackShape) parts.push("-a", attackNumber);
+    if (optimized && needsAttackShape) parts.push("-O");
+    if (username) parts.push("--username");
+    if (workload && needsAttackShape) parts.push("-w", String(workload));
+    if (deviceTypes) parts.push("-D", shellQuote(deviceTypes));
+    if (deviceIds) parts.push("-d", shellQuote(deviceIds));
+    if (session) parts.push("--session", shellQuote(session));
+    if (potfilePath) parts.push("--potfile-path", shellQuote(potfilePath));
+    if (separator) parts.push("-p", shellQuote(separator === "\\t" ? "\t" : separator));
+    if (quiet) parts.push("--quiet");
+    if (removeFound && action === "attack") parts.push("--remove");
+    if (status && action === "attack") parts.push("--status");
+    if (statusJson && action === "attack") parts.push("--status-json");
+    if ((status || statusJson) && action === "attack") pushPositiveNumberOption(parts, "--status-timer", statusTimer);
+    if (action === "attack") pushPositiveNumberOption(parts, "--runtime", runtime);
+    if (["attack", "keyspace"].includes(action)) pushPositiveNumberOption(parts, "--skip", skip);
+    if (["attack", "keyspace"].includes(action)) pushPositiveNumberOption(parts, "--limit", limitCandidates);
+    if (needsAttackShape && increment && ["mask", "hybridWordMask", "hybridMaskWord"].includes(attackMode)) parts.push("--increment");
+    if (needsAttackShape && increment && incrementMin) parts.push("--increment-min", String(incrementMin));
+    if (needsAttackShape && increment && incrementMax) parts.push("--increment-max", String(incrementMax));
+    if (needsAttackShape) {
+        ["1", "2", "3", "4"].forEach(id => {
+            const value = customCharsets[id];
+            if (value) parts.push(`-${id}`, shellQuote(value));
+        });
+    }
+
+    if (action === "benchmark" || action === "hash-info") return parts.join(" ");
+
+    if (action !== "stdout" && action !== "keyspace") {
+        parts.push(shellQuote(hashFile));
+    }
+
+    if (needsAttackShape) {
+        pushHashcatCandidateSource(parts, { attackMode, mask, wordlistFile, secondWordlistFile });
+    }
+
+    const resolvedRuleFile = ruleFile === "custom" ? customRuleFile : ruleFile;
+    if (needsAttackShape && attackMode === "rules" && resolvedRuleFile && resolvedRuleFile !== "none") {
+        parts.push("-r", shellQuote(resolvedRuleFile));
+    } else if (needsAttackShape && attackMode === "rules" && rule.hashcatRule) {
         if (rule.hashcatRule.startsWith("-r ")) {
             parts.push(...rule.hashcatRule.split(/\s+/));
         } else {
             parts.push("-r", shellQuote(`feanor-${rule.value}.rule`));
         }
     }
-    parts.push("--outfile", shellQuote(outputFile));
+
+    if (outputFile && action === "attack") parts.push("--outfile", shellQuote(outputFile));
+    const resolvedOutfileFormat = outfileFormat === "custom" ? customOutfileFormat : outfileFormat;
+    if (resolvedOutfileFormat && action === "attack") parts.push("--outfile-format", shellQuote(resolvedOutfileFormat));
     return parts.join(" ");
 }
 

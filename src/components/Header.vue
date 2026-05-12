@@ -100,7 +100,7 @@ export default {
           name: "Comunidad",
           subs: [
             { name: "Chat", route: "/el-concilio-de-elrond" },
-            { name: "Películas, Series y Juegos", route: "http://192.168.0.254/#/" },
+            { name: "Películas, Series y TV", route: "https://lapipadegandalf.com/#/" },
             { name: "Humor", route: "/la-jarra-de-pippin" },
             { name: "Música", route: "https://www.youtube.com/@TomBombadil-SONGS" }
           ]

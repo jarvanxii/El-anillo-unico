@@ -58,6 +58,7 @@ export function buildThorondorPythonAgent(config) {
 
   return `#!/usr/bin/env python3
 import json
+import glob
 import hmac
 import os
 import platform
@@ -116,6 +117,7 @@ CRITICAL_FILES = (
 )
 BASELINE_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".thorondor-baseline.json")
 MAX_LOG_LINES = 60
+MAX_CUSTOM_LOG_FILES = 8
 HEADERS = {
     "Access-Control-Allow-Origin": CORS_ORIGIN,
     "Access-Control-Allow-Methods": "GET, OPTIONS",
@@ -173,12 +175,81 @@ def find_local_ip():
 def read_tail(path, lines=MAX_LOG_LINES):
     if not path or not os.path.exists(path):
         return []
+    if os.path.isdir(path):
+        return []
     try:
         with open(path, "r", encoding="utf-8", errors="ignore") as handler:
             content = handler.readlines()[-lines:]
         return [line.rstrip("\\n") for line in content]
     except Exception as exc:
         return [f"ERROR leyendo {path}: {exc}"]
+
+
+def collect_windows_event_log_lines(log_name, lines=MAX_LOG_LINES):
+    if not IS_WINDOWS:
+        return []
+
+    safe_name = re.sub(r"[^A-Za-z0-9_ ./-]", "", str(log_name or "")).strip()
+    if not safe_name:
+        return []
+
+    try:
+        ps_script = (
+            "Get-WinEvent -LogName '" + safe_name + "' -MaxEvents " + str(int(lines)) + " 2>$null "
+            "| Select-Object @{N='ts';E={$_.TimeCreated.ToString('o')}},@{N='lvl';E={$_.LevelDisplayName}},@{N='id';E={$_.Id}},@{N='msg';E={$_.Message}} "
+            "| ConvertTo-Json -Depth 2 -Compress"
+        )
+        result = subprocess.run(
+            ["powershell", "-NoProfile", "-NonInteractive", "-Command", ps_script],
+            capture_output=True, text=True, timeout=15
+        )
+        output = []
+        if result.returncode == 0 and result.stdout.strip():
+            raw = json.loads(result.stdout)
+            if isinstance(raw, dict):
+                raw = [raw]
+            for event in raw:
+                output.append(
+                    f"[{event.get('ts', '')}] [{event.get('lvl', '')}] [{event.get('id', '')}] {str(event.get('msg', ''))[:300]}"
+                )
+        return output
+    except Exception as exc:
+        return [f"ERROR leyendo winlog://{safe_name}: {exc}"]
+
+
+def expand_log_source(source):
+    source_text = str(source or "").strip()
+    if not source_text:
+        return []
+
+    lower_source = source_text.lower()
+    if IS_WINDOWS and (lower_source.startswith("winlog://") or lower_source.startswith("eventlog://")):
+        log_name = source_text.split("://", 1)[1].strip()
+        return [{"path": f"winlog://{log_name}", "lines": collect_windows_event_log_lines(log_name, MAX_LOG_LINES)}]
+
+    candidates = glob.glob(source_text) if any(char in source_text for char in "*?[]") else [source_text]
+    entries = []
+
+    for candidate in candidates[:MAX_CUSTOM_LOG_FILES]:
+        if os.path.isdir(candidate):
+            try:
+                files = [
+                    os.path.join(candidate, item)
+                    for item in os.listdir(candidate)
+                    if os.path.isfile(os.path.join(candidate, item))
+                ]
+                files.sort(key=lambda path: os.path.getmtime(path), reverse=True)
+                for file_path in files[:MAX_CUSTOM_LOG_FILES]:
+                    entries.append({"path": file_path, "lines": read_tail(file_path, MAX_LOG_LINES)})
+            except Exception as exc:
+                entries.append({"path": candidate, "lines": [f"ERROR leyendo directorio {candidate}: {exc}"]})
+        else:
+            entries.append({"path": candidate, "lines": read_tail(candidate, MAX_LOG_LINES)})
+
+    if not entries:
+        entries.append({"path": source_text, "lines": []})
+
+    return entries
 
 
 def get_auth_log_path():
@@ -452,7 +523,7 @@ def collect_security():
 def collect_logs():
     custom_logs = []
     for path in ADDITIONAL_LOG_PATHS:
-        custom_logs.append({"path": path, "lines": read_tail(path, MAX_LOG_LINES)})
+        custom_logs.extend(expand_log_source(path))
 
     if IS_WINDOWS:
         win_lines = collect_windows_logs()

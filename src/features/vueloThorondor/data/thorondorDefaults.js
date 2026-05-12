@@ -83,7 +83,71 @@ export const THORONDOR_LOG_SOURCES = [
   { value: "custom", label: "Personalizados" }
 ];
 
-export const THORONDOR_DEFAULT_ADDITIONAL_LOG_PATHS = "/var/log/nginx/access.log\n/var/log/nginx/error.log";
+export const THORONDOR_LEGACY_ADDITIONAL_LOG_PATHS = "/var/log/nginx/access.log\n/var/log/nginx/error.log";
+
+export const THORONDOR_LINUX_DIAGNOSTIC_LOG_PATHS = [
+  "/var/log/nginx/access.log",
+  "/var/log/nginx/error.log",
+  "/var/log/apache2/access.log",
+  "/var/log/apache2/error.log",
+  "/var/log/mysql/error.log",
+  "/var/log/postgresql/postgresql-*-main.log",
+  "/var/log/php/error.log",
+  "/var/log/syslog",
+  "/var/log/auth.log",
+  "/var/log/iptables.log",
+  "/var/log/snort/"
+];
+
+export const THORONDOR_WINDOWS_DIAGNOSTIC_LOG_PATHS = [
+  "winlog://System",
+  "winlog://Application",
+  "winlog://Security",
+  "C:\\inetpub\\logs\\LogFiles\\W3SVC*\\u_ex*.log",
+  "C:\\Windows\\System32\\LogFiles\\HTTPERR\\httperr*.log",
+  "C:\\nginx\\logs\\access.log",
+  "C:\\nginx\\logs\\error.log",
+  "C:\\Apache24\\logs\\access.log",
+  "C:\\Apache24\\logs\\error.log",
+  "C:\\xampp\\apache\\logs\\access.log",
+  "C:\\xampp\\apache\\logs\\error.log",
+  "C:\\ProgramData\\MySQL\\MySQL Server *\\Data\\*.err",
+  "C:\\Program Files\\PostgreSQL\\*\\data\\log\\postgresql-*.log",
+  "C:\\php\\logs\\php_error.log",
+  "C:\\xampp\\php\\logs\\php_error_log",
+  "C:\\Windows\\Temp\\php_errors.log",
+  "C:\\Windows\\System32\\LogFiles\\Firewall\\pfirewall.log",
+  "C:\\Snort\\log\\alert.ids",
+  "C:\\Snort\\log\\alert_fast.txt"
+];
+
+function joinThorondorLogPaths(paths) {
+  return paths.join("\n");
+}
+
+function normalizeLogPathList(value) {
+  return String(value || "")
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .join("\n");
+}
+
+export const THORONDOR_DEFAULT_ADDITIONAL_LOG_PATHS = joinThorondorLogPaths(THORONDOR_LINUX_DIAGNOSTIC_LOG_PATHS);
+export const THORONDOR_WINDOWS_DEFAULT_ADDITIONAL_LOG_PATHS = joinThorondorLogPaths(THORONDOR_WINDOWS_DIAGNOSTIC_LOG_PATHS);
+
+export function getThorondorDefaultLogPathsForOs(targetOs = "linux") {
+  return targetOs === "windows"
+    ? THORONDOR_WINDOWS_DEFAULT_ADDITIONAL_LOG_PATHS
+    : THORONDOR_DEFAULT_ADDITIONAL_LOG_PATHS;
+}
+
+export function isThorondorDefaultDiagnosticLogPathList(value) {
+  const normalized = normalizeLogPathList(value);
+  return normalized === normalizeLogPathList(THORONDOR_LEGACY_ADDITIONAL_LOG_PATHS)
+    || normalized === normalizeLogPathList(THORONDOR_DEFAULT_ADDITIONAL_LOG_PATHS)
+    || normalized === normalizeLogPathList(THORONDOR_WINDOWS_DEFAULT_ADDITIONAL_LOG_PATHS);
+}
 
 export const THORONDOR_ALERT_TYPES = {
   cpu: "CPU sostenida alta",
@@ -252,12 +316,14 @@ export function buildDefaultThorondorRuleSet() {
   ];
 }
 
-export function buildThorondorAgentDraft() {
+export function buildThorondorAgentDraft(targetOs = "linux") {
+  const normalizedTargetOs = targetOs === "windows" ? "windows" : "linux";
+
   return {
-    targetOs: "linux",
+    targetOs: normalizedTargetOs,
     displayName: "",
     systemName: "",
-    distro: "",
+    distro: normalizedTargetOs === "windows" ? "Windows" : "",
     osVersion: "",
     receiverUrl: "",
     networkScope: "lan",
@@ -265,7 +331,7 @@ export function buildThorondorAgentDraft() {
     corsOrigin: "*",
     port: "",
     intervalSeconds: 30,
-    additionalLogPaths: THORONDOR_DEFAULT_ADDITIONAL_LOG_PATHS,
+    additionalLogPaths: getThorondorDefaultLogPathsForOs(normalizedTargetOs),
     modules: {
       systemMetrics: true,
       securityLogs: true,
@@ -281,7 +347,7 @@ export function buildThorondorAgentDraft() {
       loginHistory: true,
       smartMonitor: false
     },
-    generateSystemd: true,
+    generateSystemd: normalizedTargetOs !== "windows",
     hostIp: "",
     installUser: "",
     serviceName: "",
@@ -300,5 +366,5 @@ export function isLegacyThorondorAgentDraft(draft) {
     && String(draft.installUser || "") === "thorondor"
     && String(draft.serviceName || "") === "thorondor-agent"
     && Number(draft.intervalSeconds) === 30
-    && String(draft.additionalLogPaths || "") === THORONDOR_DEFAULT_ADDITIONAL_LOG_PATHS;
+    && String(draft.additionalLogPaths || "") === THORONDOR_LEGACY_ADDITIONAL_LOG_PATHS;
 }

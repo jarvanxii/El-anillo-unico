@@ -45,10 +45,10 @@
             <div class="os-selector-row">
                 <label class="field-label mb-2">Sistema operativo objetivo</label>
                 <div class="os-toggle-group">
-                    <button type="button" class="os-toggle-btn" :class="{ active: !isWindows }" @click="agentDraft.targetOs = 'linux'">
+                    <button type="button" class="os-toggle-btn" :class="{ active: !isWindows }" @click="setTargetOs('linux')">
                         <span class="os-icon">🐧</span> Linux
                     </button>
-                    <button type="button" class="os-toggle-btn" :class="{ active: isWindows }" @click="agentDraft.targetOs = 'windows'">
+                    <button type="button" class="os-toggle-btn" :class="{ active: isWindows }" @click="setTargetOs('windows')">
                         <span class="os-icon">🪟</span> Windows
                     </button>
                 </div>
@@ -233,7 +233,7 @@
                 </div>
                 <div class="control-field full-span">
                     <div class="field-heading">
-                        <label class="field-label" for="additional-logs">Rutas de logs adicionales</label>
+                        <label class="field-label" for="additional-logs">Rutas de logs diagnosticos</label>
                         <div class="context-help">
                             <button type="button" class="help-trigger" :class="{ 'is-pinned': pinnedHelpKey === 'additionalLogPaths' }" aria-label="Ayuda sobre las rutas de logs adicionales" @click.stop="togglePinnedHelp('additionalLogPaths')">
                                 ?
@@ -244,7 +244,11 @@
                             </button>
                         </div>
                     </div>
-                    <textarea id="additional-logs" v-model="agentDraft.additionalLogPaths" rows="4" class="form-control input-dark textarea-dark"></textarea>
+                    <textarea id="additional-logs" v-model="agentDraft.additionalLogPaths" rows="10" class="form-control input-dark textarea-dark"></textarea>
+                    <div class="log-preset-actions">
+                        <button type="button" class="btn btn-quiet" @click="loadDiagnosticLogPreset('linux')">Cargar rutas Linux</button>
+                        <button type="button" class="btn btn-quiet" @click="loadDiagnosticLogPreset('windows')">Cargar equivalentes Windows</button>
+                    </div>
                 </div>
                 <div class="control-field full-span">
                     <div class="field-heading">
@@ -456,6 +460,8 @@ import {
     THORONDOR_MODULE_KEYS,
     THORONDOR_NETWORK_SCOPE_OPTIONS,
     buildThorondorAgentDraft,
+    getThorondorDefaultLogPathsForOs,
+    isThorondorDefaultDiagnosticLogPathList,
     isLegacyThorondorAgentDraft,
     normalizeThorondorNetworkScope
 } from "@/features/vueloThorondor/data/thorondorDefaults";
@@ -525,8 +531,8 @@ const FIELD_GUIDES = {
         copy: "Marca el nombre base de los ficheros descargados y de la unidad systemd. Cuanto mas claro sea, mas facil sera mantenerlo con systemctl y journalctl."
     },
     additionalLogPaths: {
-        title: "Logs extra de negocio",
-        copy: "Escribe una ruta por linea para incluir logs adicionales de aplicaciones, proxys o servicios propios. Se conservan precargados porque suelen repetirse entre despliegues."
+        title: "Logs diagnosticos",
+        copy: "Escribe una ruta por linea para incluir logs de aplicaciones, sistema, firewall o IDS. Puedes usar globs, directorios y en Windows fuentes winlog://System, winlog://Application o winlog://Security."
     },
     modules: {
         title: "Que bloques recoger",
@@ -789,6 +795,28 @@ export default {
     },
 
     methods: {
+        setTargetOs(targetOs) {
+            const normalizedTargetOs = targetOs === "windows" ? "windows" : "linux";
+            const shouldReplaceLogPaths = !String(this.agentDraft.additionalLogPaths || "").trim()
+                || isThorondorDefaultDiagnosticLogPathList(this.agentDraft.additionalLogPaths);
+
+            this.agentDraft = {
+                ...this.agentDraft,
+                targetOs: normalizedTargetOs,
+                distro: normalizedTargetOs === "windows"
+                    ? "Windows"
+                    : (this.agentDraft.distro === "Windows" ? "" : this.agentDraft.distro),
+                generateSystemd: normalizedTargetOs === "windows" ? false : this.agentDraft.generateSystemd !== false,
+                additionalLogPaths: shouldReplaceLogPaths
+                    ? getThorondorDefaultLogPathsForOs(normalizedTargetOs)
+                    : this.agentDraft.additionalLogPaths
+            };
+        },
+
+        loadDiagnosticLogPreset(targetOs) {
+            this.agentDraft.additionalLogPaths = getThorondorDefaultLogPathsForOs(targetOs);
+        },
+
         prettyJson(value) {
             return JSON.stringify(value, null, 2);
         },
@@ -825,12 +853,17 @@ export default {
         },
 
         normalizeDraftShape(source = {}) {
-            const base = buildThorondorAgentDraft();
+            const targetOs = source?.targetOs === "windows" ? "windows" : "linux";
+            const base = buildThorondorAgentDraft(targetOs);
             const draft = cloneDraft(source || {});
+            const additionalLogPaths = !draft.additionalLogPaths || isThorondorDefaultDiagnosticLogPathList(draft.additionalLogPaths)
+                ? getThorondorDefaultLogPathsForOs(targetOs)
+                : draft.additionalLogPaths;
 
             return {
                 ...base,
                 ...draft,
+                targetOs,
                 displayName: String(draft.displayName ?? base.displayName),
                 systemName: String(draft.systemName ?? base.systemName),
                 distro: String(draft.distro ?? base.distro),
@@ -847,7 +880,7 @@ export default {
                 intervalSeconds: draft.intervalSeconds === "" || draft.intervalSeconds === null || draft.intervalSeconds === undefined
                     ? base.intervalSeconds
                     : Number(draft.intervalSeconds) || base.intervalSeconds,
-                additionalLogPaths: typeof draft.additionalLogPaths === "string" ? draft.additionalLogPaths : base.additionalLogPaths,
+                additionalLogPaths: typeof additionalLogPaths === "string" ? additionalLogPaths : base.additionalLogPaths,
                 modules: {
                     ...base.modules,
                     ...(draft.modules || {})
@@ -949,7 +982,7 @@ export default {
         },
 
         async clearFormData() {
-            this.agentDraft = buildThorondorAgentDraft();
+            this.agentDraft = buildThorondorAgentDraft(this.agentDraft.targetOs);
             await this.$store.dispatch("clearThorondorGeneratorDraft");
         },
 
@@ -1098,6 +1131,13 @@ export default {
 
 .compact-action {
     flex: 0 0 auto;
+}
+
+.log-preset-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.55rem;
+    margin-top: 0.65rem;
 }
 
 .field-heading {

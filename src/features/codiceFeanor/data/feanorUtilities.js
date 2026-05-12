@@ -250,11 +250,25 @@ export const feanorUtilityGroups = [
         summary: "Laboratorios defensivos para auditar hashes, founds y contrasenas debiles sin enviar material sensible fuera del navegador.",
         utilities: [
             {
-                id: "hashcatJohnWorkbench",
-                label: "Hashcat / John workbench",
-                badge: "H/J",
-                routeName: "feanor-hashcat-john-workbench",
-                description: "Planifica ataques autorizados con catalogo de modos, mascaras, reglas, wordlists, comandos Hashcat/John y preview local de candidatos."
+                id: "hashcatWorkbench",
+                label: "Hashcat",
+                badge: "HCAT",
+                routeName: "feanor-hashcat",
+                description: "Genera comandos Hashcat con selectores para -m, -a, diccionario, reglas, mascara, workload, dispositivos, potfile, sesion y salida."
+            },
+            {
+                id: "johnDictionaries",
+                label: "John diccionarios",
+                badge: "JTR",
+                routeName: "feanor-john-dictionaries",
+                description: "Consulta y carga wordlists estilo John/SecLists/RockYou en local: busca, filtra, mide longitudes y revisa candidatos sin cracking."
+            },
+            {
+                id: "ffufWorkbench",
+                label: "ffuf",
+                badge: "FFUF",
+                routeName: "feanor-ffuf",
+                description: "Construye comandos ffuf para fuzzing web autorizado: rutas, vhosts, parametros, POST, raw requests, filtros, matchers, recursion, proxy y salida."
             },
             {
                 id: "passwordCracker",

@@ -38,7 +38,9 @@ import FeanorHashView from "../views/CodiceFeanor/Feanor-HashView.vue";
 import FeanorHashLookupView from "../views/CodiceFeanor/Feanor-HashLookupView.vue";
 import FeanorPasswordHashCrackerView from "../views/CodiceFeanor/Feanor-PasswordHashCrackerView.vue";
 import FeanorRainbowTablesView from "../views/CodiceFeanor/Feanor-RainbowTablesView.vue";
-import FeanorHashcatJohnWorkbenchView from "../views/CodiceFeanor/Feanor-HashcatJohnWorkbenchView.vue";
+import FeanorHashcatView from "../views/CodiceFeanor/Feanor-HashcatView.vue";
+import FeanorJohnDictionariesView from "../views/CodiceFeanor/Feanor-JohnDictionariesView.vue";
+import FeanorFfufView from "../views/CodiceFeanor/Feanor-FfufView.vue";
 import FeanorHmacView from "../views/CodiceFeanor/Feanor-HmacView.vue";
 import FeanorKdfView from "../views/CodiceFeanor/Feanor-KdfView.vue";
 import FeanorPbkdf2View from "../views/CodiceFeanor/Feanor-Pbkdf2View.vue";
@@ -411,8 +413,24 @@ const routes = [
   },
   {
     path: "/el-codice-de-feanor/red-team/hashcat-john-workbench",
-    name: "feanor-hashcat-john-workbench",
-    component: FeanorHashcatJohnWorkbenchView,
+    redirect: { name: "feanor-hashcat" },
+  },
+  {
+    path: "/el-codice-de-feanor/red-team/hashcat",
+    name: "feanor-hashcat",
+    component: FeanorHashcatView,
+    meta: { showFeanorHeader: true },
+  },
+  {
+    path: "/el-codice-de-feanor/red-team/john-diccionarios",
+    name: "feanor-john-dictionaries",
+    component: FeanorJohnDictionariesView,
+    meta: { showFeanorHeader: true },
+  },
+  {
+    path: "/el-codice-de-feanor/red-team/ffuf",
+    name: "feanor-ffuf",
+    component: FeanorFfufView,
     meta: { showFeanorHeader: true },
   },
   {

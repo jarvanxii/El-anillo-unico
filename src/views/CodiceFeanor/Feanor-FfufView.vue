@@ -1,5 +1,5 @@
 <template>
-    <CodiceFeanorView tool-module="hashcatWorkbench" />
+    <CodiceFeanorView tool-module="ffufWorkbench" />
 </template>
 
 <script setup>

@@ -470,7 +470,7 @@ const baseFeanorTheoryTopics = [
         badge: "HASH",
         routeName: "feanor-teoria-hash-hmac-timing",
         summary: "Funciones hash, integridad autenticada, rainbow tables, comparaciones constantes y ataques por tiempo.",
-        toolRouteNames: ["feanor-hash", "feanor-hash-lookup", "feanor-hashcat-john-workbench", "feanor-password-cracker", "feanor-rainbow-tables", "feanor-hmac", "feanor-comparador-constante"],
+        toolRouteNames: ["feanor-hash", "feanor-hash-lookup", "feanor-hashcat", "feanor-john-dictionaries", "feanor-password-cracker", "feanor-rainbow-tables", "feanor-hmac", "feanor-comparador-constante"],
         pillars: [
             "Un hash resume datos de forma determinista y no reversible en condiciones normales.",
             "HMAC combina hash y clave secreta para autenticar integridad.",
@@ -588,7 +588,7 @@ const baseFeanorTheoryTopics = [
         badge: "RT",
         routeName: "feanor-teoria-red-team-hashcracking",
         summary: "Como usar Hashcat, John the Ripper, mascaras, reglas, wordlists, potfiles, founds y formatos de hash de forma autorizada y reproducible.",
-        toolRouteNames: ["feanor-hashcat-john-workbench", "feanor-password-cracker", "feanor-rainbow-tables", "feanor-hash-lookup", "feanor-hash", "feanor-yescrypt", "feanor-argon2", "feanor-scrypt", "feanor-bcrypt"],
+        toolRouteNames: ["feanor-hashcat", "feanor-john-dictionaries", "feanor-ffuf", "feanor-password-cracker", "feanor-rainbow-tables", "feanor-hash-lookup", "feanor-hash", "feanor-yescrypt", "feanor-argon2", "feanor-scrypt", "feanor-bcrypt"],
         pillars: [
             "Hashcat destaca en ataques GPU, mascaras, reglas y modos muy amplios; John destaca en formatos, single crack, reglas y crypt/shadow.",
             "Un cracking profesional empieza por identificar formato y alcance, no por lanzar fuerza bruta a ciegas.",
@@ -649,6 +649,43 @@ const baseFeanorTheoryTopics = [
                     "john --format=crypt --wordlist=wordlist.txt shadow-yescrypt.txt",
                     "john --single hashes-con-usuarios.txt",
                     "john --show hashes.txt"
+                ]
+            },
+            {
+                title: "Diccionarios y wordlists",
+                body: "Una wordlist profesional se trata como un dataset: origen, licencia, version, tamano, duplicados, orden, idioma, contexto y sesgo. El laboratorio de John de Feanor no crackea; sirve para inspeccionar listas, cargar ficheros locales, buscar patrones y decidir si un diccionario tiene sentido antes de usarlo en CLI.",
+                bullets: [
+                    "RockYou, SecLists, Openwall/password.lst y listas corporativas autorizadas cubren familias distintas de passwords.",
+                    "Filtra por longitud y contexto antes de ampliar reglas; menos candidatos buenos suelen aportar mas que millones irrelevantes.",
+                    "Separa listas genericas, nombres, servicios por defecto, teclado, temporadas, cloud/devops y terminos internos.",
+                    "Documenta el diccionario usado en el reporte porque afecta directamente a reproducibilidad y alcance."
+                ],
+                exampleTitle: "Inspeccion previa",
+                exampleLines: [
+                    "wc -l wordlist.txt",
+                    "sort -u wordlist.txt > wordlist.unique.txt",
+                    "grep -Ei 'admin|backup|2026$' wordlist.unique.txt | head",
+                    "john --wordlist=wordlist.unique.txt --rules --stdout | head",
+                    "hashcat --stdout wordlist.unique.txt -r rules/best64.rule | head"
+                ]
+            },
+            {
+                title: "Fuzzing web con ffuf",
+                body: "ffuf usa una keyword como FUZZ dentro de la URL, headers o body y sustituye esa marca por entradas de una wordlist. Es potente para discovery de rutas, vhosts, parametros GET/POST y APIs, pero necesita filtros y limites para no generar ruido ni trafico innecesario.",
+                bullets: [
+                    "Content discovery: -u https://host/FUZZ con listas de rutas y extensiones.",
+                    "Vhost discovery: -H 'Host: FUZZ.host' y filtros de tamano para eliminar la respuesta por defecto.",
+                    "Param fuzzing: coloca FUZZ en nombre o valor de parametro y filtra 401/404/soft-404.",
+                    "Raw request: exporta una request de Burp/ZAP y usa -request cuando headers/body/metodo ya estan modelados.",
+                    "Controla ruido con -mc/-fc, -ms/-fs, -mw/-fw, -ml/-fl, -mr/-fr y acota con -rate/-maxtime."
+                ],
+                exampleTitle: "Comandos ffuf",
+                exampleLines: [
+                    "ffuf -w /usr/share/seclists/Discovery/Web-Content/common.txt -u https://target/FUZZ -fc 404",
+                    "ffuf -w subdomains.txt -u https://target/ -H 'Host: FUZZ.target' -fs 4242",
+                    "ffuf -w params.txt -u 'https://target/search.php?FUZZ=test' -mc all -fs 4242",
+                    "ffuf -w passwords.txt -u https://target/login -X POST -H 'Content-Type: application/x-www-form-urlencoded' -d 'user=admin&password=FUZZ' -fc 401",
+                    "ffuf -w wordlist.txt -request raw-request.txt -request-proto https -replay-proxy http://127.0.0.1:8080"
                 ]
             },
             {
@@ -1616,6 +1653,16 @@ const feanorTheoryReferences = {
             label: "John cracking modes",
             url: "https://www.openwall.com/john/doc/MODES.shtml",
             note: "Single, wordlist, incremental, mask y external."
+        },
+        {
+            label: "ffuf",
+            url: "https://github.com/ffuf/ffuf",
+            note: "Fuzzer web rapido en Go para discovery, vhosts, parametros, filtros y salida estructurada."
+        },
+        {
+            label: "ffuf wiki",
+            url: "https://github.com/ffuf/ffuf/wiki",
+            note: "Wordlists, multiwordlists, raw requests, matchers, filters y ejemplos de uso."
         }
     ],
     "derivacion-claves": [
@@ -2030,9 +2077,9 @@ const feanorTheoryUseCases = {
             badge: "id",
             body: "El mismo hash puede encajar en varios algoritmos por longitud, asi que la identificacion debe combinar patron y contexto.",
             steps: [
-                "Pega una muestra en el workbench.",
+                "Pega una muestra en el constructor de Hashcat.",
                 "Revisa candidatos detectados y selecciona el formato real si lo conoces.",
-                "Genera comandos Hashcat/John con el modo seleccionado."
+                "Genera el comando Hashcat y revisa la wordlist en el laboratorio de diccionarios de John."
             ]
         },
         {

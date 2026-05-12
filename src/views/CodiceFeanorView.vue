@@ -682,73 +682,181 @@
                 <FeanorResultPanel v-if="hashLookupResult" :result="hashLookupResult" icon="LOOK" @copy="copyText" />
             </section>
 
-            <section v-if="isModuleVisible('hashcatJohnWorkbench')" class="section-box red-team-workbench-module">
+            <section v-if="isModuleVisible('hashcatWorkbench') || isModuleVisible('hashcatJohnWorkbench')" class="section-box red-team-workbench-module">
                 <div class="module-header">
                     <span class="section-kicker">Red Team</span>
-                    <h2 class="module-title">Hashcat / John workbench</h2>
+                    <h2 class="module-title">Hashcat command builder</h2>
                     <p class="module-copy">
-                        Planifica ataques autorizados con modos de Hashcat y John: identifica formato, estima keyspace,
-                        previsualiza candidatos locales y genera comandos reproducibles para CPU/GPU o auditoria offline.
+                        Construye comandos Hashcat reproducibles con selectores por parametro: modo de hash, ataque,
+                        diccionario, reglas, mascaras, dispositivos, sesion, potfile y salida.
                     </p>
                 </div>
 
                 <div class="control-grid">
                     <div class="control-field">
-                        <label class="field-label" for="redteam-hash-mode">Formato hash</label>
-                        <select id="redteam-hash-mode" v-model="redTeamWorkbenchHashMode" class="form-select input-dark algorithm-select">
+                        <label class="field-label" for="hashcat-action">Accion Hashcat</label>
+                        <select id="hashcat-action" v-model="hashcatWorkbenchAction" class="form-select input-dark algorithm-select">
+                            <option v-for="item in hashcatActionOptions" :key="item.value" :value="item.value">
+                                {{ item.label }} | {{ item.summary }}
+                            </option>
+                        </select>
+                    </div>
+                    <div class="control-field">
+                        <label class="field-label" for="hashcat-hash-mode">-m / tipo de hash</label>
+                        <select id="hashcat-hash-mode" v-model="redTeamWorkbenchHashMode" class="form-select input-dark algorithm-select">
                             <option v-for="item in redTeamHashModeOptions" :key="item.value" :value="item.value">
                                 {{ algorithmSelectLabel(item) }}
                             </option>
                         </select>
                     </div>
                     <div class="control-field">
-                        <label class="field-label" for="redteam-attack-mode">Modo de ataque</label>
-                        <select id="redteam-attack-mode" v-model="redTeamWorkbenchAttackMode" class="form-select input-dark algorithm-select">
-                            <option v-for="item in redTeamAttackModes" :key="item.value" :value="item.value">
-                                {{ item.label }} | hashcat {{ item.hashcatMode }} | john {{ item.johnMode }}
+                        <label class="field-label" for="hashcat-attack-mode">-a / modo de ataque</label>
+                        <select id="hashcat-attack-mode" v-model="redTeamWorkbenchAttackMode" class="form-select input-dark algorithm-select">
+                            <option v-for="item in hashcatWorkbenchAttackModes" :key="item.value" :value="item.value">
+                                {{ item.label }}
                             </option>
                         </select>
                     </div>
                     <div class="control-field">
-                        <label class="field-label" for="redteam-rule-preset">Reglas</label>
-                        <select id="redteam-rule-preset" v-model="redTeamWorkbenchRulePreset" class="form-select input-dark">
+                        <label class="field-label" for="hashcat-dictionary">Diccionario</label>
+                        <select id="hashcat-dictionary" v-model="hashcatWorkbenchDictionary" class="form-select input-dark algorithm-select" @change="syncHashcatDictionaryFromSelection">
+                            <option v-for="item in hashcatDictionaryOptions" :key="item.value" :value="item.value">
+                                {{ item.label }}
+                            </option>
+                        </select>
+                    </div>
+                    <div class="control-field">
+                        <label class="field-label" for="hashcat-dictionary-file">Ruta wordlist CLI</label>
+                        <input id="hashcat-dictionary-file" v-model="hashcatWorkbenchDictionaryFile" class="form-control input-dark mono-input" placeholder="wordlists/rockyou.txt" />
+                    </div>
+                    <div class="control-field">
+                        <label class="field-label" for="hashcat-hash-file">Fichero de hashes</label>
+                        <input id="hashcat-hash-file" v-model="hashcatWorkbenchHashFile" class="form-control input-dark mono-input" placeholder="hashes.txt" />
+                    </div>
+                    <div class="control-field">
+                        <label class="field-label" for="hashcat-rule-preset">Preset reglas local</label>
+                        <select id="hashcat-rule-preset" v-model="redTeamWorkbenchRulePreset" class="form-select input-dark">
                             <option v-for="item in redTeamRulePresets" :key="item.value" :value="item.value">
                                 {{ item.label }}
                             </option>
                         </select>
                     </div>
                     <div class="control-field">
-                        <label class="field-label" for="redteam-limit">Limite preview local</label>
-                        <input id="redteam-limit" v-model.number="redTeamWorkbenchLimit" type="number" min="100" max="500000" step="1000" class="form-control input-dark" />
+                        <label class="field-label" for="hashcat-rule-file">-r / fichero de reglas</label>
+                        <select id="hashcat-rule-file" v-model="hashcatWorkbenchRuleFile" class="form-select input-dark">
+                            <option v-for="item in hashcatRuleOptions" :key="item.value" :value="item.value">
+                                {{ item.label }}
+                            </option>
+                        </select>
+                    </div>
+                    <div v-if="hashcatWorkbenchRuleFile === 'custom'" class="control-field">
+                        <label class="field-label" for="hashcat-custom-rule-file">Ruta regla personalizada</label>
+                        <input id="hashcat-custom-rule-file" v-model="hashcatWorkbenchCustomRuleFile" class="form-control input-dark mono-input" placeholder="rules/custom.rule" />
                     </div>
                     <div class="control-field">
-                        <label class="field-label" for="redteam-workload">Workload Hashcat</label>
-                        <input id="redteam-workload" v-model.number="redTeamWorkbenchWorkload" type="number" min="1" max="4" step="1" class="form-control input-dark" />
+                        <label class="field-label" for="hashcat-limit">Limite preview local</label>
+                        <input id="hashcat-limit" v-model.number="redTeamWorkbenchLimit" type="number" min="100" max="500000" step="1000" class="form-control input-dark" />
                     </div>
                     <div class="control-field">
-                        <label class="field-label" for="redteam-mask">Mascara</label>
-                        <input id="redteam-mask" v-model="redTeamWorkbenchMask" class="form-control input-dark mono-input" placeholder="?u?l?l?l?l?d?d" />
+                        <label class="field-label" for="hashcat-workload">-w / workload</label>
+                        <select id="hashcat-workload" v-model.number="redTeamWorkbenchWorkload" class="form-select input-dark">
+                            <option v-for="item in hashcatWorkloadOptions" :key="item.value" :value="Number(item.value)">
+                                {{ item.label }}
+                            </option>
+                        </select>
                     </div>
                     <div class="control-field">
-                        <label class="field-label" for="redteam-charset1">Charset ?1</label>
-                        <input id="redteam-charset1" v-model="redTeamWorkbenchCharset1" class="form-control input-dark mono-input" placeholder="?l?d" />
+                        <label class="field-label" for="hashcat-mask">Mascara</label>
+                        <input id="hashcat-mask" v-model="redTeamWorkbenchMask" class="form-control input-dark mono-input" placeholder="?u?l?l?l?l?d?d" />
                     </div>
                     <div class="control-field">
-                        <label class="field-label" for="redteam-charset2">Charset ?2</label>
-                        <input id="redteam-charset2" v-model="redTeamWorkbenchCharset2" class="form-control input-dark mono-input" placeholder="?u?l" />
+                        <label class="field-label" for="hashcat-charset1">-1 / charset ?1</label>
+                        <input id="hashcat-charset1" v-model="redTeamWorkbenchCharset1" class="form-control input-dark mono-input" placeholder="?l?d" />
                     </div>
                     <div class="control-field">
-                        <label class="field-label" for="redteam-charset3">Charset ?3</label>
-                        <input id="redteam-charset3" v-model="redTeamWorkbenchCharset3" class="form-control input-dark mono-input" placeholder="?d?s" />
+                        <label class="field-label" for="hashcat-charset2">-2 / charset ?2</label>
+                        <input id="hashcat-charset2" v-model="redTeamWorkbenchCharset2" class="form-control input-dark mono-input" placeholder="?u?l" />
                     </div>
                     <div class="control-field">
-                        <label class="field-label" for="redteam-charset4">Charset ?4</label>
-                        <input id="redteam-charset4" v-model="redTeamWorkbenchCharset4" class="form-control input-dark mono-input" placeholder="aeiourstln0123456789" />
+                        <label class="field-label" for="hashcat-charset3">-3 / charset ?3</label>
+                        <input id="hashcat-charset3" v-model="redTeamWorkbenchCharset3" class="form-control input-dark mono-input" placeholder="?d?s" />
+                    </div>
+                    <div class="control-field">
+                        <label class="field-label" for="hashcat-charset4">-4 / charset ?4</label>
+                        <input id="hashcat-charset4" v-model="redTeamWorkbenchCharset4" class="form-control input-dark mono-input" placeholder="aeiourstln0123456789" />
+                    </div>
+                    <div class="control-field">
+                        <label class="field-label" for="hashcat-device-types">-D / dispositivo</label>
+                        <select id="hashcat-device-types" v-model="hashcatWorkbenchDeviceTypes" class="form-select input-dark">
+                            <option v-for="item in hashcatDeviceTypeOptions" :key="item.value" :value="item.value">
+                                {{ item.label }}
+                            </option>
+                        </select>
+                    </div>
+                    <div class="control-field">
+                        <label class="field-label" for="hashcat-device-ids">-d / IDs dispositivo</label>
+                        <input id="hashcat-device-ids" v-model="hashcatWorkbenchDeviceIds" class="form-control input-dark mono-input" placeholder="1,2" />
+                    </div>
+                    <div class="control-field">
+                        <label class="field-label" for="hashcat-separator">-p / separador</label>
+                        <select id="hashcat-separator" v-model="hashcatWorkbenchSeparator" class="form-select input-dark">
+                            <option v-for="item in hashcatSeparatorOptions" :key="item.value" :value="item.value">
+                                {{ item.label }}
+                            </option>
+                        </select>
+                    </div>
+                    <div class="control-field">
+                        <label class="field-label" for="hashcat-outfile-format">--outfile-format</label>
+                        <select id="hashcat-outfile-format" v-model="hashcatWorkbenchOutfileFormat" class="form-select input-dark">
+                            <option v-for="item in hashcatOutfileFormatOptions" :key="item.value" :value="item.value">
+                                {{ item.label }}
+                            </option>
+                        </select>
+                    </div>
+                    <div v-if="hashcatWorkbenchOutfileFormat === 'custom'" class="control-field">
+                        <label class="field-label" for="hashcat-custom-outfile-format">Formato salida custom</label>
+                        <input id="hashcat-custom-outfile-format" v-model="hashcatWorkbenchCustomOutfileFormat" class="form-control input-dark mono-input" placeholder="1,2,3" />
+                    </div>
+                    <div class="control-field">
+                        <label class="field-label" for="hashcat-output-file">--outfile</label>
+                        <input id="hashcat-output-file" v-model="hashcatWorkbenchOutputFile" class="form-control input-dark mono-input" placeholder="found.txt" />
+                    </div>
+                    <div class="control-field">
+                        <label class="field-label" for="hashcat-session">--session</label>
+                        <input id="hashcat-session" v-model="hashcatWorkbenchSession" class="form-control input-dark mono-input" placeholder="feanor-audit" />
+                    </div>
+                    <div class="control-field">
+                        <label class="field-label" for="hashcat-potfile">--potfile-path</label>
+                        <input id="hashcat-potfile" v-model="hashcatWorkbenchPotfilePath" class="form-control input-dark mono-input" placeholder="hashcat.potfile" />
+                    </div>
+                    <div class="control-field">
+                        <label class="field-label" for="hashcat-status-timer">--status-timer</label>
+                        <input id="hashcat-status-timer" v-model.number="hashcatWorkbenchStatusTimer" type="number" min="1" max="3600" step="1" class="form-control input-dark" />
+                    </div>
+                    <div class="control-field">
+                        <label class="field-label" for="hashcat-increment-min">--increment-min</label>
+                        <input id="hashcat-increment-min" v-model.number="hashcatWorkbenchIncrementMin" type="number" min="1" max="64" step="1" class="form-control input-dark" />
+                    </div>
+                    <div class="control-field">
+                        <label class="field-label" for="hashcat-increment-max">--increment-max</label>
+                        <input id="hashcat-increment-max" v-model.number="hashcatWorkbenchIncrementMax" type="number" min="1" max="64" step="1" class="form-control input-dark" />
+                    </div>
+                    <div class="control-field">
+                        <label class="field-label" for="hashcat-runtime">--runtime</label>
+                        <input id="hashcat-runtime" v-model.number="hashcatWorkbenchRuntime" type="number" min="0" step="60" class="form-control input-dark" placeholder="0" />
+                    </div>
+                    <div class="control-field">
+                        <label class="field-label" for="hashcat-skip">--skip</label>
+                        <input id="hashcat-skip" v-model.number="hashcatWorkbenchSkip" type="number" min="0" step="1" class="form-control input-dark" />
+                    </div>
+                    <div class="control-field">
+                        <label class="field-label" for="hashcat-limit-candidates">--limit</label>
+                        <input id="hashcat-limit-candidates" v-model.number="hashcatWorkbenchLimitCandidates" type="number" min="0" step="1" class="form-control input-dark" />
                     </div>
                     <div class="control-field full-span">
-                        <label class="field-label" for="redteam-input">Hashes objetivo / muestra</label>
+                        <label class="field-label" for="hashcat-input">Hashes objetivo / muestra</label>
                         <textarea
-                            id="redteam-input"
+                            id="hashcat-input"
                             v-model="redTeamWorkbenchInput"
                             class="form-control input-dark textarea-dark mono-textarea"
                             rows="6"
@@ -756,9 +864,9 @@
                         ></textarea>
                     </div>
                     <div class="control-field full-span">
-                        <label class="field-label" for="redteam-primary-wordlist">Wordlist primaria</label>
+                        <label class="field-label" for="hashcat-primary-wordlist">Preview wordlist primaria</label>
                         <textarea
-                            id="redteam-primary-wordlist"
+                            id="hashcat-primary-wordlist"
                             v-model="redTeamWorkbenchPrimaryWordlist"
                             class="form-control input-dark textarea-dark mono-textarea"
                             rows="7"
@@ -766,9 +874,9 @@
                         ></textarea>
                     </div>
                     <div v-if="redTeamWorkbenchAttackMode === 'combinator'" class="control-field full-span">
-                        <label class="field-label" for="redteam-secondary-wordlist">Wordlist secundaria</label>
+                        <label class="field-label" for="hashcat-secondary-wordlist">Wordlist secundaria</label>
                         <textarea
-                            id="redteam-secondary-wordlist"
+                            id="hashcat-secondary-wordlist"
                             v-model="redTeamWorkbenchSecondaryWordlist"
                             class="form-control input-dark textarea-dark mono-textarea"
                             rows="5"
@@ -778,23 +886,333 @@
                 </div>
 
                 <div class="checkbox-grid">
-                    <label class="toggle-line"><input v-model="redTeamWorkbenchOptimized" type="checkbox" /> Hashcat -O</label>
-                    <label class="toggle-line"><input v-model="redTeamWorkbenchUsername" type="checkbox" /> hashes con usuario</label>
+                    <label class="toggle-line"><input v-model="redTeamWorkbenchOptimized" type="checkbox" /> -O kernel optimizado</label>
+                    <label class="toggle-line"><input v-model="redTeamWorkbenchUsername" type="checkbox" /> --username hashes con usuario</label>
                     <label class="toggle-line"><input v-model="redTeamWorkbenchIncrement" type="checkbox" /> --increment en mascaras</label>
+                    <label class="toggle-line"><input v-model="hashcatWorkbenchStatus" type="checkbox" /> --status</label>
+                    <label class="toggle-line"><input v-model="hashcatWorkbenchStatusJson" type="checkbox" /> --status-json</label>
+                    <label class="toggle-line"><input v-model="hashcatWorkbenchRestore" type="checkbox" /> --restore</label>
+                    <label class="toggle-line"><input v-model="hashcatWorkbenchRemoveFound" type="checkbox" /> --remove founds</label>
+                    <label class="toggle-line"><input v-model="hashcatWorkbenchQuiet" type="checkbox" /> --quiet</label>
                 </div>
 
                 <div class="inline-actions">
-                    <button class="btn btn-main" @click="runRedTeamWorkbench">Generar plan</button>
-                    <button class="btn btn-subtle" @click="fillRedTeamWorkbenchExample">Cargar ejemplo</button>
-                    <button class="btn btn-subtle" @click="sendHashResultToRedTeamWorkbench">Usar ultimo hash</button>
-                    <button class="btn btn-subtle" @click="clearRedTeamWorkbench">Limpiar</button>
+                    <button class="btn btn-main" @click="runHashcatWorkbench">Generar comando</button>
+                    <button class="btn btn-subtle" @click="loadHashcatDictionaryPreview">Cargar diccionario</button>
+                    <button class="btn btn-subtle" @click="fillHashcatWorkbenchExample">Cargar ejemplo</button>
+                    <button class="btn btn-subtle" @click="sendHashResultToHashcatWorkbench">Usar ultimo hash</button>
+                    <button class="btn btn-subtle" @click="clearHashcatWorkbench">Limpiar</button>
                 </div>
                 <p class="helper-copy">
-                    El navegador solo previsualiza candidatos y verifica hashes rapidos de laboratorio. Para volumen real,
-                    usa los comandos generados con autorizacion, limites de alcance y potfile controlado.
+                    Esta vista no ejecuta cracking: documenta y compone comandos para auditorias autorizadas. El preview
+                    de candidatos sirve para validar la hipotesis antes de moverlo a una maquina de trabajo controlada.
                 </p>
 
                 <FeanorResultPanel v-if="redTeamWorkbenchResult" :result="redTeamWorkbenchResult" icon="RT" @copy="copyText" />
+            </section>
+
+            <section v-if="isModuleVisible('johnDictionaries')" class="section-box red-team-workbench-module">
+                <div class="module-header">
+                    <span class="section-kicker">Red Team</span>
+                    <h2 class="module-title">John the Ripper: diccionarios</h2>
+                    <p class="module-copy">
+                        Consulta wordlists de referencia y ficheros locales sin ejecutar cracking. Filtra, mide y revisa
+                        candidatos antes de usarlos en John, Hashcat u otro flujo offline autorizado.
+                    </p>
+                </div>
+
+                <div class="control-grid">
+                    <div class="control-field">
+                        <label class="field-label" for="john-dictionary-source">Diccionario base</label>
+                        <select id="john-dictionary-source" v-model="johnDictionarySource" class="form-select input-dark algorithm-select" @change="loadJohnDictionaryPreset(false)">
+                            <option v-for="item in johnDictionaryOptions" :key="item.value" :value="item.value">
+                                {{ item.label }}
+                            </option>
+                        </select>
+                    </div>
+                    <div class="control-field">
+                        <label class="field-label" for="john-dictionary-file">Cargar .txt/.lst/.dic</label>
+                        <input id="john-dictionary-file" type="file" accept=".txt,.lst,.dic,text/plain" class="form-control input-dark" @change="handleJohnDictionaryFile" />
+                    </div>
+                    <div class="control-field">
+                        <label class="field-label" for="john-dictionary-query">Consulta</label>
+                        <input id="john-dictionary-query" v-model="johnDictionaryQuery" class="form-control input-dark mono-input" placeholder="admin, ^pass, 2026$..." />
+                    </div>
+                    <div class="control-field">
+                        <label class="field-label" for="john-dictionary-search-mode">Modo busqueda</label>
+                        <select id="john-dictionary-search-mode" v-model="johnDictionarySearchMode" class="form-select input-dark">
+                            <option v-for="item in johnDictionarySearchModes" :key="item.value" :value="item.value">
+                                {{ item.label }}
+                            </option>
+                        </select>
+                    </div>
+                    <div class="control-field">
+                        <label class="field-label" for="john-dictionary-min">Longitud minima</label>
+                        <input id="john-dictionary-min" v-model.number="johnDictionaryMinLength" type="number" min="0" max="256" step="1" class="form-control input-dark" />
+                    </div>
+                    <div class="control-field">
+                        <label class="field-label" for="john-dictionary-max">Longitud maxima</label>
+                        <input id="john-dictionary-max" v-model.number="johnDictionaryMaxLength" type="number" min="0" max="256" step="1" class="form-control input-dark" />
+                    </div>
+                    <div class="control-field">
+                        <label class="field-label" for="john-dictionary-limit">Limite resultados</label>
+                        <input id="john-dictionary-limit" v-model.number="johnDictionaryLimit" type="number" min="10" max="100000" step="100" class="form-control input-dark" />
+                    </div>
+                    <div class="control-field full-span">
+                        <label class="field-label" for="john-dictionary-text">Contenido del diccionario</label>
+                        <textarea
+                            id="john-dictionary-text"
+                            v-model="johnDictionaryText"
+                            class="form-control input-dark textarea-dark mono-textarea"
+                            rows="12"
+                            placeholder="Una entrada por linea"
+                        ></textarea>
+                    </div>
+                </div>
+
+                <div class="checkbox-grid">
+                    <label class="toggle-line"><input v-model="johnDictionaryCaseSensitive" type="checkbox" /> sensible a mayusculas</label>
+                    <label class="toggle-line"><input v-model="johnDictionaryUnique" type="checkbox" /> eliminar duplicados</label>
+                    <label class="toggle-line"><input v-model="johnDictionarySort" type="checkbox" /> ordenar resultados</label>
+                </div>
+
+                <div class="inline-actions">
+                    <button class="btn btn-main" @click="queryJohnDictionary">Consultar</button>
+                    <button class="btn btn-subtle" @click="loadJohnDictionaryPreset(false)">Cargar preset</button>
+                    <button class="btn btn-subtle" @click="loadJohnDictionaryPreset(true)">Anadir preset</button>
+                    <button class="btn btn-subtle" @click="summarizeJohnDictionary">Estadisticas</button>
+                    <button class="btn btn-subtle" @click="clearJohnDictionary">Limpiar</button>
+                </div>
+                <p class="helper-copy">
+                    Los presets son muestras defensivas y categorias de trabajo. Para auditorias reales carga tus propias
+                    listas autorizadas; esta vista solo las inspecciona y no intenta resolver hashes.
+                </p>
+
+                <FeanorResultPanel v-if="johnDictionaryResult" :result="johnDictionaryResult" icon="JTR" @copy="copyText" />
+            </section>
+
+            <section v-if="isModuleVisible('ffufWorkbench')" class="section-box red-team-workbench-module">
+                <div class="module-header">
+                    <span class="section-kicker">Red Team</span>
+                    <h2 class="module-title">ffuf command builder</h2>
+                    <p class="module-copy">
+                        Genera comandos ffuf para fuzzing web autorizado: discovery de rutas, vhosts, parametros,
+                        formularios, APIs JSON y raw requests exportadas desde proxy.
+                    </p>
+                </div>
+
+                <div class="control-grid">
+                    <div class="control-field">
+                        <label class="field-label" for="ffuf-scenario">Escenario</label>
+                        <select id="ffuf-scenario" v-model="ffufScenario" class="form-select input-dark algorithm-select" @change="syncFfufScenarioDefaults">
+                            <option v-for="item in ffufScenarioOptions" :key="item.value" :value="item.value">
+                                {{ item.label }}
+                            </option>
+                        </select>
+                    </div>
+                    <div class="control-field">
+                        <label class="field-label" for="ffuf-url">-u / URL objetivo</label>
+                        <input id="ffuf-url" v-model="ffufUrl" class="form-control input-dark mono-input" placeholder="https://target/FUZZ" />
+                    </div>
+                    <div class="control-field">
+                        <label class="field-label" for="ffuf-wordlist">-w / wordlist</label>
+                        <input id="ffuf-wordlist" v-model="ffufWordlist" class="form-control input-dark mono-input" placeholder="/usr/share/seclists/Discovery/Web-Content/common.txt" />
+                    </div>
+                    <div class="control-field">
+                        <label class="field-label" for="ffuf-keyword">Keyword</label>
+                        <input id="ffuf-keyword" v-model="ffufKeyword" class="form-control input-dark mono-input" placeholder="FUZZ" />
+                    </div>
+                    <div class="control-field">
+                        <label class="field-label" for="ffuf-second-wordlist">Segunda wordlist</label>
+                        <input id="ffuf-second-wordlist" v-model="ffufSecondWordlist" class="form-control input-dark mono-input" placeholder="/usr/share/seclists/Discovery/DNS/subdomains.txt" />
+                    </div>
+                    <div class="control-field">
+                        <label class="field-label" for="ffuf-second-keyword">Segunda keyword</label>
+                        <input id="ffuf-second-keyword" v-model="ffufSecondKeyword" class="form-control input-dark mono-input" placeholder="WORD" />
+                    </div>
+                    <div class="control-field">
+                        <label class="field-label" for="ffuf-mode">-mode</label>
+                        <select id="ffuf-mode" v-model="ffufMultiwordMode" class="form-select input-dark">
+                            <option v-for="item in ffufMultiwordModeOptions" :key="item.value" :value="item.value">
+                                {{ item.label }}
+                            </option>
+                        </select>
+                    </div>
+                    <div class="control-field">
+                        <label class="field-label" for="ffuf-method">-X / metodo</label>
+                        <select id="ffuf-method" v-model="ffufMethod" class="form-select input-dark">
+                            <option v-for="item in ffufMethodOptions" :key="item.value" :value="item.value">
+                                {{ item.label }}
+                            </option>
+                        </select>
+                    </div>
+                    <div class="control-field">
+                        <label class="field-label" for="ffuf-request-file">-request</label>
+                        <input id="ffuf-request-file" v-model="ffufRequestFile" class="form-control input-dark mono-input" placeholder="raw-request.txt" />
+                    </div>
+                    <div class="control-field">
+                        <label class="field-label" for="ffuf-request-proto">-request-proto</label>
+                        <select id="ffuf-request-proto" v-model="ffufRequestProto" class="form-select input-dark">
+                            <option value="https">https</option>
+                            <option value="http">http</option>
+                        </select>
+                    </div>
+                    <div class="control-field full-span">
+                        <label class="field-label" for="ffuf-headers">-H / headers</label>
+                        <textarea id="ffuf-headers" v-model="ffufHeaders" class="form-control input-dark textarea-dark mono-textarea" rows="4" placeholder="Host: FUZZ.target.local&#10;Authorization: Bearer TOKEN&#10;Content-Type: application/json"></textarea>
+                    </div>
+                    <div class="control-field full-span">
+                        <label class="field-label" for="ffuf-data">-d / body</label>
+                        <textarea id="ffuf-data" v-model="ffufData" class="form-control input-dark textarea-dark mono-textarea" rows="4" placeholder="username=admin&password=FUZZ"></textarea>
+                    </div>
+                    <div class="control-field full-span">
+                        <label class="field-label" for="ffuf-cookie">-b / cookies</label>
+                        <input id="ffuf-cookie" v-model="ffufCookie" class="form-control input-dark mono-input" placeholder="SESSION=abc; theme=dark" />
+                    </div>
+                </div>
+
+                <div class="control-grid">
+                    <div class="control-field">
+                        <label class="field-label" for="ffuf-match-codes">-mc / match codigos</label>
+                        <input id="ffuf-match-codes" v-model="ffufMatchCodes" class="form-control input-dark mono-input" placeholder="200,204,301,302,307,401,403,405,500" />
+                    </div>
+                    <div class="control-field">
+                        <label class="field-label" for="ffuf-filter-codes">-fc / filtrar codigos</label>
+                        <input id="ffuf-filter-codes" v-model="ffufFilterCodes" class="form-control input-dark mono-input" placeholder="404,400" />
+                    </div>
+                    <div class="control-field">
+                        <label class="field-label" for="ffuf-match-size">-ms / match tamano</label>
+                        <input id="ffuf-match-size" v-model="ffufMatchSize" class="form-control input-dark mono-input" placeholder="100-5000" />
+                    </div>
+                    <div class="control-field">
+                        <label class="field-label" for="ffuf-filter-size">-fs / filtrar tamano</label>
+                        <input id="ffuf-filter-size" v-model="ffufFilterSize" class="form-control input-dark mono-input" placeholder="4242" />
+                    </div>
+                    <div class="control-field">
+                        <label class="field-label" for="ffuf-match-words">-mw / match palabras</label>
+                        <input id="ffuf-match-words" v-model="ffufMatchWords" class="form-control input-dark mono-input" placeholder="10-200" />
+                    </div>
+                    <div class="control-field">
+                        <label class="field-label" for="ffuf-filter-words">-fw / filtrar palabras</label>
+                        <input id="ffuf-filter-words" v-model="ffufFilterWords" class="form-control input-dark mono-input" placeholder="7" />
+                    </div>
+                    <div class="control-field">
+                        <label class="field-label" for="ffuf-match-lines">-ml / match lineas</label>
+                        <input id="ffuf-match-lines" v-model="ffufMatchLines" class="form-control input-dark mono-input" placeholder="1-80" />
+                    </div>
+                    <div class="control-field">
+                        <label class="field-label" for="ffuf-filter-lines">-fl / filtrar lineas</label>
+                        <input id="ffuf-filter-lines" v-model="ffufFilterLines" class="form-control input-dark mono-input" placeholder="12" />
+                    </div>
+                    <div class="control-field">
+                        <label class="field-label" for="ffuf-match-regex">-mr / match regex</label>
+                        <input id="ffuf-match-regex" v-model="ffufMatchRegex" class="form-control input-dark mono-input" placeholder="(?i)admin|dashboard" />
+                    </div>
+                    <div class="control-field">
+                        <label class="field-label" for="ffuf-filter-regex">-fr / filtrar regex</label>
+                        <input id="ffuf-filter-regex" v-model="ffufFilterRegex" class="form-control input-dark mono-input" placeholder="Not found|Invalid" />
+                    </div>
+                    <div class="control-field">
+                        <label class="field-label" for="ffuf-match-time">-mt / match tiempo</label>
+                        <input id="ffuf-match-time" v-model="ffufMatchTime" class="form-control input-dark mono-input" placeholder=">5000" />
+                    </div>
+                    <div class="control-field">
+                        <label class="field-label" for="ffuf-filter-time">-ft / filtrar tiempo</label>
+                        <input id="ffuf-filter-time" v-model="ffufFilterTime" class="form-control input-dark mono-input" placeholder=">10000" />
+                    </div>
+                </div>
+
+                <div class="control-grid">
+                    <div class="control-field">
+                        <label class="field-label" for="ffuf-threads">-t / threads</label>
+                        <input id="ffuf-threads" v-model.number="ffufThreads" type="number" min="1" max="1000" step="1" class="form-control input-dark" />
+                    </div>
+                    <div class="control-field">
+                        <label class="field-label" for="ffuf-rate">-rate / req/s</label>
+                        <input id="ffuf-rate" v-model.number="ffufRate" type="number" min="0" step="1" class="form-control input-dark" placeholder="0 = sin limite" />
+                    </div>
+                    <div class="control-field">
+                        <label class="field-label" for="ffuf-timeout">-timeout</label>
+                        <input id="ffuf-timeout" v-model.number="ffufTimeout" type="number" min="1" max="300" step="1" class="form-control input-dark" />
+                    </div>
+                    <div class="control-field">
+                        <label class="field-label" for="ffuf-maxtime">-maxtime</label>
+                        <input id="ffuf-maxtime" v-model.number="ffufMaxTime" type="number" min="0" step="10" class="form-control input-dark" />
+                    </div>
+                    <div class="control-field">
+                        <label class="field-label" for="ffuf-maxtime-job">-maxtime-job</label>
+                        <input id="ffuf-maxtime-job" v-model.number="ffufMaxTimeJob" type="number" min="0" step="10" class="form-control input-dark" />
+                    </div>
+                    <div class="control-field">
+                        <label class="field-label" for="ffuf-recursion-depth">-recursion-depth</label>
+                        <input id="ffuf-recursion-depth" v-model.number="ffufRecursionDepth" type="number" min="0" max="10" step="1" class="form-control input-dark" />
+                    </div>
+                    <div class="control-field">
+                        <label class="field-label" for="ffuf-recursion-strategy">-recursion-strategy</label>
+                        <select id="ffuf-recursion-strategy" v-model="ffufRecursionStrategy" class="form-select input-dark">
+                            <option v-for="item in ffufRecursionStrategyOptions" :key="item.value" :value="item.value">
+                                {{ item.label }}
+                            </option>
+                        </select>
+                    </div>
+                    <div class="control-field">
+                        <label class="field-label" for="ffuf-calibration">Autocalibracion</label>
+                        <select id="ffuf-calibration" v-model="ffufAutoCalibration" class="form-select input-dark">
+                            <option v-for="item in ffufCalibrationModeOptions" :key="item.value" :value="item.value">
+                                {{ item.label }}
+                            </option>
+                        </select>
+                    </div>
+                    <div class="control-field">
+                        <label class="field-label" for="ffuf-proxy">-x / proxy</label>
+                        <input id="ffuf-proxy" v-model="ffufProxy" class="form-control input-dark mono-input" placeholder="http://127.0.0.1:8080" />
+                    </div>
+                    <div class="control-field">
+                        <label class="field-label" for="ffuf-replay-proxy">-replay-proxy</label>
+                        <input id="ffuf-replay-proxy" v-model="ffufReplayProxy" class="form-control input-dark mono-input" placeholder="http://127.0.0.1:8080" />
+                    </div>
+                    <div class="control-field">
+                        <label class="field-label" for="ffuf-output-file">-o / salida</label>
+                        <input id="ffuf-output-file" v-model="ffufOutputFile" class="form-control input-dark mono-input" placeholder="ffuf-results.json" />
+                    </div>
+                    <div class="control-field">
+                        <label class="field-label" for="ffuf-output-format">-of / formato</label>
+                        <select id="ffuf-output-format" v-model="ffufOutputFormat" class="form-select input-dark">
+                            <option v-for="item in ffufOutputFormatOptions" :key="item.value" :value="item.value">
+                                {{ item.label }}
+                            </option>
+                        </select>
+                    </div>
+                    <div class="control-field">
+                        <label class="field-label" for="ffuf-config">-config</label>
+                        <input id="ffuf-config" v-model="ffufConfigFile" class="form-control input-dark mono-input" placeholder="~/.config/ffuf/ffufrc" />
+                    </div>
+                    <div class="control-field">
+                        <label class="field-label" for="ffuf-sni">-sni</label>
+                        <input id="ffuf-sni" v-model="ffufSni" class="form-control input-dark mono-input" placeholder="target.local" />
+                    </div>
+                </div>
+
+                <div class="checkbox-grid">
+                    <label class="toggle-line"><input v-model="ffufRecursion" type="checkbox" /> -recursion</label>
+                    <label class="toggle-line"><input v-model="ffufFollowRedirects" type="checkbox" /> -r seguir redirects</label>
+                    <label class="toggle-line"><input v-model="ffufHttp2" type="checkbox" /> -http2</label>
+                    <label class="toggle-line"><input v-model="ffufRaw" type="checkbox" /> -raw no codificar URI</label>
+                    <label class="toggle-line"><input v-model="ffufIgnoreBody" type="checkbox" /> -ignore-body</label>
+                    <label class="toggle-line"><input v-model="ffufSilent" type="checkbox" /> -s modo silencioso</label>
+                </div>
+
+                <div class="inline-actions">
+                    <button class="btn btn-main" @click="runFfufWorkbench">Generar comando</button>
+                    <button class="btn btn-subtle" @click="fillFfufExample">Cargar ejemplo</button>
+                    <button class="btn btn-subtle" @click="clearFfufWorkbench">Limpiar</button>
+                </div>
+                <p class="helper-copy">
+                    Feanor no lanza peticiones HTTP: compone comandos y valida que exista keyword. Ejecuta ffuf solo sobre
+                    activos propios o con autorizacion, con rate y maxtime adecuados.
+                </p>
+
+                <FeanorResultPanel v-if="ffufResult" :result="ffufResult" icon="FFUF" @copy="copyText" />
             </section>
 
             <section v-if="isModuleVisible('passwordCracker')" class="section-box password-cracker-module">
@@ -2953,10 +3371,26 @@ import {
     redTeamHashModeOptions
 } from "@/features/codiceFeanor/redTeam/hashcatJohnCatalog";
 import {
+    dictionaryFileName,
+    dictionaryText,
+    filterDictionaryEntries,
+    findJohnDictionary,
+    johnDictionaryCatalog,
+    johnDictionaryOptions,
+    normalizeDictionaryLines,
+    summarizeDictionaryEntries
+} from "@/features/codiceFeanor/redTeam/dictionaryCatalog";
+import {
     buildHashcatCommand,
-    buildJohnCommand,
     buildRedTeamWorkflowLines,
     generateRedTeamCandidates,
+    hashcatActionOptions,
+    hashcatAttackModeOptions,
+    hashcatDeviceTypeOptions,
+    hashcatOutfileFormatOptions,
+    hashcatRuleFileOptions,
+    hashcatSeparatorOptions,
+    hashcatWorkloadOptions,
     redTeamAttackModes,
     redTeamDefaultCharsets,
     redTeamRulePresets
@@ -3008,12 +3442,25 @@ const requiredFeanorFieldIds = new Set([
     "hash-lookup-encoding",
     "hash-lookup-limit",
     "hash-lookup-input",
-    "redteam-hash-mode",
-    "redteam-attack-mode",
-    "redteam-rule-preset",
-    "redteam-limit",
-    "redteam-workload",
-    "redteam-input",
+    "hashcat-action",
+    "hashcat-hash-mode",
+    "hashcat-attack-mode",
+    "hashcat-dictionary",
+    "hashcat-hash-file",
+    "hashcat-output-file",
+    "hashcat-limit",
+    "hashcat-workload",
+    "hashcat-input",
+    "john-dictionary-source",
+    "john-dictionary-text",
+    "ffuf-scenario",
+    "ffuf-wordlist",
+    "ffuf-keyword",
+    "ffuf-url",
+    "ffuf-method",
+    "ffuf-match-codes",
+    "ffuf-threads",
+    "ffuf-timeout",
     "password-cracker-algorithm",
     "password-cracker-salt-mode",
     "password-cracker-encoding",
@@ -3216,6 +3663,48 @@ const passwordCrackerAttackModes = redTeamAttackModes.filter(item =>
     ["straight", "rules", "mask", "hybridWordMask", "hybridMaskWord", "combinator"].includes(item.value)
 );
 const passwordCrackerRuleModes = redTeamRulePresets;
+const hashcatWorkbenchAttackModes = hashcatAttackModeOptions;
+const hashcatRuleOptions = hashcatRuleFileOptions;
+const hashcatDictionaryOptions = johnDictionaryOptions;
+const johnDictionarySearchModes = [
+    { value: "contains", label: "Contiene" },
+    { value: "exact", label: "Exacta" },
+    { value: "prefix", label: "Empieza por" },
+    { value: "suffix", label: "Termina en" },
+    { value: "regex", label: "Regex" }
+];
+const ffufScenarioOptions = [
+    { value: "content", label: "Content discovery | -u /FUZZ | rutas y ficheros" },
+    { value: "vhost", label: "Vhost discovery | -H Host: FUZZ | hosts virtuales" },
+    { value: "get-param-name", label: "GET param names | ?FUZZ=value | nombres" },
+    { value: "get-param-value", label: "GET param values | name=FUZZ | valores" },
+    { value: "post-form", label: "POST form | -X POST -d | formularios" },
+    { value: "json-api", label: "JSON/API fuzz | Content-Type JSON | APIs" },
+    { value: "raw-request", label: "Raw request | -request | Burp/ZAP" }
+];
+const ffufMethodOptions = ["GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"].map(value => ({ value, label: value }));
+const ffufMultiwordModeOptions = [
+    { value: "clusterbomb", label: "clusterbomb | combinaciones completas" },
+    { value: "pitchfork", label: "pitchfork | listas en paralelo" }
+];
+const ffufRecursionStrategyOptions = [
+    { value: "default", label: "default | basada en redirects" },
+    { value: "greedy", label: "greedy | recursar en todos los matches" }
+];
+const ffufOutputFormatOptions = [
+    { value: "json", label: "json | integracion" },
+    { value: "ejson", label: "ejson | payload Base64" },
+    { value: "html", label: "html | informe navegable" },
+    { value: "md", label: "md | markdown" },
+    { value: "csv", label: "csv | tablas" },
+    { value: "ecsv", label: "ecsv | CSV con payload Base64" },
+    { value: "all", label: "all | todos los formatos" }
+];
+const ffufCalibrationModeOptions = [
+    { value: "none", label: "Sin autocalibracion" },
+    { value: "global", label: "-ac | autocalibracion global" },
+    { value: "per-host", label: "-ach | por host" }
+];
 const hashLookupSaltModes = [
     { value: "auto", label: "Auto: plain, plain+salt y salt+plain" },
     { value: "none", label: "Sin salt: hash(plain)" },
@@ -3890,6 +4379,88 @@ const redTeamWorkbenchIncrement = ref(true);
 const redTeamWorkbenchOptimized = ref(true);
 const redTeamWorkbenchUsername = ref(false);
 const redTeamWorkbenchResult = ref(null);
+const hashcatWorkbenchAction = ref("attack");
+const hashcatWorkbenchDictionary = ref("john-password-lst-style");
+const hashcatWorkbenchDictionaryFile = ref(dictionaryFileName("john-password-lst-style"));
+const hashcatWorkbenchRuleFile = ref("rules/best64.rule");
+const hashcatWorkbenchCustomRuleFile = ref("rules/custom.rule");
+const hashcatWorkbenchHashFile = ref("hashes.txt");
+const hashcatWorkbenchOutputFile = ref("found.txt");
+const hashcatWorkbenchSession = ref("feanor-audit");
+const hashcatWorkbenchPotfilePath = ref("hashcat.potfile");
+const hashcatWorkbenchDeviceTypes = ref("");
+const hashcatWorkbenchDeviceIds = ref("");
+const hashcatWorkbenchSeparator = ref(":");
+const hashcatWorkbenchOutfileFormat = ref("1,2");
+const hashcatWorkbenchCustomOutfileFormat = ref("1,2,3");
+const hashcatWorkbenchIncrementMin = ref(1);
+const hashcatWorkbenchIncrementMax = ref(8);
+const hashcatWorkbenchStatus = ref(true);
+const hashcatWorkbenchStatusJson = ref(false);
+const hashcatWorkbenchStatusTimer = ref(30);
+const hashcatWorkbenchRuntime = ref(0);
+const hashcatWorkbenchSkip = ref(0);
+const hashcatWorkbenchLimitCandidates = ref(0);
+const hashcatWorkbenchRemoveFound = ref(false);
+const hashcatWorkbenchQuiet = ref(false);
+const hashcatWorkbenchRestore = ref(false);
+const johnDictionarySource = ref("john-password-lst-style");
+const johnDictionaryText = ref(dictionaryText("john-password-lst-style"));
+const johnDictionaryQuery = ref("");
+const johnDictionarySearchMode = ref("contains");
+const johnDictionaryCaseSensitive = ref(false);
+const johnDictionaryUnique = ref(true);
+const johnDictionarySort = ref(false);
+const johnDictionaryMinLength = ref(0);
+const johnDictionaryMaxLength = ref(0);
+const johnDictionaryLimit = ref(500);
+const johnDictionaryResult = ref(null);
+const ffufScenario = ref("content");
+const ffufUrl = ref("https://target.local/FUZZ");
+const ffufWordlist = ref("/usr/share/seclists/Discovery/Web-Content/directory-list-2.3-medium.txt");
+const ffufKeyword = ref("FUZZ");
+const ffufSecondWordlist = ref("");
+const ffufSecondKeyword = ref("WORD");
+const ffufMultiwordMode = ref("clusterbomb");
+const ffufMethod = ref("GET");
+const ffufHeaders = ref("");
+const ffufData = ref("");
+const ffufCookie = ref("");
+const ffufRequestFile = ref("");
+const ffufRequestProto = ref("https");
+const ffufMatchCodes = ref("200,204,301,302,307,401,403,405,500");
+const ffufFilterCodes = ref("");
+const ffufMatchSize = ref("");
+const ffufFilterSize = ref("");
+const ffufMatchWords = ref("");
+const ffufFilterWords = ref("");
+const ffufMatchLines = ref("");
+const ffufFilterLines = ref("");
+const ffufMatchRegex = ref("");
+const ffufFilterRegex = ref("");
+const ffufMatchTime = ref("");
+const ffufFilterTime = ref("");
+const ffufThreads = ref(40);
+const ffufRate = ref(0);
+const ffufTimeout = ref(10);
+const ffufMaxTime = ref(0);
+const ffufMaxTimeJob = ref(0);
+const ffufRecursion = ref(false);
+const ffufRecursionDepth = ref(2);
+const ffufRecursionStrategy = ref("default");
+const ffufFollowRedirects = ref(false);
+const ffufHttp2 = ref(false);
+const ffufRaw = ref(false);
+const ffufIgnoreBody = ref(false);
+const ffufSilent = ref(false);
+const ffufAutoCalibration = ref("none");
+const ffufProxy = ref("");
+const ffufReplayProxy = ref("");
+const ffufOutputFile = ref("ffuf-results.json");
+const ffufOutputFormat = ref("json");
+const ffufConfigFile = ref("");
+const ffufSni = ref("");
+const ffufResult = ref(null);
 const passwordCrackerInput = ref("");
 const passwordCrackerCandidates = ref("");
 const passwordCrackerSecondaryCandidates = ref("");
@@ -5255,11 +5826,18 @@ function isFeanorFieldRequired(fieldId) {
     if (fieldId === "hash-input") return hashInputKind.value === "text";
     if (fieldId === "hash-secret" || fieldId === "hash-secret-encoding") return hashMode.value === "hmac";
     if (["hash-salt", "hash-iterations", "hash-key-size"].includes(fieldId)) return hashMode.value === "pbkdf2";
-    if (fieldId === "redteam-mask") return ["mask", "hybridWordMask", "hybridMaskWord"].includes(redTeamWorkbenchAttackMode.value);
-    if (fieldId === "redteam-primary-wordlist") {
+    if (fieldId === "hashcat-mask") return ["mask", "hybridWordMask", "hybridMaskWord"].includes(redTeamWorkbenchAttackMode.value);
+    if (fieldId === "hashcat-primary-wordlist") {
         return ["straight", "rules", "hybridWordMask", "hybridMaskWord", "combinator"].includes(redTeamWorkbenchAttackMode.value);
     }
-    if (fieldId === "redteam-secondary-wordlist") return redTeamWorkbenchAttackMode.value === "combinator";
+    if (fieldId === "hashcat-secondary-wordlist") return redTeamWorkbenchAttackMode.value === "combinator";
+    if (fieldId === "hashcat-rule-file") return redTeamWorkbenchAttackMode.value === "rules";
+    if (fieldId === "hashcat-custom-rule-file") return redTeamWorkbenchAttackMode.value === "rules" && hashcatWorkbenchRuleFile.value === "custom";
+    if (fieldId === "hashcat-increment-min" || fieldId === "hashcat-increment-max") return redTeamWorkbenchIncrement.value;
+    if (fieldId === "ffuf-request-file" || fieldId === "ffuf-request-proto") return ffufScenario.value === "raw-request";
+    if (fieldId === "ffuf-data") return ["post-form", "json-api"].includes(ffufScenario.value);
+    if (fieldId === "ffuf-second-wordlist" || fieldId === "ffuf-second-keyword" || fieldId === "ffuf-mode") return Boolean(ffufSecondWordlist.value.trim());
+    if (fieldId === "ffuf-recursion-depth" || fieldId === "ffuf-recursion-strategy") return ffufRecursion.value;
     if (fieldId === "password-cracker-mask") return ["mask", "hybridWordMask", "hybridMaskWord"].includes(passwordCrackerAttackMode.value);
     if (fieldId === "password-cracker-candidates") {
         return ["straight", "rules", "hybridWordMask", "hybridMaskWord", "combinator"].includes(passwordCrackerAttackMode.value);
@@ -5939,7 +6517,7 @@ function redTeamInputLines(raw, limit = 50) {
         .slice(0, limit);
 }
 
-function detectRedTeamWorkbenchModes() {
+function detectHashcatWorkbenchModes() {
     const lines = redTeamInputLines(redTeamWorkbenchInput.value, 10);
     const modes = [];
     lines.forEach(item => {
@@ -5952,12 +6530,12 @@ function detectRedTeamWorkbenchModes() {
     return modes;
 }
 
-function selectedRedTeamWorkbenchHashMode(detectedModes = []) {
+function selectedHashcatWorkbenchHashMode(detectedModes = []) {
     if (redTeamWorkbenchHashMode.value === "auto") return detectedModes[0] || null;
     return findRedTeamHashMode(redTeamWorkbenchHashMode.value);
 }
 
-function buildRedTeamWorkbenchResult({ title, body, tone, detectedModes, selectedMode, candidatePlan, hashcatCommand, johnCommand }) {
+function buildHashcatWorkbenchResult({ title, body, tone, detectedModes, selectedMode, candidatePlan, hashcatCommand }) {
     const preview = candidatePlan.candidates.slice(0, 180).join("\n") || "Sin candidatos locales generados para este modo.";
     const workflowLines = buildRedTeamWorkflowLines({
         hashMode: selectedMode,
@@ -5965,12 +6543,16 @@ function buildRedTeamWorkbenchResult({ title, body, tone, detectedModes, selecte
         candidatePlan,
         detectedModes
     });
+    const action = hashcatActionOptions.find(item => item.value === hashcatWorkbenchAction.value) || hashcatActionOptions[0];
+    const dictionary = hashcatWorkbenchDictionary.value === "custom"
+        ? { label: "Personalizado", fileName: hashcatWorkbenchDictionaryFile.value || "custom-wordlist.txt", source: "Ruta local" }
+        : findJohnDictionary(hashcatWorkbenchDictionary.value);
     const warnings = candidatePlan.warnings.length
         ? buildTextList("Avisos", candidatePlan.warnings)
-        : "Avisos\n- Configuracion lista para laboratorio local.";
+        : "Avisos\n- Comando listo para revisar y ejecutar en un entorno autorizado.";
 
     return {
-        primaryValue: [hashcatCommand, johnCommand].join("\n"),
+        primaryValue: hashcatCommand,
         verdictTone: tone,
         verdictTitle: title,
         verdictBody: body,
@@ -5978,16 +6560,17 @@ function buildRedTeamWorkbenchResult({ title, body, tone, detectedModes, selecte
             { label: "Formatos", value: detectedModes.length ? String(detectedModes.length) : "Auto", tone: detectedModes.length ? "tone-success" : "tone-warning", note: selectedMode?.label || "Sin seleccion" },
             { label: "Keyspace", value: candidatePlan.keyspaceLabel || "N/D", tone: "tone-neutral", note: "Estimado" },
             { label: "Preview", value: candidatePlan.candidates.length.toLocaleString("es-ES"), tone: candidatePlan.candidates.length ? "tone-success" : "tone-warning", note: "Candidatos locales" },
-            { label: "Modo", value: redTeamWorkbenchAttackMode.value, tone: "tone-neutral", note: "Ataque" }
+            { label: "Accion", value: action.label, tone: "tone-neutral", note: "Hashcat" }
         ],
         signalCards: [
-            { label: "Hashcat", value: selectedMode?.hashcatMode ? `-m ${selectedMode.hashcatMode}` : "N/D", tone: selectedMode?.hashcatMode ? "tone-success" : "tone-warning", note: "Modo" },
-            { label: "John", value: selectedMode?.johnFormat || "N/D", tone: selectedMode?.johnFormat ? "tone-success" : "tone-warning", note: "Formato" },
-            { label: "Reglas", value: redTeamWorkbenchRulePreset.value, tone: "tone-neutral", note: "Preset" },
+            { label: "-m", value: selectedMode?.hashcatMode ? selectedMode.hashcatMode : "auto", tone: selectedMode?.hashcatMode ? "tone-success" : "tone-warning", note: selectedMode?.status || "Autodetectar" },
+            { label: "-a", value: redTeamWorkbenchAttackMode.value, tone: "tone-neutral", note: "Ataque" },
+            { label: "Wordlist", value: hashcatWorkbenchDictionaryFile.value || dictionary.fileName, tone: "tone-neutral", note: dictionary.label },
+            { label: "Reglas", value: hashcatWorkbenchRuleFile.value, tone: "tone-neutral", note: redTeamWorkbenchRulePreset.value },
             { label: "Mascara", value: redTeamWorkbenchMask.value || "N/D", tone: "tone-neutral", note: candidatePlan.maskSummary || "No usada" }
         ],
         panels: [
-            { title: "Comandos", badge: "cli", content: [hashcatCommand, johnCommand].join("\n"), copyValue: [hashcatCommand, johnCommand].join("\n") },
+            { title: "Comando Hashcat", badge: "cli", content: hashcatCommand, copyValue: hashcatCommand },
             { title: "Preview candidatos", badge: "dict", content: preview, copyValue: preview },
             { title: "Plan tecnico", badge: "plan", content: buildTextList("Flujo", workflowLines), copyValue: workflowLines.join("\n") },
             { title: "Avisos", badge: "scope", content: warnings, copyValue: candidatePlan.warnings.join("\n") }
@@ -5995,65 +6578,100 @@ function buildRedTeamWorkbenchResult({ title, body, tone, detectedModes, selecte
     };
 }
 
-function runRedTeamWorkbench() {
-    const detectedModes = detectRedTeamWorkbenchModes();
-    const selectedMode = selectedRedTeamWorkbenchHashMode(detectedModes);
-    const candidatePlan = generateRedTeamCandidates({
-        attackMode: redTeamWorkbenchAttackMode.value,
-        primaryWordlist: redTeamWorkbenchPrimaryWordlist.value,
-        secondaryWordlist: redTeamWorkbenchSecondaryWordlist.value,
-        mask: redTeamWorkbenchMask.value,
-        customCharsets: redTeamWorkbenchCharsets(),
-        rulePreset: redTeamWorkbenchRulePreset.value,
-        limit: redTeamWorkbenchLimit.value
-    });
+function runHashcatWorkbench() {
+    const detectedModes = detectHashcatWorkbenchModes();
+    const selectedMode = selectedHashcatWorkbenchHashMode(detectedModes);
+    const needsCandidatePreview = ["attack", "stdout", "keyspace"].includes(hashcatWorkbenchAction.value);
+    const candidatePlan = needsCandidatePreview
+        ? generateRedTeamCandidates({
+            attackMode: redTeamWorkbenchAttackMode.value,
+            primaryWordlist: redTeamWorkbenchPrimaryWordlist.value,
+            secondaryWordlist: redTeamWorkbenchSecondaryWordlist.value,
+            mask: redTeamWorkbenchMask.value,
+            customCharsets: redTeamWorkbenchCharsets(),
+            rulePreset: redTeamWorkbenchRulePreset.value,
+            limit: redTeamWorkbenchLimit.value
+        })
+        : { candidates: [], keyspace: 0n, keyspaceLabel: "N/D", warnings: [], maskSummary: "", primaryCount: 0, secondaryCount: 0 };
     const commandConfig = {
+        action: hashcatWorkbenchAction.value,
         hashModeId: redTeamWorkbenchHashMode.value,
         detectedModes,
         attackMode: redTeamWorkbenchAttackMode.value,
         rulePreset: redTeamWorkbenchRulePreset.value,
+        ruleFile: hashcatWorkbenchRuleFile.value,
+        customRuleFile: hashcatWorkbenchCustomRuleFile.value,
         mask: redTeamWorkbenchMask.value,
         customCharsets: redTeamWorkbenchCharsets(),
         optimized: redTeamWorkbenchOptimized.value,
         username: redTeamWorkbenchUsername.value,
         workload: redTeamWorkbenchWorkload.value,
-        increment: redTeamWorkbenchIncrement.value
+        increment: redTeamWorkbenchIncrement.value,
+        incrementMin: hashcatWorkbenchIncrementMin.value,
+        incrementMax: hashcatWorkbenchIncrementMax.value,
+        deviceTypes: hashcatWorkbenchDeviceTypes.value,
+        deviceIds: hashcatWorkbenchDeviceIds.value,
+        separator: hashcatWorkbenchSeparator.value,
+        session: hashcatWorkbenchSession.value,
+        restore: hashcatWorkbenchRestore.value,
+        status: hashcatWorkbenchStatus.value,
+        statusJson: hashcatWorkbenchStatusJson.value,
+        statusTimer: hashcatWorkbenchStatusTimer.value,
+        potfilePath: hashcatWorkbenchPotfilePath.value,
+        outfileFormat: hashcatWorkbenchOutfileFormat.value,
+        customOutfileFormat: hashcatWorkbenchCustomOutfileFormat.value,
+        runtime: hashcatWorkbenchRuntime.value,
+        skip: hashcatWorkbenchSkip.value,
+        limitCandidates: hashcatWorkbenchLimitCandidates.value,
+        removeFound: hashcatWorkbenchRemoveFound.value,
+        quiet: hashcatWorkbenchQuiet.value,
+        hashFile: hashcatWorkbenchHashFile.value,
+        wordlistFile: hashcatWorkbenchDictionaryFile.value,
+        secondWordlistFile: hashcatWorkbenchDictionaryFile.value,
+        outputFile: hashcatWorkbenchOutputFile.value
     };
     const hashcatCommand = buildHashcatCommand(commandConfig);
-    const johnCommand = buildJohnCommand(commandConfig);
-    const hasPlan = Boolean(selectedMode || candidatePlan.candidates.length || candidatePlan.keyspace > 0n);
+    const hasPlan = Boolean(hashcatCommand && (selectedMode || candidatePlan.candidates.length || candidatePlan.keyspace > 0n || hashcatWorkbenchAction.value !== "attack"));
 
-    redTeamWorkbenchResult.value = buildRedTeamWorkbenchResult({
-        title: hasPlan ? "Plan Red Team generado" : "Plan incompleto",
+    redTeamWorkbenchResult.value = buildHashcatWorkbenchResult({
+        title: hasPlan ? "Comando Hashcat generado" : "Comando incompleto",
         body: hasPlan
-            ? "Se ha generado una estrategia reproducible con comandos, keyspace y preview local."
-            : "Faltan hashes, wordlist o mascara para cerrar el plan.",
+            ? "Se ha generado una linea CLI revisable junto con preview local y contexto operativo."
+            : "Faltan hashes, wordlist o mascara para cerrar el comando.",
         tone: hasPlan ? "verdict-success" : "verdict-warning",
         detectedModes,
         selectedMode,
         candidatePlan,
-        hashcatCommand,
-        johnCommand
+        hashcatCommand
     });
 }
 
-function fillRedTeamWorkbenchExample() {
+function syncHashcatDictionaryFromSelection() {
+    hashcatWorkbenchDictionaryFile.value = dictionaryFileName(hashcatWorkbenchDictionary.value);
+    if (hashcatWorkbenchDictionary.value !== "custom") {
+        redTeamWorkbenchPrimaryWordlist.value = dictionaryText(hashcatWorkbenchDictionary.value);
+    }
+}
+
+function loadHashcatDictionaryPreview() {
+    syncHashcatDictionaryFromSelection();
+    runHashcatWorkbench();
+}
+
+function fillHashcatWorkbenchExample() {
     redTeamWorkbenchInput.value = [
         "5f4dcc3b5aa765d61d8327deb882cf99",
         "$2b$10$abcdefghijklmnopqrstuuJ4xkQG8nYDyf1x0Wl4nY9a7e9YzYxWm",
         "$y$j9T$SALTSTRING22CHARS$hashmaterial"
     ].join("\n");
+    hashcatWorkbenchAction.value = "attack";
     redTeamWorkbenchHashMode.value = "auto";
     redTeamWorkbenchAttackMode.value = "rules";
     redTeamWorkbenchRulePreset.value = "best64-lite";
-    redTeamWorkbenchPrimaryWordlist.value = [
-        "password",
-        "admin",
-        "empresa",
-        "Mithril",
-        "Feanor",
-        "verano"
-    ].join("\n");
+    hashcatWorkbenchDictionary.value = "john-password-lst-style";
+    hashcatWorkbenchDictionaryFile.value = dictionaryFileName(hashcatWorkbenchDictionary.value);
+    hashcatWorkbenchRuleFile.value = "rules/best64.rule";
+    redTeamWorkbenchPrimaryWordlist.value = dictionaryText(hashcatWorkbenchDictionary.value);
     redTeamWorkbenchSecondaryWordlist.value = ["2026", "!", "prod", "dev", "01"].join("\n");
     redTeamWorkbenchMask.value = "?l?l?l?l?d?d";
     redTeamWorkbenchCharset1.value = redTeamDefaultCharsets["1"];
@@ -6065,10 +6683,14 @@ function fillRedTeamWorkbenchExample() {
     redTeamWorkbenchIncrement.value = true;
     redTeamWorkbenchOptimized.value = true;
     redTeamWorkbenchUsername.value = false;
+    hashcatWorkbenchHashFile.value = "hashes.txt";
+    hashcatWorkbenchOutputFile.value = "found.txt";
+    hashcatWorkbenchSession.value = "feanor-audit";
+    hashcatWorkbenchPotfilePath.value = "hashcat.potfile";
     redTeamWorkbenchResult.value = null;
 }
 
-function sendHashResultToRedTeamWorkbench() {
+function sendHashResultToHashcatWorkbench() {
     if (!hashResult.value?.primaryValue) {
         redTeamWorkbenchResult.value = buildErrorResult("REDTEAM_HASH_RESULT_EMPTY", "No hay ultimo hash", "Calcula primero una huella en el modulo Hash digest.");
         return;
@@ -6083,11 +6705,356 @@ function sendHashResultToRedTeamWorkbench() {
     redTeamWorkbenchResult.value = null;
 }
 
-function clearRedTeamWorkbench() {
+function clearHashcatWorkbench() {
     redTeamWorkbenchInput.value = "";
     redTeamWorkbenchPrimaryWordlist.value = "";
     redTeamWorkbenchSecondaryWordlist.value = "";
     redTeamWorkbenchResult.value = null;
+}
+
+function johnDictionaryLines() {
+    return normalizeDictionaryLines(johnDictionaryText.value, 100000);
+}
+
+function buildJohnDictionaryResult({ title, body, tone, entries, stats, sourceNote = "", error = "" }) {
+    const preview = entries.slice(0, 500).join("\n") || "Sin entradas que mostrar.";
+    const source = johnDictionarySource.value === "custom"
+        ? { label: "Personalizado", fileName: "custom-wordlist.txt", source: "Fichero local", note: "Contenido cargado o pegado por el usuario." }
+        : findJohnDictionary(johnDictionarySource.value);
+
+    return {
+        primaryValue: preview,
+        verdictTone: tone,
+        verdictTitle: title,
+        verdictBody: body,
+        summaryCards: [
+            { label: "Entradas", value: stats.total.toLocaleString("es-ES"), tone: stats.total ? "tone-success" : "tone-warning", note: "Lineas cargadas" },
+            { label: "Unicas", value: stats.unique.toLocaleString("es-ES"), tone: "tone-neutral", note: "Case-insensitive" },
+            { label: "Longitud", value: `${stats.min}-${stats.max}`, tone: "tone-neutral", note: `media ${stats.average}` },
+            { label: "Matches", value: entries.length.toLocaleString("es-ES"), tone: entries.length ? "tone-success" : "tone-warning", note: johnDictionarySearchMode.value }
+        ],
+        signalCards: [
+            { label: "Origen", value: source.label, tone: "tone-neutral", note: source.source },
+            { label: "Fichero", value: source.fileName, tone: "tone-neutral", note: sourceNote || source.note },
+            { label: "Filtro", value: johnDictionaryQuery.value || "sin filtro", tone: "tone-neutral", note: johnDictionaryCaseSensitive.value ? "case-sensitive" : "case-insensitive" },
+            { label: "Uso", value: "consulta", tone: "tone-success", note: "no cracking" }
+        ],
+        panels: [
+            { title: "Resultados", badge: "dict", content: preview, copyValue: preview },
+            { title: "Diccionarios incluidos", badge: "src", content: buildTextList("Catalogo", johnDictionaryCatalog.map(item => `${item.label}: ${item.fileName} (${item.entries.length})`)), copyValue: johnDictionaryCatalog.map(item => item.fileName).join("\n") },
+            { title: "Notas", badge: error ? "warn" : "info", content: error || source.note || "Consulta local lista.", copyValue: error || source.note || "" }
+        ]
+    };
+}
+
+function queryJohnDictionary() {
+    const lines = johnDictionaryLines();
+    const stats = summarizeDictionaryEntries(lines);
+    const { entries, error } = filterDictionaryEntries(lines, {
+        query: johnDictionaryQuery.value,
+        mode: johnDictionarySearchMode.value,
+        caseSensitive: johnDictionaryCaseSensitive.value,
+        unique: johnDictionaryUnique.value,
+        sort: johnDictionarySort.value,
+        minLength: johnDictionaryMinLength.value,
+        maxLength: johnDictionaryMaxLength.value,
+        limit: johnDictionaryLimit.value
+    });
+
+    johnDictionaryResult.value = buildJohnDictionaryResult({
+        title: error ? "Consulta no valida" : entries.length ? "Consulta completada" : "Sin coincidencias",
+        body: error || "La wordlist se ha filtrado localmente sin enviar datos ni probar hashes.",
+        tone: error ? "verdict-danger" : entries.length ? "verdict-success" : "verdict-warning",
+        entries,
+        stats,
+        error
+    });
+}
+
+function loadJohnDictionaryPreset(append = false) {
+    if (johnDictionarySource.value === "custom") return;
+    const text = dictionaryText(johnDictionarySource.value);
+    johnDictionaryText.value = append && johnDictionaryText.value.trim()
+        ? `${johnDictionaryText.value.trim()}\n${text}`
+        : text;
+    queryJohnDictionary();
+}
+
+async function handleJohnDictionaryFile(event) {
+    const [file] = Array.from(event.target.files || []);
+    if (!file) return;
+    johnDictionarySource.value = "custom";
+    johnDictionaryText.value = await file.text();
+    johnDictionaryResult.value = buildJohnDictionaryResult({
+        title: "Diccionario cargado",
+        body: `Se ha cargado ${file.name} para consulta local. No se ejecuta ningun ataque.`,
+        tone: "verdict-success",
+        entries: johnDictionaryLines().slice(0, johnDictionaryLimit.value),
+        stats: summarizeDictionaryEntries(johnDictionaryLines()),
+        sourceNote: `${file.name} (${formatBytesSize(file.size)})`
+    });
+    event.target.value = "";
+}
+
+function summarizeJohnDictionary() {
+    const lines = johnDictionaryLines();
+    johnDictionaryResult.value = buildJohnDictionaryResult({
+        title: "Estadisticas del diccionario",
+        body: "Resumen local de tamano, duplicados y longitudes para decidir si la lista encaja con tu hipotesis.",
+        tone: lines.length ? "verdict-success" : "verdict-warning",
+        entries: lines.slice(0, johnDictionaryLimit.value),
+        stats: summarizeDictionaryEntries(lines)
+    });
+}
+
+function clearJohnDictionary() {
+    johnDictionaryText.value = "";
+    johnDictionaryQuery.value = "";
+    johnDictionaryResult.value = null;
+}
+
+function commandQuote(value) {
+    const text = String(value ?? "");
+    if (!text) return "''";
+    if (/^[A-Za-z0-9_./:@%+=,-]+$/.test(text)) return text;
+    return `'${text.replace(/'/g, "'\\''")}'`;
+}
+
+function ffufPushValue(parts, flag, value) {
+    const text = String(value ?? "").trim();
+    if (text) parts.push(flag, commandQuote(text));
+}
+
+function ffufPushPositiveNumber(parts, flag, value) {
+    const number = Number(value);
+    if (Number.isFinite(number) && number > 0) parts.push(flag, String(Math.trunc(number)));
+}
+
+function ffufHeaderLines() {
+    return String(ffufHeaders.value || "")
+        .split(/\r?\n/)
+        .map(line => line.trim())
+        .filter(Boolean);
+}
+
+function ffufWordlistArgs() {
+    const keyword = String(ffufKeyword.value || "FUZZ").trim() || "FUZZ";
+    const args = [];
+    args.push("-w", commandQuote(`${ffufWordlist.value.trim()}:${keyword}`));
+    if (ffufSecondWordlist.value.trim()) {
+        const secondKeyword = String(ffufSecondKeyword.value || "WORD").trim() || "WORD";
+        args.push("-w", commandQuote(`${ffufSecondWordlist.value.trim()}:${secondKeyword}`), "-mode", ffufMultiwordMode.value);
+    }
+    return args;
+}
+
+function ffufTargetContainsKeyword() {
+    const keyword = String(ffufKeyword.value || "FUZZ").trim() || "FUZZ";
+    const requestSurface = [
+        ffufUrl.value,
+        ffufHeaders.value,
+        ffufData.value,
+        ffufScenario.value === "raw-request" ? ffufRequestFile.value : ""
+    ].join("\n");
+    return requestSurface.includes(keyword) || ffufScenario.value === "raw-request";
+}
+
+function buildFfufCommand() {
+    const parts = ["ffuf", ...ffufWordlistArgs()];
+
+    if (ffufScenario.value === "raw-request") {
+        ffufPushValue(parts, "-request", ffufRequestFile.value || "raw-request.txt");
+        ffufPushValue(parts, "-request-proto", ffufRequestProto.value);
+    } else {
+        ffufPushValue(parts, "-u", ffufUrl.value);
+        if (ffufMethod.value && ffufMethod.value !== "GET") parts.push("-X", ffufMethod.value);
+    }
+
+    ffufHeaderLines().forEach(header => parts.push("-H", commandQuote(header)));
+    ffufPushValue(parts, "-d", ffufData.value);
+    ffufPushValue(parts, "-b", ffufCookie.value);
+    ffufPushValue(parts, "-mc", ffufMatchCodes.value);
+    ffufPushValue(parts, "-fc", ffufFilterCodes.value);
+    ffufPushValue(parts, "-ms", ffufMatchSize.value);
+    ffufPushValue(parts, "-fs", ffufFilterSize.value);
+    ffufPushValue(parts, "-mw", ffufMatchWords.value);
+    ffufPushValue(parts, "-fw", ffufFilterWords.value);
+    ffufPushValue(parts, "-ml", ffufMatchLines.value);
+    ffufPushValue(parts, "-fl", ffufFilterLines.value);
+    ffufPushValue(parts, "-mr", ffufMatchRegex.value);
+    ffufPushValue(parts, "-fr", ffufFilterRegex.value);
+    ffufPushValue(parts, "-mt", ffufMatchTime.value);
+    ffufPushValue(parts, "-ft", ffufFilterTime.value);
+    ffufPushPositiveNumber(parts, "-t", ffufThreads.value);
+    ffufPushPositiveNumber(parts, "-rate", ffufRate.value);
+    ffufPushPositiveNumber(parts, "-timeout", ffufTimeout.value);
+    ffufPushPositiveNumber(parts, "-maxtime", ffufMaxTime.value);
+    ffufPushPositiveNumber(parts, "-maxtime-job", ffufMaxTimeJob.value);
+    if (ffufRecursion.value) {
+        parts.push("-recursion");
+        ffufPushPositiveNumber(parts, "-recursion-depth", ffufRecursionDepth.value);
+        ffufPushValue(parts, "-recursion-strategy", ffufRecursionStrategy.value);
+    }
+    if (ffufFollowRedirects.value) parts.push("-r");
+    if (ffufHttp2.value) parts.push("-http2");
+    if (ffufRaw.value) parts.push("-raw");
+    if (ffufIgnoreBody.value) parts.push("-ignore-body");
+    if (ffufSilent.value) parts.push("-s");
+    if (ffufAutoCalibration.value === "global") parts.push("-ac");
+    if (ffufAutoCalibration.value === "per-host") parts.push("-ach");
+    ffufPushValue(parts, "-x", ffufProxy.value);
+    ffufPushValue(parts, "-replay-proxy", ffufReplayProxy.value);
+    ffufPushValue(parts, "-o", ffufOutputFile.value);
+    ffufPushValue(parts, "-of", ffufOutputFormat.value);
+    ffufPushValue(parts, "-config", ffufConfigFile.value);
+    ffufPushValue(parts, "-sni", ffufSni.value);
+
+    return parts.join(" ");
+}
+
+function buildFfufResult({ command, valid, warnings }) {
+    const keyword = String(ffufKeyword.value || "FUZZ").trim() || "FUZZ";
+    const requestNotes = [
+        `Escenario: ${ffufScenario.value}`,
+        `Keyword principal: ${keyword}`,
+        ffufSecondWordlist.value.trim() ? `Multiwordlist: ${ffufMultiwordMode.value} con ${ffufSecondKeyword.value || "WORD"}` : "",
+        ffufScenario.value === "raw-request" ? `Request file: ${ffufRequestFile.value || "raw-request.txt"}` : `URL: ${ffufUrl.value}`,
+        ffufHeaders.value.trim() ? `Headers: ${ffufHeaderLines().length}` : "",
+        ffufData.value.trim() ? "Body configurado" : "",
+        ffufRecursion.value ? `Recursion: depth ${ffufRecursionDepth.value} (${ffufRecursionStrategy.value})` : "",
+        ffufReplayProxy.value.trim() ? `Replay proxy: ${ffufReplayProxy.value}` : ""
+    ].filter(Boolean);
+    const filters = [
+        ffufMatchCodes.value ? `Match codes: ${ffufMatchCodes.value}` : "",
+        ffufFilterCodes.value ? `Filter codes: ${ffufFilterCodes.value}` : "",
+        ffufFilterSize.value ? `Filter size: ${ffufFilterSize.value}` : "",
+        ffufFilterWords.value ? `Filter words: ${ffufFilterWords.value}` : "",
+        ffufMatchRegex.value ? `Match regex: ${ffufMatchRegex.value}` : "",
+        ffufFilterRegex.value ? `Filter regex: ${ffufFilterRegex.value}` : "",
+        ffufMatchTime.value ? `Match time: ${ffufMatchTime.value}` : "",
+        ffufFilterTime.value ? `Filter time: ${ffufFilterTime.value}` : ""
+    ].filter(Boolean);
+
+    return {
+        primaryValue: command,
+        verdictTone: valid ? "verdict-success" : "verdict-warning",
+        verdictTitle: valid ? "Comando ffuf generado" : "Comando ffuf incompleto",
+        verdictBody: valid
+            ? "La linea CLI queda lista para revisar y ejecutar fuera del navegador dentro del alcance autorizado."
+            : "Revisa keyword, URL/request y wordlist antes de ejecutar.",
+        summaryCards: [
+            { label: "Escenario", value: ffufScenario.value, tone: "tone-neutral", note: "Flujo" },
+            { label: "Keyword", value: keyword, tone: ffufTargetContainsKeyword() ? "tone-success" : "tone-warning", note: "Debe aparecer en request" },
+            { label: "Threads", value: String(ffufThreads.value), tone: "tone-neutral", note: ffufRate.value ? `${ffufRate.value} req/s` : "sin rate" },
+            { label: "Salida", value: ffufOutputFormat.value, tone: "tone-neutral", note: ffufOutputFile.value || "stdout" }
+        ],
+        signalCards: [
+            { label: "Wordlist", value: ffufWordlist.value.split(/[\\/]/).pop() || "wordlist", tone: ffufWordlist.value ? "tone-success" : "tone-warning", note: ffufWordlist.value },
+            { label: "Match", value: ffufMatchCodes.value || "all/default", tone: "tone-neutral", note: "Codigos" },
+            { label: "Filtros", value: filters.length ? String(filters.length) : "0", tone: filters.length ? "tone-success" : "tone-warning", note: filters.length ? "Reducen ruido" : "Sin filtros" },
+            { label: "Ambito", value: "CLI", tone: "tone-success", note: "Feanor no envia trafico" }
+        ],
+        panels: [
+            { title: "Comando", badge: "cli", content: command, copyValue: command },
+            { title: "Request", badge: "http", content: buildTextList("Superficie", requestNotes), copyValue: requestNotes.join("\n") },
+            { title: "Matchers y filtros", badge: "flt", content: buildTextList("Criterios", filters), copyValue: filters.join("\n") },
+            { title: "Avisos", badge: warnings.length ? "warn" : "scope", content: buildTextList("Checklist", warnings.length ? warnings : ["Valida autorizacion, rate, filtros y ventana temporal antes de lanzar ffuf."]), copyValue: warnings.join("\n") }
+        ]
+    };
+}
+
+function syncFfufScenarioDefaults() {
+    if (ffufScenario.value === "content") {
+        ffufUrl.value = "https://target.local/FUZZ";
+        ffufMethod.value = "GET";
+        ffufHeaders.value = "";
+        ffufData.value = "";
+        ffufWordlist.value = "/usr/share/seclists/Discovery/Web-Content/directory-list-2.3-medium.txt";
+    } else if (ffufScenario.value === "vhost") {
+        ffufUrl.value = "https://target.local/";
+        ffufHeaders.value = "Host: FUZZ.target.local";
+        ffufFilterSize.value = ffufFilterSize.value || "4242";
+        ffufWordlist.value = "/usr/share/seclists/Discovery/DNS/subdomains-top1million-5000.txt";
+    } else if (ffufScenario.value === "get-param-name") {
+        ffufUrl.value = "https://target.local/search.php?FUZZ=test";
+        ffufFilterSize.value = ffufFilterSize.value || "4242";
+        ffufWordlist.value = "/usr/share/seclists/Discovery/Web-Content/burp-parameter-names.txt";
+    } else if (ffufScenario.value === "get-param-value") {
+        ffufUrl.value = "https://target.local/search.php?id=FUZZ";
+        ffufFilterCodes.value = ffufFilterCodes.value || "401,404";
+        ffufWordlist.value = "/usr/share/seclists/Fuzzing/special-chars.txt";
+    } else if (ffufScenario.value === "post-form") {
+        ffufUrl.value = "https://target.local/login.php";
+        ffufMethod.value = "POST";
+        ffufHeaders.value = "Content-Type: application/x-www-form-urlencoded";
+        ffufData.value = "username=admin&password=FUZZ";
+        ffufFilterCodes.value = ffufFilterCodes.value || "401";
+    } else if (ffufScenario.value === "json-api") {
+        ffufUrl.value = "https://target.local/api/v1/users";
+        ffufMethod.value = "POST";
+        ffufHeaders.value = "Content-Type: application/json";
+        ffufData.value = "{\"id\":\"FUZZ\"}";
+        ffufMatchTime.value = "";
+    } else if (ffufScenario.value === "raw-request") {
+        ffufRequestFile.value = ffufRequestFile.value || "raw-request.txt";
+        ffufRequestProto.value = ffufRequestProto.value || "https";
+    }
+    ffufResult.value = null;
+}
+
+function runFfufWorkbench() {
+    const warnings = [];
+    if (!ffufWordlist.value.trim()) warnings.push("Define una wordlist con -w o usa un input-cmd fuera de esta vista.");
+    if (ffufScenario.value !== "raw-request" && !ffufUrl.value.trim()) warnings.push("Define una URL con -u.");
+    if (ffufScenario.value === "raw-request" && !ffufRequestFile.value.trim()) warnings.push("Define un fichero raw request.");
+    if (!ffufTargetContainsKeyword()) warnings.push("La keyword principal no aparece en URL, headers o body.");
+    if (!ffufFilterCodes.value && !ffufFilterSize.value && !ffufFilterWords.value && !ffufFilterLines.value && ffufScenario.value !== "content") {
+        warnings.push("Anade filtros (-fc/-fs/-fw/-fl) para reducir falsos positivos en vhost, parametros o POST.");
+    }
+    if (!ffufRate.value && ffufThreads.value > 80) warnings.push("Threads altos sin -rate pueden generar demasiado trafico.");
+    if (!ffufMaxTime.value) warnings.push("Considera -maxtime para acotar la ventana de auditoria.");
+
+    const command = buildFfufCommand();
+    const valid = warnings.every(item => !item.startsWith("Define") && !item.includes("keyword principal no aparece"));
+    ffufResult.value = buildFfufResult({ command, valid, warnings });
+}
+
+function fillFfufExample() {
+    ffufScenario.value = "content";
+    ffufUrl.value = "https://target.local/FUZZ";
+    ffufWordlist.value = "/usr/share/seclists/Discovery/Web-Content/raft-medium-directories.txt";
+    ffufKeyword.value = "FUZZ";
+    ffufSecondWordlist.value = "";
+    ffufSecondKeyword.value = "WORD";
+    ffufMultiwordMode.value = "clusterbomb";
+    ffufMethod.value = "GET";
+    ffufHeaders.value = "User-Agent: Feanor-audit/1.0";
+    ffufData.value = "";
+    ffufCookie.value = "";
+    ffufMatchCodes.value = "200,204,301,302,307,401,403,405";
+    ffufFilterCodes.value = "404";
+    ffufFilterSize.value = "";
+    ffufThreads.value = 40;
+    ffufRate.value = 50;
+    ffufTimeout.value = 10;
+    ffufMaxTime.value = 300;
+    ffufOutputFile.value = "ffuf-results.json";
+    ffufOutputFormat.value = "json";
+    ffufResult.value = null;
+}
+
+function clearFfufWorkbench() {
+    ffufUrl.value = "";
+    ffufHeaders.value = "";
+    ffufData.value = "";
+    ffufCookie.value = "";
+    ffufFilterCodes.value = "";
+    ffufFilterSize.value = "";
+    ffufFilterWords.value = "";
+    ffufFilterLines.value = "";
+    ffufMatchRegex.value = "";
+    ffufFilterRegex.value = "";
+    ffufResult.value = null;
 }
 
 function uniqueStringChars(value) {

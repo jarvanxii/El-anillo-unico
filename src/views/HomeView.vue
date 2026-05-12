@@ -89,7 +89,7 @@
                         <p class="info-quote">"Esta ciudad ha resistido durante eras."</p>
                     </div>
                 </router-link>
-                <a href="http://192.168.0.254/#/" class="option-card card-large" target="_blank">
+                <a href="https://lapipadegandalf.com/#/" class="option-card card-large" target="_blank">
                     <div class="corner-tl"></div>
                     <div class="corner-br"></div>
                     <div class="option-img-wrap">
@@ -98,8 +98,7 @@
                     <h3>La pipa de Gandalf</h3>
                     <span class="option-tag">Ocio</span>
                     <div class="option-info">
-                        <p class="info-desc">Plataforma privada para la descarga y reproducción de contenido multimedia.
-                        </p>
+                        <p class="info-desc">Plataforma privada de contenido multimedia. Otro archivo de la tierra media digital con películas, series, TV y mucho más.</p>
                         <p class="info-quote">"Tu amor por la hoja de los medianos ha ralentizado claramente tu mente."
                         </p>
                     </div>
